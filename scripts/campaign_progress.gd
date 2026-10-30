@@ -52,14 +52,30 @@ func record_victory(level_id: String, actions: int) -> bool:
 			known = true
 	if not known:
 		return false
+	var previous_best := best.duplicate()
 	if not best.has(level_id) or actions < best[level_id]:
 		best[level_id] = actions
-	return save_progress()
+	if save_progress():
+		return true
+	best = previous_best
+	return false
 
 func save_progress() -> bool:
-	var file := FileAccess.open(path, FileAccess.WRITE)
+	# Keep the committed save intact until its replacement is fully written.
+	# A sibling temporary file stays on the same filesystem for atomic rename.
+	var temporary_path := path + ".tmp"
+	var file := FileAccess.open(temporary_path, FileAccess.WRITE)
 	if file == null:
 		return false
 	file.store_string(JSON.stringify({"version": 1, "best": best}))
+	file.flush()
+	var write_error := file.get_error()
 	file.close()
-	return true
+	if write_error == OK:
+		var rename_error := DirAccess.rename_absolute(
+			ProjectSettings.globalize_path(temporary_path), ProjectSettings.globalize_path(path)
+		)
+		if rename_error == OK:
+			return true
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(temporary_path))
+	return false

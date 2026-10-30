@@ -67,6 +67,8 @@ func _initialize() -> void:
 	var reloaded = Progress.new(save_path)
 	if not _assert(reloaded.is_complete("01") and reloaded.best["01"] == 12 and reloaded.unlocked(1, catalog), "progress survives app restart"):
 		return
+	if not _test_safe_saves(progress, catalog):
+		return
 	var corrupt := FileAccess.open(save_path, FileAccess.WRITE)
 	corrupt.store_string("{not json")
 	corrupt.close()
@@ -76,6 +78,45 @@ func _initialize() -> void:
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(save_path))
 	print("PASS: ten validated/solvable missions, saved unlock progression and corrupt save handling")
 	quit(0)
+
+func _test_safe_saves(progress: RefCounted, catalog: RefCounted) -> bool:
+	var save_path: String = progress.path
+	var temp_path := save_path + ".tmp"
+	# Simulate termination during a replacement write: the committed save wins.
+	var interrupted := FileAccess.open(temp_path, FileAccess.WRITE)
+	interrupted.store_string("{partial")
+	interrupted.close()
+	var reloaded = Progress.new(save_path)
+	if not _assert(reloaded.best == progress.best and reloaded.unlocked(1, catalog), "partial temporary save preserves committed progress"):
+		return false
+	if not _assert(progress.record_victory("01", 10), "replace existing save after interrupted write"):
+		return false
+	reloaded = Progress.new(save_path)
+	if not _assert(reloaded.best["01"] == 10 and not FileAccess.file_exists(temp_path), "replacement persists improved score and removes temporary file"):
+		return false
+	var original := FileAccess.get_file_as_string(save_path)
+	# A directory at the temporary path forces an actual file-open failure.
+	if not _assert(DirAccess.make_dir_absolute(ProjectSettings.globalize_path(temp_path)) == OK, "prepare failed temporary write"):
+		return false
+	var saved: bool = progress.record_victory("02", 8)
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(temp_path))
+	if not _assert(not saved and not progress.is_complete("02") and not progress.unlocked(2, catalog), "failed save does not grant an unpersisted unlock"):
+		return false
+	if not _assert(FileAccess.get_file_as_string(save_path) == original, "failed write preserves prior save bytes"):
+		return false
+	# A directory destination forces rename to fail after the write succeeds.
+	var blocked_path := save_path + ".blocked"
+	if not _assert(DirAccess.make_dir_absolute(ProjectSettings.globalize_path(blocked_path)) == OK, "prepare failed save replacement"):
+		return false
+	var blocked = Progress.new(blocked_path)
+	saved = blocked.record_victory("01", 3)
+	var leftover := FileAccess.file_exists(blocked_path + ".tmp")
+	var directory_preserved := DirAccess.dir_exists_absolute(ProjectSettings.globalize_path(blocked_path))
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(blocked_path + ".tmp"))
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(blocked_path))
+	if not _assert(not saved and blocked.best.is_empty() and not leftover and directory_preserved, "failed replacement reports failure, rolls back and cleans temporary file"):
+		return false
+	return true
 
 func _navigate(mission: RefCounted, target: Vector2i) -> bool:
 	var route: Array[Vector2i] = mission.plan_route(target)
