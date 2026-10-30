@@ -4,7 +4,7 @@ extends RefCounted
 ## G = locked gate, C = civilian, X = extraction, # = wall.
 const MISSIONS = [
 	{"title": "The Locked Corridor", "rows": ["###########", "#F.f.C.GX##", "#.#.###.###", "#E.Bs.....#", "###########"]},
-	{"title": "The Burning Gate", "rows": ["###########", "#F..Cf.GX##", "#.#.###.###", "#E.Bs.....#", "###########"]},
+	{"title": "The Burning Gate", "rows": ["###########", "#Ff..C.GX##", "#.#.###.###", "#E.Bs.....#", "###########"]},
 	{"title": "Double Push", "rows": ["###########", "#F.f.C.GX##", "#.#.###.###", "#E.B.s....#", "###########"]},
 ]
 var mission_index: int = 0
