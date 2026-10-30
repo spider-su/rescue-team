@@ -129,6 +129,33 @@ func _initialize() -> void:
 	if not _check(closed.plan_route(Vector2i(1, 3)).is_empty(), "Cannot navigate into other rescuer"):
 		return
 
+
+	# Three missions share one deterministic rules engine, not separate scripts.
+	var missions = RescueLevel.new()
+	if not _check(missions.MISSIONS.size() == 3, "Three mission definitions exist"):
+		return
+	if not _check(not missions.load_mission(3) and missions.mission_index == 0, "Invalid mission rejected"):
+		return
+	for mission_id in range(3):
+		if not _check(missions.load_mission(mission_id), "Load mission"):
+			return
+		if not _check(missions.width == 11 and missions.height == 5 and missions.history.is_empty(), "Mission resets board and history"):
+			return
+		missions.select_role(missions.ENGINEER)
+		var pushes: int = 2 if mission_id == 2 else 1
+		for i in range(pushes):
+			if not _check(_navigate(missions, missions.crate_pos), "Engineer can push mission crate"):
+				return
+		if not _check(missions.gate_is_open(), "Mission gate opens"):
+			return
+		missions.select_role(missions.FIREFIGHTER)
+		if not _check(_navigate(missions, missions.fire_pos), "Firefighter clears mission fire"):
+			return
+		if not _check(_navigate(missions, missions.civilian_pos), "Mission civilian collected"):
+			return
+		if not _check(_navigate(missions, missions.exit_pos) and missions.rescued, "Mission exit reached"):
+			return
+
 	print("PASS: first Rescue Team puzzle, role restrictions, undo and full winning path")
 	quit(0)
 

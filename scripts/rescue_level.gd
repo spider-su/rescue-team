@@ -2,13 +2,12 @@ extends RefCounted
 ## Deterministic one-level rescue puzzle. No Node, physics or rendering dependencies.
 ## F = firefighter, E = engineer, f = fire, B = crate, s = switch,
 ## G = locked gate, C = civilian, X = extraction, # = wall.
-const ROWS = [
-	"###########",
-	"#F.f.C.GX##",
-	"#.#.###.###",
-	"#E.Bs.....#",
-	"###########",
+const MISSIONS = [
+	{"title": "The Locked Corridor", "rows": ["###########", "#F.f.C.GX##", "#.#.###.###", "#E.Bs.....#", "###########"]},
+	{"title": "The Burning Gate", "rows": ["###########", "#Ff..C.GX##", "#.#.###.###", "#E.Bs.....#", "###########"]},
+	{"title": "Double Push", "rows": ["###########", "#F.f.C.GX##", "#.#.###.###", "#E.B.s....#", "###########"]},
 ]
+var mission_index: int = 0
 const FIREFIGHTER = "firefighter"
 const ENGINEER = "engineer"
 
@@ -33,16 +32,30 @@ var history: Array[Dictionary] = []
 func _init() -> void:
 	reset()
 
+func load_mission(index: int) -> bool:
+	if index < 0 or index >= MISSIONS.size():
+		return false
+	mission_index = index
+	reset()
+	return true
+
 func reset() -> void:
+	var rows: Array = MISSIONS[mission_index]["rows"]
 	walls.clear()
 	positions.clear()
-	height = ROWS.size()
-	width = ROWS[0].length()
+	height = rows.size()
+	width = rows[0].length()
+	fire_pos = Vector2i(-1, -1)
+	crate_pos = Vector2i(-1, -1)
+	switch_pos = Vector2i(-1, -1)
+	gate_pos = Vector2i(-1, -1)
+	civilian_pos = Vector2i(-1, -1)
+	exit_pos = Vector2i(-1, -1)
 	for y in range(height):
-		assert(ROWS[y].length() == width, "Every row must have the same width")
+		assert(rows[y].length() == width, "Every row must have the same width")
 		for x in range(width):
 			var cell := Vector2i(x, y)
-			match ROWS[y].substr(x, 1):
+			match rows[y].substr(x, 1):
 				"#": walls[cell] = true
 				"F": positions[FIREFIGHTER] = cell
 				"E": positions[ENGINEER] = cell

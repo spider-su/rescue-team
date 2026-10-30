@@ -11,9 +11,15 @@ var status_label: Label
 var objective_label: Label
 var undo_button: Button
 var restart_button: Button
+var previous_button: Button
+var next_button: Button
+var mission_label: Label
 var moving: bool = false
+var max_unlocked: int = 0
+const PROGRESS_PATH = "user://rescue_progress.json"
 
 func _ready() -> void:
+	_load_progress()
 	_build_ui()
 	_refresh()
 
@@ -39,11 +45,17 @@ func _build_ui() -> void:
 	title.add_theme_font_size_override("font_size", 40)
 	layout.add_child(title)
 
-	var subtitle := Label.new()
-	subtitle.text = "MISSION 01  /  THE LOCKED CORRIDOR"
-	subtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	subtitle.add_theme_font_size_override("font_size", 19)
-	layout.add_child(subtitle)
+	mission_label = Label.new()
+	mission_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	mission_label.add_theme_font_size_override("font_size", 19)
+	layout.add_child(mission_label)
+
+	var mission_navigation := HBoxContainer.new()
+	layout.add_child(mission_navigation)
+	previous_button = _create_button("PREVIOUS", mission_navigation)
+	previous_button.pressed.connect(_change_mission.bind(-1))
+	next_button = _create_button("NEXT", mission_navigation)
+	next_button.pressed.connect(_change_mission.bind(1))
 
 	objective_label = Label.new()
 	objective_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -128,8 +140,32 @@ func _follow_route(route: Array[Vector2i]) -> void:
 		_refresh()
 		await get_tree().create_timer(0.13).timeout
 	level.collapse_history(undo_from)
+	if level.rescued and max_unlocked < level.MISSIONS.size() - 1:
+		max_unlocked = maxi(max_unlocked, level.mission_index + 1)
+		_save_progress()
 	moving = false
 	_refresh()
+
+func _load_progress() -> void:
+	if not FileAccess.file_exists(PROGRESS_PATH):
+		return
+	var parsed: Variant = JSON.parse_string(FileAccess.get_file_as_string(PROGRESS_PATH))
+	if parsed is Dictionary:
+		var unlocked: Variant = parsed.get("max_unlocked")
+		if unlocked is float or unlocked is int:
+			max_unlocked = clampi(int(unlocked), 0, level.MISSIONS.size() - 1)
+
+func _save_progress() -> void:
+	var file := FileAccess.open(PROGRESS_PATH, FileAccess.WRITE)
+	if file != null:
+		file.store_string(JSON.stringify({"max_unlocked": max_unlocked}))
+
+func _change_mission(delta: int) -> void:
+	if moving:
+		return
+	var target: int = level.mission_index + delta
+	if target >= 0 and target <= max_unlocked and level.load_mission(target):
+		_refresh()
 
 func _on_undo() -> void:
 	if moving:
@@ -144,6 +180,9 @@ func _on_restart() -> void:
 	_refresh()
 
 func _refresh() -> void:
+	mission_label.text = "MISSION %02d  /  %s" % [level.mission_index + 1, level.MISSIONS[level.mission_index]["title"]]
+	previous_button.disabled = moving or level.mission_index == 0
+	next_button.disabled = moving or level.mission_index >= max_unlocked
 	firefighter_button.text = ("● " if level.selected == level.FIREFIGHTER else "  ") + "FIREFIGHTER"
 	engineer_button.text = ("● " if level.selected == level.ENGINEER else "  ") + "ENGINEER"
 	firefighter_button.disabled = level.rescued or moving
