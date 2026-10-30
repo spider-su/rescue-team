@@ -1,0 +1,12 @@
+{
+  "id": "04",
+  "title": "The Locked Corridor",
+  "hint": "Coordinate both rescuers: open the gate, clear fire, extract.",
+  "rows": [
+    "###########",
+    "#F.f.C.GX##",
+    "#.#.###.###",
+    "#E.Bs.....#",
+    "###########"
+  ]
+}

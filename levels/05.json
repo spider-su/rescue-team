@@ -1,0 +1,13 @@
+{
+  "id": "05",
+  "title": "Crossed Routes",
+  "hint": "Two box pushes, then a long firefighter extraction.",
+  "rows": [
+    "#############",
+    "#F..f..C.GX##",
+    "#.#.#####.###",
+    "#E..B.s.....#",
+    "#...###.....#",
+    "#############"
+  ]
+}

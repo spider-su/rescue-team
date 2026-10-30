@@ -1,0 +1,12 @@
+{
+  "id": "02",
+  "title": "Smoke Alley",
+  "hint": "Only the firefighter can clear the flame blocking the way.",
+  "rows": [
+    "##########",
+    "#F.f.C.X.#",
+    "#.#.######",
+    "#E.......#",
+    "##########"
+  ]
+}
