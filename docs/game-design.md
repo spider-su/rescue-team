@@ -26,7 +26,7 @@ Target session: approximately 1–3 minutes per level; slow, thoughtful play is 
 
 **Level elements:** walls, open tiles, fire hazard, movable crate, floor switch/gate, civilian, exit. Introduce one new rule at a time and clearly signal when a move is blocked.
 
-**Current prototype controls:** portrait grid, select by role button or tapping a rescuer, tap a **directly adjacent** tile to walk or act, UNDO the last successful action, RESTART the level. No automatic distant pathfinding yet. Firefighter clears adjacent fire, engineer pushes an adjacent crate one tile, stepping onto the civilian tile picks them up, and a carrier reaching EXIT wins once the crate powers the gate.
+**Current prototype controls:** portrait grid, select by role button or tapping a rescuer, tap a **distant reachable destination** to automatically walk the shortest safe route, or tap FIRE/BOX to approach and interact. Movement is animated tile-by-tile; each tap is one UNDO step. Unreachable/locked locations remain blocked, and RESTART resets the level. Firefighter clears adjacent fire, engineer pushes an adjacent crate one tile, stepping onto the civilian tile picks them up, and a carrier reaching EXIT wins once the crate powers the gate.
 
 ## Implemented Phase 1 level
 

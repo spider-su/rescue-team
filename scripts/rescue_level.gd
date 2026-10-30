@@ -70,6 +70,108 @@ func select_role(role: String) -> bool:
 	message = "Firefighter clears fire." if role == FIREFIGHTER else "Engineer pushes crates."
 	return true
 
+
+## Choose the shortest safe route through walkable cells. Hazard tiles are
+## interactive destinations: move beside them, then use the existing act() rule.
+## Obstacles are never bypassed and no switches/fire are solved automatically.
+func plan_route(target: Vector2i) -> Array[Vector2i]:
+	if rescued:
+		_reject("Rescue completed. Tap RESTART to play again.")
+		return []
+	if not _inside(target) or walls.has(target):
+		_reject("A wall blocks that destination.")
+		return []
+	var start: Vector2i = positions[selected]
+	if target == start:
+		_reject("Already standing on that tile.")
+		return []
+	# Keep the current adjacent interaction semantics and their feedback.
+	if absi(target.x - start.x) + absi(target.y - start.y) == 1:
+		return [target]
+	if target == fire_pos and not fire_cleared:
+		if selected != FIREFIGHTER:
+			_reject("Only the firefighter can extinguish flames.")
+			return []
+		return _route_to_interaction(target, false)
+	if target == crate_pos:
+		if selected != ENGINEER:
+			_reject("Only the engineer can move the crate.")
+			return []
+		return _route_to_interaction(target, true)
+	if not _can_enter(target):
+		if target == gate_pos and not gate_is_open():
+			_reject("The gate needs the crate on the blue switch.")
+		else:
+			_reject("That destination is blocked.")
+		return []
+	var route := _shortest_path(start, target)
+	if route.is_empty():
+		_reject("No safe route. Clear hazards or move another rescuer.")
+	return route
+
+func _route_to_interaction(target: Vector2i, pushing_crate: bool) -> Array[Vector2i]:
+	var start: Vector2i = positions[selected]
+	var best: Array[Vector2i] = []
+	var best_cost: int = 999999
+	for direction in [Vector2i.RIGHT, Vector2i.LEFT, Vector2i.UP, Vector2i.DOWN]:
+		var beside: Vector2i = target - direction
+		if beside != start and not _can_enter(beside):
+			continue
+		if pushing_crate:
+			var beyond: Vector2i = target + direction
+			if beyond == exit_pos or (beyond == civilian_pos and carrying_role.is_empty()) or not _can_enter(beyond):
+				continue
+		var route := _shortest_path(start, beside)
+		if beside != start and route.is_empty():
+			continue
+		# When pushing a crate, prefer placing it on the switch over an
+		# otherwise equally short push in another direction.
+		var cost: int = route.size() * 10
+		if pushing_crate and target + direction == switch_pos:
+			cost -= 5
+		if cost < best_cost:
+			best_cost = cost
+			best = route.duplicate()
+			best.append(target)
+	if best.is_empty():
+		_reject("No safe approach. Move obstacles or choose another target.")
+	return best
+
+func _shortest_path(start: Vector2i, target: Vector2i) -> Array[Vector2i]:
+	if start == target:
+		return []
+	if not _can_enter(target):
+		return []
+	var queue: Array[Vector2i] = [start]
+	var previous: Dictionary = {start: start}
+	var cursor: int = 0
+	while cursor < queue.size():
+		var current: Vector2i = queue[cursor]
+		cursor += 1
+		for direction in [Vector2i.RIGHT, Vector2i.LEFT, Vector2i.UP, Vector2i.DOWN]:
+			var neighbor: Vector2i = current + direction
+			if previous.has(neighbor) or not _can_enter(neighbor):
+				continue
+			previous[neighbor] = current
+			if neighbor == target:
+				var reversed_path: Array[Vector2i] = []
+				var step: Vector2i = target
+				while step != start:
+					reversed_path.append(step)
+					step = previous[step]
+				reversed_path.reverse()
+				return reversed_path
+			queue.append(neighbor)
+	return []
+
+## A single destination tap is one undoable action even if it walked 6 cells.
+func collapse_history(from_index: int) -> void:
+	if from_index < 0 or from_index >= history.size():
+		return
+	var before: Dictionary = history[from_index]
+	history.resize(from_index)
+	history.append(before)
+
 func act(target: Vector2i) -> bool:
 	if rescued:
 		return _reject("Rescue completed. Tap RESTART to play again.")

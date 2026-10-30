@@ -91,8 +91,57 @@ func _initialize() -> void:
 	if not _check(not restrictions.act(Vector2i(7, 1)) and not restrictions.gate_is_open(), "Locked gate blocks movement"):
 		return
 
+
+	# Tap-to-destination is a shortest safe path, not teleportation.
+	var navigation = RescueLevel.new()
+	if not _check(navigation.plan_route(Vector2i(5, 1)).is_empty(), "Fire blocks path to civilian"):
+		return
+	if not _check(navigation.positions[navigation.FIREFIGHTER] == Vector2i(1, 1) and navigation.history.is_empty(), "Failed route has no state changes"):
+		return
+	navigation.select_role(navigation.ENGINEER)
+	if not _check(_navigate(navigation, Vector2i(3, 3)), "Engineer taps distant crate"):
+		return
+	if not _check(navigation.gate_is_open() and navigation.positions[navigation.ENGINEER] == Vector2i(3, 3), "Crate pushed onto switch using auto-route"):
+		return
+	if not _check(navigation.history.size() == 1 and navigation.actions == 2, "Walking path is one undo step"):
+		return
+	if not _check(navigation.undo() and not navigation.gate_is_open() and navigation.positions[navigation.ENGINEER] == Vector2i(1, 3), "Undo restores entire route"):
+		return
+	if not _check(_navigate(navigation, Vector2i(3, 3)), "Reapply engineer route"):
+		return
+	navigation.select_role(navigation.FIREFIGHTER)
+	if not _check(_navigate(navigation, Vector2i(3, 1)) and navigation.fire_cleared, "Fire tap automatically approaches and extinguishes"):
+		return
+	if not _check(_navigate(navigation, Vector2i(5, 1)) and navigation.carrying_role == navigation.FIREFIGHTER, "Civilian tap automatically walks and picks up"):
+		return
+	if not _check(_navigate(navigation, Vector2i(8, 1)) and navigation.rescued, "Exit tap automatically walks and completes mission"):
+		return
+	if not _check(navigation.history.size() == 4, "Four destination taps remain four undo steps"):
+		return
+	if not _check(navigation.undo() and not navigation.rescued and navigation.positions[navigation.FIREFIGHTER] == Vector2i(5, 1), "Undo distant exit trip in one step"):
+		return
+	if not _check(navigation.plan_route(Vector2i(0, 0)).is_empty(), "Cannot path through walls"):
+		return
+	var closed = RescueLevel.new()
+	closed.positions[closed.FIREFIGHTER] = Vector2i(6, 1)
+	if not _check(closed.plan_route(Vector2i(8, 1)).is_empty(), "Cannot path through a closed gate"):
+		return
+	if not _check(closed.plan_route(Vector2i(1, 3)).is_empty(), "Cannot navigate into other rescuer"):
+		return
+
 	print("PASS: first Rescue Team puzzle, role restrictions, undo and full winning path")
 	quit(0)
+
+func _navigate(level: RefCounted, target: Vector2i) -> bool:
+	var route: Array[Vector2i] = level.plan_route(target)
+	if route.is_empty():
+		return false
+	var undo_from: int = level.history.size()
+	for cell in route:
+		if not level.act(cell):
+			return false
+	level.collapse_history(undo_from)
+	return true
 
 func _check(condition: bool, description: String) -> bool:
 	if condition:

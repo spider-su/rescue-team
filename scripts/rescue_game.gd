@@ -9,6 +9,9 @@ var firefighter_button: Button
 var engineer_button: Button
 var status_label: Label
 var objective_label: Label
+var undo_button: Button
+var restart_button: Button
+var moving: bool = false
 
 func _ready() -> void:
 	_build_ui()
@@ -74,13 +77,13 @@ func _build_ui() -> void:
 	var commands := HBoxContainer.new()
 	commands.add_theme_constant_override("separation", 12)
 	layout.add_child(commands)
-	var undo_button := _create_button("UNDO", commands)
+	undo_button = _create_button("UNDO", commands)
 	undo_button.pressed.connect(_on_undo)
-	var restart_button := _create_button("RESTART", commands)
+	restart_button = _create_button("RESTART", commands)
 	restart_button.pressed.connect(_on_restart)
 
 	var hint := Label.new()
-	hint.text = "Tap a specialist, then an adjacent square. F clears fire; E pushes BOX to the blue switch."
+	hint.text = "Select a specialist and tap a destination to walk there. Tap FIRE or BOX to interact."
 	hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	hint.add_theme_font_size_override("font_size", 17)
@@ -96,35 +99,61 @@ func _create_button(label: String, container: HBoxContainer) -> Button:
 	return button
 
 func _on_role(role: String) -> void:
+	if moving:
+		return
 	level.select_role(role)
 	_refresh()
 
 func _on_cell_tapped(cell: Vector2i) -> void:
+	if moving:
+		return
 	for role in [level.FIREFIGHTER, level.ENGINEER]:
 		if level.positions[role] == cell:
 			level.select_role(role)
 			_refresh()
 			return
-	level.act(cell)
+	var route: Array[Vector2i] = level.plan_route(cell)
+	if route.is_empty():
+		_refresh()
+		return
+	moving = true
+	_refresh()
+	_follow_route(route)
+
+func _follow_route(route: Array[Vector2i]) -> void:
+	var undo_from: int = level.history.size()
+	for cell in route:
+		if not level.act(cell):
+			break
+		_refresh()
+		await get_tree().create_timer(0.13).timeout
+	level.collapse_history(undo_from)
+	moving = false
 	_refresh()
 
 func _on_undo() -> void:
+	if moving:
+		return
 	level.undo()
 	_refresh()
 
 func _on_restart() -> void:
+	if moving:
+		return
 	level.reset()
 	_refresh()
 
 func _refresh() -> void:
 	firefighter_button.text = ("● " if level.selected == level.FIREFIGHTER else "  ") + "FIREFIGHTER"
 	engineer_button.text = ("● " if level.selected == level.ENGINEER else "  ") + "ENGINEER"
-	firefighter_button.disabled = level.rescued
-	engineer_button.disabled = level.rescued
+	firefighter_button.disabled = level.rescued or moving
+	engineer_button.disabled = level.rescued or moving
 	objective_label.text = "FIRE %s    |    GATE %s    |    CIVILIAN %s" % [
 		"OUT" if level.fire_cleared else "ACTIVE",
 		"OPEN" if level.gate_is_open() else "LOCKED",
 		"SAFE" if level.rescued else ("CARRIED" if not level.carrying_role.is_empty() else "WAITING"),
 	]
+	undo_button.disabled = moving
+	restart_button.disabled = moving
 	status_label.text = level.message + "\nMoves: %d" % level.actions
 	board.queue_redraw()
