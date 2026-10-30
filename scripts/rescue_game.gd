@@ -23,6 +23,7 @@ var undo_button: Button
 var restart_button: Button
 var next_button: Button
 var menu_panel: VBoxContainer
+var menu_scroll: ScrollContainer
 var play_panel: VBoxContainer
 var level_buttons: Array[Button] = []
 
@@ -57,10 +58,14 @@ func _build_ui() -> void:
 	subtitle_label.add_theme_font_size_override("font_size", 19)
 	layout.add_child(subtitle_label)
 
+	menu_scroll = ScrollContainer.new()
+	menu_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	menu_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	layout.add_child(menu_scroll)
 	menu_panel = VBoxContainer.new()
-	menu_panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	menu_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	menu_panel.add_theme_constant_override("separation", 14)
-	layout.add_child(menu_panel)
+	menu_scroll.add_child(menu_panel)
 
 	var instructions := Label.new()
 	instructions.text = "Choose a mission. Complete one to unlock the next."
@@ -148,7 +153,7 @@ func _button(label: String, container: HBoxContainer) -> Button:
 func _show_menu() -> void:
 	if moving:
 		return
-	menu_panel.visible = true
+	menu_scroll.visible = true
 	play_panel.visible = false
 	subtitle_label.text = "MISSIONS  /  FIELD OPERATIONS"
 	for index in range(catalog.count()):
@@ -169,7 +174,7 @@ func _start_level(index: int) -> void:
 	board.level = level
 	board.route_preview.clear()
 	board.clear_animation()
-	menu_panel.visible = false
+	menu_scroll.visible = false
 	play_panel.visible = true
 	subtitle_label.text = "MISSION %s  /  %s" % [level.level_id, level.title.to_upper()]
 	hint_label.text = level.hint + "\nTap a distant tile to walk; select a rescuer to switch."
