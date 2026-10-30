@@ -5,12 +5,12 @@
 - Godot **4.7.2 standard / GDScript**, GL Compatibility renderer, portrait 720×1280 viewport.
 - `project.godot`: app identity, display/renderer and main scene.
 - `export_presets.cfg`: `com.spidersu.rescueteam`, Android **debug APK** preset, arm64.
-- `scenes/main.tscn`, `scripts/demo_game.gd`: inherited **technical test scene**; replace during phase 1.
-- `scripts/game_session.gd`, `tests/test_game_session.gd`: inherited score model/tests, not real rescue domain logic.
+- `scenes/main.tscn`, `scripts/rescue_game.gd`, `scripts/board_view.gd`: Phase 1 original rescue puzzle scene, touch handlers and temporary tile rendering.
+- `scripts/rescue_level.gd`, `tests/test_rescue_level.gd`: deterministic rules and headless tests of the complete first puzzle solution.
 - `.github/workflows/godot-ci.yml`: pinned Godot/editor templates, Java 17, Android SDK, headless tests, debug APK artifact.
 - `docs/game-design.md` and `docs/roadmap.md`: product scope, stage gates and test expectations.
 
-## Planned gameplay boundaries (not yet implemented)
+## Gameplay boundaries (first level implemented)
 
 1. **Pure puzzle domain:** deterministic grid, unit positions, hazards, actions, win/lose rules and undo; no dependency on graphics.
 2. **Level content:** data-driven 2D tile definitions and validation; simple human-readable format preferred.

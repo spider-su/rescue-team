@@ -21,6 +21,6 @@ This repository is a product, not the upstream game-template. **Godot 4.7.2 stab
 
 ## Quality gate
 
-Run `godot --headless --path . --editor --import --quit`, `godot --headless --path . --script res://tests/test_game_session.gd` while the demo exists, and the Android APK CI workflow. When gameplay replaces the demo, update the test command to its actual test suite and update CI together. A green CI does **not** establish real-device usability.
+Run `godot --headless --path . --editor --import --quit`, `godot --headless --path . --script res://tests/test_rescue_level.gd` and the Android APK CI workflow. Add assertions for new rule variations; CI must keep the full winning path executable. A green CI does **not** establish real-device usability.
 
 For PRs: record scope, scene/script changes, tests and exact results, APK link, Android device or emulator evidence, known limitations and roadmap milestone. Keep changes focused.

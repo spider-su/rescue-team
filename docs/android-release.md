@@ -10,12 +10,12 @@ Local build: install matching Godot 4.7.2 editor/export templates, Android SDK a
 
 ```bash
 godot --headless --path . --editor --import --quit
-godot --headless --path . --script res://tests/test_game_session.gd
+godot --headless --path . --script res://tests/test_rescue_level.gd
 mkdir -p build
 godot --headless --path . --export-debug "Android" build/game-debug.apk
 ```
 
-This uses the **temporary inherited demo** until phase 1 implements actual rescue gameplay.
+This exports **Mission 01, the first original playable rescue puzzle**. Physical-device smoke testing is not yet recorded.
 
 ## Release readiness (not yet implemented)
 
