@@ -4,7 +4,28 @@
 
 The `Godot Game CI` workflow builds `build/game-debug.apk` and uploads an artifact named `rescue-team-debug-apk` on pushes to `main` and `feat/**`, pull requests to `main` and manual workflow dispatches.
 
-Uses pinned **Godot 4.7.2 stable** editor/templates, Java 17, Android SDK and headless project/test checks. **Only an arm64 APK** is currently produced. CI generates an **ephemeral** debug keystore on every run; upgrades across runs may fail because signatures differ.
+Uses pinned **Godot 4.7.2 stable** editor/templates, Java 17, Android SDK and headless project/test checks. **Only an arm64 APK** is currently produced. CI **prefers a persistent debug keystore** supplied by repository Actions secret `ANDROID_DEBUG_KEYSTORE_BASE64`. Until configured, the workflow falls back to an ephemeral key and emits a warning, so Android **cannot upgrade an existing installation** signed by another run.
+
+### One-time: configure stable CI debug signing
+
+On a trusted machine with JDK installed, create a **development-only** key (not your Play release key):
+
+```bash
+keytool -genkeypair -keystore rescue-debug.keystore -storepass android -keypass android \
+  -alias androiddebugkey -keyalg RSA -keysize 2048 -validity 10000 \
+  -dname "CN=Rescue Team Debug,O=Development,C=PL"
+base64 -w 0 rescue-debug.keystore
+```
+
+On macOS, use `base64 < rescue-debug.keystore | tr -d '\\n'` instead of `base64 -w 0`.
+
+Copy the single-line Base64 result to **Settings → Secrets and variables → Actions → New repository secret** in GitHub. Name it `ANDROID_DEBUG_KEYSTORE_BASE64`. Keep a backed-up copy of the keystore in private storage. Do not commit it or paste it into a chat.
+
+Run **Godot Game CI** again. Future CI builds will use that same key for the package `com.spidersu.rescueteam`. Existing APKs were signed with unrelated temporary keys; **the first switch still requires uninstalling the old Rescue Team app**, which may erase saved progress. After that first reinstall, updates signed with the stable key should work as long as version codes do not decrease.
+
+If the artifact isn't installable even after uninstalling, confirm it is an APK from the workflow (not the artifact ZIP itself), check Android version/device ABI (only ARM64 is currently exported), free storage and the exact Package Installer error. ADB can report `INSTALL_FAILED_UPDATE_INCOMPATIBLE` for a signature mismatch.
+
+For private pull requests, repository secrets can be used by CI. GitHub does not provide secrets to untrusted fork PRs; those builds intentionally use an ephemeral key and should not be installed over existing signed builds.
 
 Local build: install matching Godot 4.7.2 editor/export templates, Android SDK and Java 17; configure Godot Editor Settings > Export > Android. Then:
 
