@@ -1,14 +1,6 @@
 extends RefCounted
-## Deterministic one-level rescue puzzle. No Node, physics or rendering dependencies.
-## F = firefighter, E = engineer, f = fire, B = crate, s = switch,
-## G = locked gate, C = civilian, X = extraction, # = wall.
-const ROWS = [
-	"###########",
-	"#F.f.C.GX##",
-	"#.#.###.###",
-	"#E.Bs.....#",
-	"###########",
-]
+## Deterministic puzzle rules: map content comes from validated JSON, not GDScript.
+const LevelCatalog = preload("res://scripts/level_catalog.gd")
 const FIREFIGHTER = "firefighter"
 const ENGINEER = "engineer"
 
@@ -29,20 +21,40 @@ var selected: String = FIREFIGHTER
 var actions: int = 0
 var message: String = ""
 var history: Array[Dictionary] = []
+var level_id: String = ""
+var title: String = ""
+var hint: String = ""
+var has_fire: bool = false
+var has_crate: bool = false
+var has_gate: bool = false
+var _definition: Dictionary = {}
 
-func _init() -> void:
+func _init(definition: Dictionary = {}) -> void:
+	if definition.is_empty():
+		definition = LevelCatalog.new().load_level(0)
+	assert(LevelCatalog.new().validate(definition).is_empty(), "Invalid mission data")
+	_definition = definition.duplicate(true)
+	level_id = definition["id"]
+	title = definition["title"]
+	hint = definition["hint"]
 	reset()
 
 func reset() -> void:
 	walls.clear()
 	positions.clear()
-	height = ROWS.size()
-	width = ROWS[0].length()
+	fire_pos = Vector2i(-1, -1)
+	crate_pos = Vector2i(-1, -1)
+	switch_pos = Vector2i(-1, -1)
+	gate_pos = Vector2i(-1, -1)
+	civilian_pos = Vector2i(-1, -1)
+	exit_pos = Vector2i(-1, -1)
+	var rows: Array = _definition["rows"]
+	height = rows.size()
+	width = rows[0].length()
 	for y in range(height):
-		assert(ROWS[y].length() == width, "Every row must have the same width")
 		for x in range(width):
 			var cell := Vector2i(x, y)
-			match ROWS[y].substr(x, 1):
+			match rows[y].substr(x, 1):
 				"#": walls[cell] = true
 				"F": positions[FIREFIGHTER] = cell
 				"E": positions[ENGINEER] = cell
@@ -52,16 +64,19 @@ func reset() -> void:
 				"G": gate_pos = cell
 				"C": civilian_pos = cell
 				"X": exit_pos = cell
-	fire_cleared = false
+	has_fire = fire_pos.x >= 0
+	has_crate = crate_pos.x >= 0
+	has_gate = gate_pos.x >= 0
+	fire_cleared = not has_fire
 	carrying_role = ""
 	rescued = false
 	selected = FIREFIGHTER
 	actions = 0
-	message = "Clear fire, power the gate, then carry the civilian to EXIT."
+	message = hint
 	history.clear()
 
 func gate_is_open() -> bool:
-	return crate_pos == switch_pos
+	return not has_gate or crate_pos == switch_pos
 
 func select_role(role: String) -> bool:
 	if rescued or not positions.has(role):
@@ -88,12 +103,12 @@ func plan_route(target: Vector2i) -> Array[Vector2i]:
 	# Keep the current adjacent interaction semantics and their feedback.
 	if absi(target.x - start.x) + absi(target.y - start.y) == 1:
 		return [target]
-	if target == fire_pos and not fire_cleared:
+	if has_fire and target == fire_pos and not fire_cleared:
 		if selected != FIREFIGHTER:
 			_reject("Only the firefighter can extinguish flames.")
 			return []
 		return _route_to_interaction(target, false)
-	if target == crate_pos:
+	if has_crate and target == crate_pos:
 		if selected != ENGINEER:
 			_reject("Only the engineer can move the crate.")
 			return []
@@ -240,7 +255,7 @@ func tile_at(cell: Vector2i) -> String:
 		return "wall"
 	if cell == gate_pos:
 		return "open_gate" if gate_is_open() else "gate"
-	if cell == switch_pos:
+	if has_crate and cell == switch_pos:
 		return "switch"
 	if cell == exit_pos:
 		return "exit"
@@ -252,7 +267,7 @@ func _inside(cell: Vector2i) -> bool:
 func _can_enter(cell: Vector2i) -> bool:
 	if not _inside(cell) or walls.has(cell):
 		return false
-	if cell == crate_pos or (cell == fire_pos and not fire_cleared):
+	if (has_crate and cell == crate_pos) or (has_fire and cell == fire_pos and not fire_cleared):
 		return false
 	if cell == gate_pos and not gate_is_open():
 		return false

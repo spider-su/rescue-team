@@ -1,0 +1,12 @@
+{
+  "id": "01",
+  "title": "First Response",
+  "hint": "Tap the civilian, then the green exit.",
+  "rows": [
+    "#########",
+    "#F.C.X..#",
+    "#.......#",
+    "#E......#",
+    "#########"
+  ]
+}

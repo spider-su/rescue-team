@@ -61,6 +61,9 @@ jobs:
       - name: Run GDScript logic tests
         run: godot --headless --path . --script res://tests/test_rescue_level.gd
 
+      - name: Validate mission data, solutions and saved progress
+        run: godot --headless --path . --script res://tests/test_campaign.gd
+
       - name: Boot the game scene headlessly
         run: godot --headless --path . --quit-after 5
 

@@ -1,9 +1,10 @@
 extends SceneTree
 ## Pure headless rule verification for the first rescue level.
 const RescueLevel = preload("res://scripts/rescue_level.gd")
+const Catalog = preload("res://scripts/level_catalog.gd")
 
 func _initialize() -> void:
-	var level = RescueLevel.new()
+	var level = RescueLevel.new(Catalog.new().load_level(3))
 	if not _check(level.width == 11 and level.height == 5, "Board dimensions"):
 		return
 	if not _check(not level.gate_is_open() and not level.fire_cleared and not level.rescued, "Initial hazards"):
@@ -78,7 +79,7 @@ func _initialize() -> void:
 		return
 
 	# Isolate role restrictions and the locked gate without changing the scenario.
-	var restrictions = RescueLevel.new()
+	var restrictions = RescueLevel.new(Catalog.new().load_level(3))
 	restrictions.positions[restrictions.ENGINEER] = Vector2i(2, 1)
 	restrictions.select_role(restrictions.ENGINEER)
 	if not _check(not restrictions.act(Vector2i(3, 1)) and not restrictions.fire_cleared, "Engineer cannot extinguish fire"):
@@ -93,7 +94,7 @@ func _initialize() -> void:
 
 
 	# Tap-to-destination is a shortest safe path, not teleportation.
-	var navigation = RescueLevel.new()
+	var navigation = RescueLevel.new(Catalog.new().load_level(3))
 	if not _check(navigation.plan_route(Vector2i(5, 1)).is_empty(), "Fire blocks path to civilian"):
 		return
 	if not _check(navigation.positions[navigation.FIREFIGHTER] == Vector2i(1, 1) and navigation.history.is_empty(), "Failed route has no state changes"):
@@ -122,7 +123,7 @@ func _initialize() -> void:
 		return
 	if not _check(navigation.plan_route(Vector2i(0, 0)).is_empty(), "Cannot path through walls"):
 		return
-	var closed = RescueLevel.new()
+	var closed = RescueLevel.new(Catalog.new().load_level(3))
 	closed.positions[closed.FIREFIGHTER] = Vector2i(6, 1)
 	if not _check(closed.plan_route(Vector2i(8, 1)).is_empty(), "Cannot path through a closed gate"):
 		return

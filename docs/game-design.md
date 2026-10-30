@@ -1,6 +1,6 @@
 # Rescue Team — game concept (working design)
 
-**Status:** one basic playable rescue puzzle is implemented; remaining levels, art and tuning are provisional.
+**Status:** five original data-driven levels implemented on the campaign branch; remaining five levels, art, sound and tuning are provisional.
 
 ## Player promise
 
@@ -26,13 +26,21 @@ Target session: approximately 1–3 minutes per level; slow, thoughtful play is 
 
 **Level elements:** walls, open tiles, fire hazard, movable crate, floor switch/gate, civilian, exit. Introduce one new rule at a time and clearly signal when a move is blocked.
 
-**Current prototype controls:** portrait grid, select by role button or tapping a rescuer, tap a **distant reachable destination** to automatically walk the shortest safe route, or tap FIRE/BOX to approach and interact. Movement is animated tile-by-tile; each tap is one UNDO step. Unreachable/locked locations remain blocked, and RESTART resets the level. Firefighter clears adjacent fire, engineer pushes an adjacent crate one tile, stepping onto the civilian tile picks them up, and a carrier reaching EXIT wins once the crate powers the gate.
+**Current prototype controls:** portrait grid with level picker, local saved unlocks, animated path preview, movement tweening; , select by role button or tapping a rescuer, tap a **distant reachable destination** to automatically walk the shortest safe route, or tap FIRE/BOX to approach and interact. Movement is animated tile-by-tile; each tap is one UNDO step. Unreachable/locked locations remain blocked, and RESTART resets the level. Firefighter clears adjacent fire, engineer pushes an adjacent crate one tile, stepping onto the civilian tile picks them up, and a carrier reaching EXIT wins once the crate powers the gate.
 
 ## Implemented Phase 1 level
 
 **Mission 01 — The Locked Corridor:** engineer pushes a crate onto a switch; firefighter extinguishes the fire blocking the upper passage; firefighter carries the civilian through the now-open gate to extraction. The full solution is covered by a deterministic headless test. Simple colored tiles are temporary art.
 
-## First vertical slice: 10 original levels
+## First five missions (implemented)
+
+1. First Response — tap-to-rescue and exit.
+2. Smoke Alley — clear a blocking fire.
+3. Power the Gate — engineer activates a switch.
+4. The Locked Corridor — original cooperative prototype.
+5. Crossed Routes — two crate pushes and longer extraction.
+
+## Remaining vertical slice: 10 original levels
 
 - 1–2: movement, character selection and exit.
 - 3–4: fire hazard and firefighter ability.
