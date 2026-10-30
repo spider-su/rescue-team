@@ -67,6 +67,9 @@ jobs:
       - name: Boot the game scene headlessly
         run: godot --headless --path . --quit-after 5
 
+      - name: Verify UI navigation, rescue flow and adaptive tile input
+        run: godot --headless --path . --script res://tests/test_rescue_ui.gd
+
       - name: Configure Android debug signing key
         shell: bash
         env:

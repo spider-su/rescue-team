@@ -1,41 +1,51 @@
 # Rescue Team
 
-**Original Android-first rescue puzzle game** in Godot 4.7.2 stable/GDScript, bootstrapped from [mobile_template/game-template](https://github.com/spider-su/mobile_template/tree/game-template).
+An original Android-first rescue puzzle game in **Godot 4.7.2 stable / GDScript**.
 
-**Status:** ten playable missions in the current vertical-slice PR; temporary vector-style art and movement animations. The original Mission 01 prototype was installed and completed on an Android device on October 30, 2026. The ten-mission build still needs device acceptance.
+Ten hand-authored missions pair a firefighter and engineer to clear hazards, open routes and carry civilians to safety. The coastal UI uses original illustrated human characters, a harbor mission picker, an adaptive puzzle board and a dedicated completion screen. The original Mission 01 had an owner-reported Android happy-path playtest; **the redesigned ten-mission build still needs physical-device acceptance**.
 
-## How to play
+## Play
 
-Start from the mission selection screen. Only the first level is unlocked; finishing a mission records your best move count locally and unlocks the next mission. Tap a firefighter or engineer to select them; tap a **distant tile** to walk the safe shortest route. Tap a fire tile as the firefighter to extinguish it or a crate as the engineer to push it. Push crates onto blue switches to open gates, pick up the civilian, and carry them to EXIT. One tap is one undo action. Use **UNDO**, **RESTART**, **LEVELS** or **NEXT MISSION** to navigate.
+Choose an unlocked mission. Tap a rescuer or their portrait to select them, then tap a destination to walk the safe shortest route. The firefighter extinguishes fire; the engineer pushes crates onto blue switches to open gates. Pick up the civilian and reach the green exit.
 
-| Mission | Mechanic introduced |
-| --- | --- |
-| 01 — First Response | Rescue and exit |
-| 02 — Smoke Alley | Firefighter clears fire |
-| 03 — Power the Gate | Engineer pushes crate onto switch |
-| 04 — The Locked Corridor | Both specialists cooperate |
-| 05 — Crossed Routes | Two crate pushes plus a longer rescue |
+- Each destination tap is one undo step, even when it walks several tiles.
+- **UNDO**, **RESTART** and **LEVELS** remain available during play, except while movement is animating.
+- Completion shows actual move count, saved best, replay, undo rescue and the next unlocked mission. The final mission returns to the campaign.
+- Progress is saved offline through atomic replacement. A failed save is reported instead of announcing an unlock.
+- Tall play areas may rotate a mission's visual grid clockwise; routes and taps use the original mission coordinates. No mission rules change.
+- All ten mission cards are accessible by scrolling. Completion also scrolls on smaller displays.
 
-All mission maps are original \`levels/*.json\` files. The level format and validation are documented in [docs/level-format.md](docs/level-format.md). The standalone \`scripts/level_catalog.gd\` lists the playable mission manifest and validates each level before it is loaded. [docs/roadmap.md](docs/roadmap.md) tracks the remaining ten missions and polish.
+## Develop and verify
 
-## Development and tests
+Open `project.godot` in standard Godot 4.7.2 and run F5. From the repository root:
 
-Install standard Godot 4.7.2, open \`project.godot\`, run F5.
-
-\`\`\`bash
+```bash
 godot --headless --path . --editor --import --quit
 godot --headless --path . --script res://tests/test_rescue_level.gd
 godot --headless --path . --script res://tests/test_campaign.gd
+godot --headless --path . --script res://tests/test_rescue_ui.gd
 godot --headless --path . --quit-after 5
-\`\`\`
+```
 
-The \`Godot Game CI\` workflow builds an **arm64 Android debug APK**, runs both headless suites and a scene startup test, then uploads \`rescue-team-debug-apk\` as an Actions artifact. [Download builds from Actions](https://github.com/spider-su/rescue-team/actions).
+To capture the actual scene using a graphical renderer and an isolated test save:
 
-CI uses a **new debug signing key per run**, so uninstall the previous build before installing a new APK. Release AAB, stable signing, ads, monetization, backend and cloud accounts are deliberately out of scope. See [docs/android-release.md](docs/android-release.md) before Google Play distribution.
+```bash
+godot --path . --script res://tests/test_rescue_ui.gd -- --capture-dir=/absolute/path/to/screenshots
+```
 
-## Project scope
+The UI suite verifies animated input, victory/undo/replay, next/final mission navigation, save failure feedback, tile picking in both orientations and portrait layouts. Screenshots from the suite use seeded prior completions in its test save; they do not modify a player's progress.
 
-- **Implemented:** ten validated mission maps, two roles, safe pathfinding, tile-step animations and route preview, undo/restart, level selection, offline saved progress and deterministic win-path tests.
-- **Not yet completed:** ten-level campaign, professional original graphics/sound, broad real-device acceptance, 20–40 external playtesters and commercial validation.
+## Android builds
 
-Use original or properly licensed game assets only. Check [AGENTS.md](AGENTS.md), [docs/architecture.md](docs/architecture.md), and [docs/game-design.md](docs/game-design.md) before development.
+[Godot Game CI](https://github.com/spider-su/rescue-team/actions) runs the headless checks and exports an **arm64 debug APK**, uploaded as `rescue-team-debug-apk`. It uses a persistent debug keystore when configured, otherwise a temporary key that cannot update an earlier differently signed install. The package remains `com.spidersu.rescueteam`.
+
+See [Android release and device scenarios](docs/android-release.md). APK export and desktop rendering do not establish physical-device usability. Release AAB, billing, ads, analytics, backend and cloud accounts are outside the current prototype scope.
+
+## Design and assets
+
+- [Game design](docs/game-design.md), [roadmap](docs/roadmap.md), [architecture](docs/architecture.md), [level format](docs/level-format.md).
+- [Coastal UI specification and validation](docs/coastal-ui.md).
+- [Artwork provenance and generation prompts](assets/coastal/README.md). Fonts include their SIL Open Font Licenses under `assets/fonts/`.
+- All missions and product artwork are original. No protected legacy game assets are used.
+
+Bootstrapped from the MIT-licensed [mobile_template/game-template](https://github.com/spider-su/mobile_template/tree/game-template). This is an independent product; port selected upstream fixes deliberately. Follow [AGENTS.md](AGENTS.md).
