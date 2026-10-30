@@ -130,8 +130,33 @@ func _initialize() -> void:
 	if not _check(closed.plan_route(Vector2i(1, 3)).is_empty(), "Cannot navigate into other rescuer"):
 		return
 
+	if not _test_civilian_push():
+		return
 	print("PASS: first Rescue Team puzzle, role restrictions, undo and full winning path")
 	quit(0)
+
+func _test_civilian_push() -> bool:
+	var fixture := {
+		"id": "civilian-push", "title": "Civilian protection", "hint": "",
+		"rows": ["#########", "#F...X..#", "#########", "#E.BCsG.#", "#########"],
+	}
+	var mission = RescueLevel.new(fixture)
+	mission.select_role(mission.ENGINEER)
+	if not _check(mission.plan_route(mission.crate_pos).is_empty(), "Distant crate tap cannot push onto waiting civilian"):
+		return false
+	if not _check(mission.act(Vector2i(2, 3)), "Approach crate adjacent to civilian"):
+		return false
+	var actions_before: int = mission.actions
+	var history_before: int = mission.history.size()
+	if not _check(not mission.act(mission.crate_pos), "Adjacent crate push cannot overlap waiting civilian"):
+		return false
+	if not _check(mission.crate_pos == Vector2i(3, 3) and mission.positions[mission.ENGINEER] == Vector2i(2, 3) and mission.carrying_role.is_empty() and mission.actions == actions_before and mission.history.size() == history_before, "Rejected push preserves positions, civilian, moves and undo history"):
+		return false
+	# Once carried, the civilian no longer occupies the starting tile.
+	mission.carrying_role = mission.FIREFIGHTER
+	if not _check(mission.act(mission.crate_pos) and mission.crate_pos == mission.civilian_pos, "Collected civilian's former tile allows crate movement"):
+		return false
+	return _check(mission.undo() and mission.crate_pos == Vector2i(3, 3) and mission.carrying_role == mission.FIREFIGHTER, "Undo restores legal push without dropping civilian")
 
 func _navigate(level: RefCounted, target: Vector2i) -> bool:
 	var route: Array[Vector2i] = level.plan_route(target)

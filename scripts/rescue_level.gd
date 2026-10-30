@@ -134,7 +134,7 @@ func _route_to_interaction(target: Vector2i, pushing_crate: bool) -> Array[Vecto
 			continue
 		if pushing_crate:
 			var beyond: Vector2i = target + direction
-			if beyond == exit_pos or (beyond == civilian_pos and carrying_role.is_empty()) or not _can_enter(beyond):
+			if not _can_push_into(beyond):
 				continue
 		var route := _shortest_path(start, beside)
 		if beside != start and route.is_empty():
@@ -209,7 +209,7 @@ func act(target: Vector2i) -> bool:
 		if selected != ENGINEER:
 			return _reject("Only the engineer can move the crate.")
 		var destination := target + direction
-		if destination == exit_pos or not _can_enter(destination):
+		if not _can_push_into(destination):
 			return _reject("The crate cannot be pushed in that direction.")
 		_record()
 		crate_pos = destination
@@ -277,6 +277,9 @@ func _can_enter(cell: Vector2i) -> bool:
 		if positions[role] == cell:
 			return false
 	return true
+
+func _can_push_into(cell: Vector2i) -> bool:
+	return cell != exit_pos and not (cell == civilian_pos and carrying_role.is_empty()) and _can_enter(cell)
 
 func _record() -> void:
 	history.append({

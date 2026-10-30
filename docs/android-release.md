@@ -38,6 +38,12 @@ godot --headless --path . --export-debug "Android" build/game-debug.apk
 
 This exports **Mission 01, the first original playable rescue puzzle**. Physical-device smoke testing is not yet recorded.
 
+## Regression playtest: progress and crate safety (pending on device)
+
+- Complete Mission 01, close the app with Android's force-stop action, then reopen it offline. Mission 02 must remain unlocked. Complete another mission and repeat; prior unlocks and best move counts must remain. This checks completed-save persistence, not power-loss durability during a write.
+- In a test map with an engineer, crate and waiting civilian in adjacent corridor cells, tap the crate from both an adjacent and a distant starting tile. Neither input may push the crate onto the civilian; a rejected push must preserve move count and undo history. After collecting the civilian and moving the carrier away, the former civilian tile must accept a crate normally, and undo must restore the push.
+- Record APK commit, device model, Android version and exact results. Headless regression tests cover interrupted temporary writes and failed replacement; those results do not establish real-device usability.
+
 ## Release readiness (not yet implemented)
 
 1. Keep product package ID `com.spidersu.rescueteam` stable, increase Android version code for each published build.
