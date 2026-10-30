@@ -35,7 +35,8 @@ Prefer a small focused PR for each increment; do not combine all milestones in o
 
 - [x] Project bootstrapped from Godot game-template and identity set.
 - [x] CI workflow configured for `main`, feature branches and pull requests.
-- [x] CI green **in this repository** — [initial successful workflow run](https://github.com/spider-su/rescue-team/actions/runs/41079474191), including Android debug APK artifact. Device smoke test still pending.
+- [x] CI green **in this repository** — [initial successful workflow run](https://github.com/spider-su/rescue-team/actions/runs/41079474191), including Android debug APK artifact. Basic real-device Mission 01 completion was subsequently reported; broader smoke testing remains pending.
 - [x] Phase 1: one playable original rescue puzzle, two specialist abilities, fire, crate/switch/gate, civilian extraction, deterministic win path, undo and restart. Ten levels still pending.
-- [ ] On-device smoke test completed.
+- [x] **Initial Android happy-path playtest** (2026-10-30): project owner reports installing the APK and completing Mission 01 successfully; hardware/OS version and detailed input observations not recorded.
+- [ ] **Comprehensive device smoke test** still pending: touch ergonomics, undo/restart, app lifecycle, different screen sizes, accessibility and performance.
 - [ ] Commercial metrics validated.
