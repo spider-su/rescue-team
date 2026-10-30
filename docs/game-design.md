@@ -1,6 +1,6 @@
 # Rescue Team — game concept (working design)
 
-**Status:** concept proposal for the first prototype; gameplay not yet implemented. Name, visual identity and gameplay tuning remain provisional.
+**Status:** one basic playable rescue puzzle is implemented; remaining levels, art and tuning are provisional.
 
 ## Player promise
 
@@ -26,7 +26,11 @@ Target session: approximately 1–3 minutes per level; slow, thoughtful play is 
 
 **Level elements:** walls, open tiles, fire hazard, movable crate, floor switch/gate, civilian, exit. Introduce one new rule at a time and clearly signal when a move is blocked.
 
-**Control hypothesis:** portrait grid, tap character to select, tap reachable destination/action tile; explicit active-character display, undo and reset. Choose the simplest deterministic movement/interaction semantics after evaluating a playable level. Never combine continuous physics with turn-based grid rules just for spectacle.
+**Current prototype controls:** portrait grid, select by role button or tapping a rescuer, tap a **directly adjacent** tile to walk or act, UNDO the last successful action, RESTART the level. No automatic distant pathfinding yet. Firefighter clears adjacent fire, engineer pushes an adjacent crate one tile, stepping onto the civilian tile picks them up, and a carrier reaching EXIT wins once the crate powers the gate.
+
+## Implemented Phase 1 level
+
+**Mission 01 — The Locked Corridor:** engineer pushes a crate onto a switch; firefighter extinguishes the fire blocking the upper passage; firefighter carries the civilian through the now-open gate to extraction. The full solution is covered by a deterministic headless test. Simple colored tiles are temporary art.
 
 ## First vertical slice: 10 original levels
 

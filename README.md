@@ -2,7 +2,7 @@
 
 **An original, touch-first 2D rescue puzzle game for Android.** Built in **Godot 4.7.2 stable (GDScript)**.
 
-> **Current status: project bootstrap.** The playable screen is the inherited Godot *tap-to-score technical demo*, **not** Rescue Team gameplay yet. The roadmap defines the first playable rescue puzzle and 10-level vertical slice.
+> **Current status: Phase 1 playable prototype.** One original cooperative rescue puzzle is implemented. Ten curated levels, original artwork and device playtesting are still planned.
 
 ## Game vision
 
@@ -19,9 +19,9 @@ Detailed product scope and stage gates: [Game design](docs/game-design.md) and [
 ## Current project contents
 
 - `project.godot`: Godot project and 720×1280 portrait configuration.
-- `scenes/main.tscn` + `scripts/demo_game.gd`: disposable starter screen.
-- `scripts/game_session.gd`: tested score/pause/save example (to be replaced with real game state).
-- `tests/test_game_session.gd`: headless smoke tests of the inherited starter logic.
+- `scenes/main.tscn` + `scripts/rescue_game.gd` + `scripts/board_view.gd`: first playable portrait puzzle with touch controls.
+- `scripts/rescue_level.gd`: deterministic 11×5 board state, two specialists, fire, crate/switch/gate, civilian pickup, extraction, undo and restart.
+- `tests/test_rescue_level.gd`: headless tests including a complete winning action sequence, invalid moves and undo.
 - `.github/workflows/godot-ci.yml`: Android debug APK build using GitHub Actions, Java 17, Android SDK, pinned Godot editor/export templates; uploads an installable artifact.
 - `docs/architecture.md`, `docs/android-release.md`: technical and release documentation.
 
@@ -33,10 +33,10 @@ Detailed product scope and stage gates: [Game design](docs/game-design.md) and [
 
 ```bash
 godot --headless --path . --editor --import --quit
-godot --headless --path . --script res://tests/test_game_session.gd
+godot --headless --path . --script res://tests/test_rescue_level.gd
 ```
 
-The code is currently a *template smoke demo*. A successful headless check is not proof of playable rescue puzzles or Android device compatibility.
+Play **Mission 01: The Locked Corridor**. Select the engineer (E), move right and push the crate (BOX) onto the blue switch to open the gate. Then select the firefighter (F), extinguish the fire, pick up the civilian (C), and reach EXIT. Tap an adjacent square for each action. UNDO and RESTART are provided. This has not yet been validated on physical Android devices.
 
 ## Android APK / CI
 
