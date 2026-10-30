@@ -2,6 +2,9 @@ extends Control
 ## Lightweight tile renderer without artwork or plugins; replace with original art later.
 signal cell_tapped(cell: Vector2i)
 var level: RefCounted
+var route_preview: Array[Vector2i] = []
+var animated_role: String = ""
+var animated_position: Vector2 = Vector2.ZERO
 
 const FLOOR = Color("#24374a")
 const WALL = Color("#101927")
@@ -51,23 +54,29 @@ func _draw() -> void:
 			elif tile == "exit":
 				_draw_icon(center, "EXIT", step * 0.23)
 
-	if not level.fire_cleared:
+	# Route dots make one-tap movement visible before and during animation.
+	for cell in route_preview:
+		var dot: Vector2 = origin + (Vector2(cell) + Vector2(0.5, 0.5)) * step
+		draw_circle(dot, step * 0.11, Color("#afe8ff", 0.70))
+	if level.has_fire and not level.fire_cleared:
 		_draw_marker(level.fire_pos, origin, step, Color("#e86440"), "!", false)
-	_draw_marker(level.crate_pos, origin, step, Color("#c88a4a"), "BOX", true)
+	if level.has_crate:
+		_draw_marker(level.crate_pos, origin, step, Color("#c88a4a"), "BOX", true)
 	if level.carrying_role.is_empty() and not level.rescued:
 		_draw_marker(level.civilian_pos, origin, step, Color("#e3d9a0"), "C", false)
 	for role in [level.FIREFIGHTER, level.ENGINEER]:
 		var color := Color("#ed704b") if role == level.FIREFIGHTER else Color("#62abe9")
 		var symbol := "F" if role == level.FIREFIGHTER else "E"
-		_draw_marker(level.positions[role], origin, step, color, symbol, false)
+		var marker_pos: Vector2 = animated_position if animated_role == role else Vector2(level.positions[role])
+		_draw_marker(marker_pos, origin, step, color, symbol, false)
 		if level.selected == role:
-			var center: Vector2 = origin + (Vector2(level.positions[role]) + Vector2(0.5, 0.5)) * step
+			var center: Vector2 = origin + (marker_pos + Vector2(0.5, 0.5)) * step
 			draw_arc(center, step * 0.43, 0.0, TAU, 32, Color.WHITE, 3.0)
 		if level.carrying_role == role:
-			var carrier_center: Vector2 = origin + (Vector2(level.positions[role]) + Vector2(0.5, 0.5)) * step
+			var carrier_center: Vector2 = origin + (marker_pos + Vector2(0.5, 0.5)) * step
 			draw_circle(carrier_center + Vector2(step * 0.23, -step * 0.23), step * 0.13, Color("#e3d9a0"))
 
-func _draw_marker(cell: Vector2i, origin: Vector2, step: float, color: Color, symbol: String, is_box: bool) -> void:
+func _draw_marker(cell: Vector2, origin: Vector2, step: float, color: Color, symbol: String, is_box: bool) -> void:
 	var center := origin + (Vector2(cell) + Vector2(0.5, 0.5)) * step
 	if is_box:
 		draw_rect(Rect2(center - Vector2.ONE * step * 0.32, Vector2.ONE * step * 0.64), color, true)
@@ -77,6 +86,22 @@ func _draw_marker(cell: Vector2i, origin: Vector2, step: float, color: Color, sy
 
 func _draw_icon(center: Vector2, symbol: String, font_size: float) -> void:
 	draw_string(ThemeDB.fallback_font, center + Vector2(0.0, font_size * 0.36), symbol, HORIZONTAL_ALIGNMENT_CENTER, -1.0, int(font_size), TEXT)
+
+func animate_step(role: String, start: Vector2i, target: Vector2i) -> void:
+	animated_role = role
+	animated_position = Vector2(start)
+	var tween := create_tween()
+	tween.tween_method(_set_animated_position, Vector2(start), Vector2(target), 0.16)
+	await tween.finished
+	clear_animation()
+
+func _set_animated_position(value: Vector2) -> void:
+	animated_position = value
+	queue_redraw()
+
+func clear_animation() -> void:
+	animated_role = ""
+	queue_redraw()
 
 func _gui_input(event: InputEvent) -> void:
 	# Godot emulates mouse clicks for mobile touch; handle one event type to avoid duplicates.
