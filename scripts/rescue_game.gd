@@ -1,5 +1,5 @@
 extends Control
-## Five-mission prototype: mission picker, automatic routing and local unlocks.
+## Rescue Team campaign: mission picker, automatic routing and local unlocks.
 const RescueLevel = preload("res://scripts/rescue_level.gd")
 const BoardView = preload("res://scripts/board_view.gd")
 const LevelCatalog = preload("res://scripts/level_catalog.gd")
@@ -26,6 +26,8 @@ var menu_panel: VBoxContainer
 var menu_scroll: ScrollContainer
 var play_panel: VBoxContainer
 var level_buttons: Array[Button] = []
+var victory_panel: PanelContainer
+var victory_label: Label
 
 func _ready() -> void:
 	_build_ui()
@@ -42,20 +44,20 @@ func _build_ui() -> void:
 	layout.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	layout.offset_left = 22.0
 	layout.offset_right = -22.0
-	layout.offset_top = 46.0
-	layout.offset_bottom = -64.0
-	layout.add_theme_constant_override("separation", 12)
+	layout.offset_top = 20.0
+	layout.offset_bottom = -22.0
+	layout.add_theme_constant_override("separation", 6)
 	add_child(layout)
 
 	title_label = Label.new()
 	title_label.text = "RESCUE TEAM"
 	title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title_label.add_theme_font_size_override("font_size", 37)
+	title_label.add_theme_font_size_override("font_size", 30)
 	layout.add_child(title_label)
 
 	subtitle_label = Label.new()
 	subtitle_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	subtitle_label.add_theme_font_size_override("font_size", 19)
+	subtitle_label.add_theme_font_size_override("font_size", 17)
 	layout.add_child(subtitle_label)
 
 	menu_scroll = ScrollContainer.new()
@@ -85,13 +87,13 @@ func _build_ui() -> void:
 
 	play_panel = VBoxContainer.new()
 	play_panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	play_panel.add_theme_constant_override("separation", 9)
+	play_panel.add_theme_constant_override("separation", 5)
 	layout.add_child(play_panel)
 
 	objective_label = Label.new()
 	objective_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	objective_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	objective_label.custom_minimum_size.y = 54
+	objective_label.custom_minimum_size.y = 40
 	objective_label.add_theme_font_size_override("font_size", 20)
 	play_panel.add_child(objective_label)
 
@@ -113,7 +115,7 @@ func _build_ui() -> void:
 	status_label = Label.new()
 	status_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	status_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	status_label.custom_minimum_size.y = 70
+	status_label.custom_minimum_size.y = 48
 	status_label.add_theme_font_size_override("font_size", 20)
 	play_panel.add_child(status_label)
 
@@ -129,7 +131,7 @@ func _build_ui() -> void:
 
 	next_button = Button.new()
 	next_button.text = "NEXT MISSION"
-	next_button.custom_minimum_size.y = 72
+	next_button.custom_minimum_size.y = 58
 	next_button.add_theme_font_size_override("font_size", 21)
 	next_button.pressed.connect(_next_level)
 	play_panel.add_child(next_button)
@@ -137,14 +139,37 @@ func _build_ui() -> void:
 	hint_label = Label.new()
 	hint_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	hint_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	hint_label.custom_minimum_size.y = 61
+	hint_label.custom_minimum_size.y = 36
 	hint_label.add_theme_font_size_override("font_size", 18)
 	play_panel.add_child(hint_label)
+
+	victory_panel = PanelContainer.new()
+	victory_panel.visible = false
+	var victory_style := StyleBoxFlat.new()
+	victory_style.bg_color = Color("#1a6757")
+	victory_style.corner_radius_top_left = 16
+	victory_style.corner_radius_top_right = 16
+	victory_style.corner_radius_bottom_left = 16
+	victory_style.corner_radius_bottom_right = 16
+	victory_panel.add_theme_stylebox_override("panel", victory_style)
+	play_panel.add_child(victory_panel)
+	var victory_content := VBoxContainer.new()
+	victory_panel.add_child(victory_content)
+	victory_label = Label.new()
+	victory_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	victory_label.add_theme_font_size_override("font_size", 21)
+	victory_content.add_child(victory_label)
+	var replay := Button.new()
+	replay.text = "REPLAY"
+	replay.custom_minimum_size.y = 55
+	replay.pressed.connect(_on_restart)
+	victory_content.add_child(replay)
+
 
 func _button(label: String, container: HBoxContainer) -> Button:
 	var button := Button.new()
 	button.text = label
-	button.custom_minimum_size = Vector2(0, 76)
+	button.custom_minimum_size = Vector2(0, 58)
 	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	button.add_theme_font_size_override("font_size", 18)
 	container.add_child(button)
@@ -177,7 +202,7 @@ func _start_level(index: int) -> void:
 	menu_scroll.visible = false
 	play_panel.visible = true
 	subtitle_label.text = "MISSION %s  /  %s" % [level.level_id, level.title.to_upper()]
-	hint_label.text = level.hint + "\nTap a distant tile to walk; select a rescuer to switch."
+	hint_label.text = "Tap a destination to walk. Select a specialist for their ability."
 	_refresh()
 
 func _on_role(role: String) -> void:
@@ -262,4 +287,7 @@ func _refresh() -> void:
 	var person_status := "SAFE" if level.rescued else ("CARRIED" if not level.carrying_role.is_empty() else "WAITING")
 	objective_label.text = "FIRE %s   |   GATE %s   |   CIVILIAN %s" % [fire_status, gate_status, person_status]
 	status_label.text = "%s\nMoves: %d" % [level.message, level.actions]
+	victory_panel.visible = level.rescued and not moving
+	if victory_panel.visible:
+		victory_label.text = "MISSION COMPLETE!\nCivilian rescued in %d moves." % level.actions
 	board.queue_redraw()

@@ -10,6 +10,16 @@ const FLOOR = Color("#24374a")
 const WALL = Color("#101927")
 const GRID = Color("#172434")
 const TEXT = Color("#ffffff")
+const ART = {
+	"firefighter": preload("res://assets/characters/firefighter.svg"),
+	"engineer": preload("res://assets/characters/engineer.svg"),
+	"civilian": preload("res://assets/characters/civilian.svg"),
+	"fire": preload("res://assets/props/fire.svg"),
+	"crate": preload("res://assets/props/crate.svg"),
+	"switch": preload("res://assets/props/switch.svg"),
+	"gate": preload("res://assets/props/gate.svg"),
+	"exit": preload("res://assets/props/exit.svg"),
+}
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
@@ -35,9 +45,9 @@ func _draw() -> void:
 			var cell := Vector2i(x, y)
 			var rect := Rect2(origin + Vector2(x, y) * step + Vector2.ONE, Vector2.ONE * (step - 2.0))
 			var tile: String = level.tile_at(cell)
-			var color := FLOOR
+			var color := Color("#e1cda4") if (x + y) % 2 == 0 else Color("#d2b989")
 			match tile:
-				"wall": color = WALL
+				"wall": color = Color("#657e86")
 				"exit": color = Color("#24785c")
 				"switch": color = Color("#245c92")
 				"gate": color = Color("#923c49")
@@ -46,35 +56,38 @@ func _draw() -> void:
 			draw_rect(rect, GRID, false, 1.5)
 			var center := rect.get_center()
 			if tile == "switch":
-				draw_arc(center, step * 0.28, 0.0, TAU, 28, Color("#8dd4ff"), 3.0)
+				_draw_art("switch", center, step)
 			elif tile == "gate":
-				_draw_icon(center, "LOCK", step * 0.24)
+				_draw_art("gate", center, step)
 			elif tile == "open_gate":
 				_draw_icon(center, "OPEN", step * 0.24)
 			elif tile == "exit":
-				_draw_icon(center, "EXIT", step * 0.23)
+				_draw_art("exit", center, step)
 
 	# Route dots make one-tap movement visible before and during animation.
 	for cell in route_preview:
 		var dot: Vector2 = origin + (Vector2(cell) + Vector2(0.5, 0.5)) * step
 		draw_circle(dot, step * 0.11, Color("#afe8ff", 0.70))
 	if level.has_fire and not level.fire_cleared:
-		_draw_marker(level.fire_pos, origin, step, Color("#e86440"), "!", false)
+		_draw_art("fire", origin + (Vector2(level.fire_pos) + Vector2(0.5, 0.5)) * step, step)
 	if level.has_crate:
-		_draw_marker(level.crate_pos, origin, step, Color("#c88a4a"), "BOX", true)
+		_draw_art("crate", origin + (Vector2(level.crate_pos) + Vector2(0.5, 0.5)) * step, step)
 	if level.carrying_role.is_empty() and not level.rescued:
-		_draw_marker(level.civilian_pos, origin, step, Color("#e3d9a0"), "C", false)
+		_draw_art("civilian", origin + (Vector2(level.civilian_pos) + Vector2(0.5, 0.5)) * step, step)
 	for role in [level.FIREFIGHTER, level.ENGINEER]:
 		var color := Color("#ed704b") if role == level.FIREFIGHTER else Color("#62abe9")
 		var symbol := "F" if role == level.FIREFIGHTER else "E"
 		var marker_pos: Vector2 = animated_position if animated_role == role else Vector2(level.positions[role])
-		_draw_marker(marker_pos, origin, step, color, symbol, false)
+		_draw_art(role, origin + (marker_pos + Vector2(0.5, 0.5)) * step, step * 1.1)
 		if level.selected == role:
 			var center: Vector2 = origin + (marker_pos + Vector2(0.5, 0.5)) * step
 			draw_arc(center, step * 0.43, 0.0, TAU, 32, Color.WHITE, 3.0)
 		if level.carrying_role == role:
 			var carrier_center: Vector2 = origin + (marker_pos + Vector2(0.5, 0.5)) * step
-			draw_circle(carrier_center + Vector2(step * 0.23, -step * 0.23), step * 0.13, Color("#e3d9a0"))
+			_draw_art("civilian", carrier_center + Vector2(step * 0.23, -step * 0.23), step * 0.5)
+
+func _draw_art(name: String, center: Vector2, side: float) -> void:
+	draw_texture_rect(ART[name], Rect2(center - Vector2.ONE * side / 2.0, Vector2.ONE * side), false)
 
 func _draw_marker(cell: Vector2, origin: Vector2, step: float, color: Color, symbol: String, is_box: bool) -> void:
 	var center := origin + (Vector2(cell) + Vector2(0.5, 0.5)) * step
