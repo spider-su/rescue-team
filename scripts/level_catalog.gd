@@ -6,6 +6,11 @@ const PATHS = [
 	"res://levels/03.json",
 	"res://levels/04.json",
 	"res://levels/05.json",
+	"res://levels/06.json",
+	"res://levels/07.json",
+	"res://levels/08.json",
+	"res://levels/09.json",
+	"res://levels/10.json",
 ]
 const ALLOWED = ".#FECXfBsG"
 

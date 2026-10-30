@@ -1,0 +1,12 @@
+{
+  "id": "08",
+  "title": "Fire Before Power",
+  "hint": "Reach the lower flames from above, then let the engineer move the crate.",
+  "rows": [
+    "#############",
+    "#F..C..G.X..#",
+    "#.#.###.##.##",
+    "#E..f.Bs....#",
+    "#############"
+  ]
+}

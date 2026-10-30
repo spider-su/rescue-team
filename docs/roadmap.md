@@ -36,10 +36,11 @@ Prefer a small focused PR for each increment; do not combine all milestones in o
 - [x] Project bootstrapped from Godot game-template and identity set.
 - [x] CI workflow configured for `main`, feature branches and pull requests.
 - [x] CI green **in this repository** — [initial successful workflow run](https://github.com/spider-su/rescue-team/actions/runs/41079474191), including Android debug APK artifact. Basic real-device Mission 01 completion was subsequently reported; broader smoke testing remains pending.
-- [x] Phase 1: one playable original rescue puzzle, two specialist abilities, fire, crate/switch/gate, civilian extraction, deterministic win path, undo and restart. Ten levels still pending.
+- [x] Phase 1: one playable original rescue puzzle, two specialist abilities, fire, crate/switch/gate, civilian extraction, deterministic win path, undo and restart. Ten missions implemented on `feat/ten-level-slice`; real-device campaign playtest pending.
 - [x] **Initial Android happy-path playtest** (2026-10-30): project owner reports installing the APK and completing Mission 01 successfully; hardware/OS version and detailed input observations not recorded.
 - [ ] **New five-level build device smoke test** (tap-to-move, menu navigation, unlock/save, pause/resume, smaller screens): still pending.
 - [ ] **Comprehensive device smoke test** still pending: touch ergonomics, undo/restart, app lifecycle, different screen sizes, accessibility and performance.
 - [x] Five data-driven JSON missions with validated complete solutions, mission picker, monotonic offline unlocks and route animations (feature branch; CI/device verification pending).
-- [ ] Remaining five missions and full ten-level vertical slice.
+- [x] Ten original JSON missions with deterministic win-path tests and offline unlock progression (feature branch; device verification pending).
+- [ ] External playtest of the ten-level campaign and puzzle difficulty tuning.
 - [ ] Commercial metrics validated.

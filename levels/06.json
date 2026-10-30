@@ -1,0 +1,12 @@
+{
+  "id": "06",
+  "title": "Reverse Pressure",
+  "hint": "Push the crate left onto the switch. The exit stays locked until then.",
+  "rows": [
+    "#############",
+    "#F....C.GX..#",
+    "#.#.###.##.##",
+    "#...sBE.....#",
+    "#############"
+  ]
+}

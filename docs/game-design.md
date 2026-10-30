@@ -1,6 +1,6 @@
 # Rescue Team — game concept (working design)
 
-**Status:** five original data-driven levels implemented on the campaign branch; remaining five levels, art, sound and tuning are provisional.
+**Status:** ten original data-driven levels implemented on the vertical-slice branch; the art, sound and difficulty tuning are provisional.
 
 ## Player promise
 
@@ -40,7 +40,15 @@ Target session: approximately 1–3 minutes per level; slow, thoughtful play is 
 4. The Locked Corridor — original cooperative prototype.
 5. Crossed Routes — two crate pushes and longer extraction.
 
-## Remaining vertical slice: 10 original levels
+## Additional levels 06–10 (implemented)
+
+- 06 — Reverse Pressure: reverse-direction crate push.
+- 07 — Blocked Passage: clear fire for the engineer and move out of the way.
+- 08 — Fire Before Power: firefighter must access the engineer corridor from above.
+- 09 — Narrow Crossing: two crate pushes and coordinated passage around another rescuer.
+- 10 — Final Dispatch: firefighter clears the route and engineer completes a longer extraction.
+
+## Full vertical slice: 10 original levels
 
 - 1–2: movement, character selection and exit.
 - 3–4: fire hazard and firefighter ability.

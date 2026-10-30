@@ -1,0 +1,12 @@
+{
+  "id": "09",
+  "title": "Narrow Crossing",
+  "hint": "Push the crate twice. Make room for both rescuers to pass through the narrow crossing.",
+  "rows": [
+    "#############",
+    "#F..#..CfGX.#",
+    "#...#....####",
+    "#E..B.s.....#",
+    "#############"
+  ]
+}

@@ -6,9 +6,9 @@ const Progress = preload("res://scripts/campaign_progress.gd")
 
 func _initialize() -> void:
 	var catalog = Catalog.new()
-	if not _assert(catalog.count() == 5, "five curated missions"):
+	if not _assert(catalog.count() == 10, "ten curated missions"):
 		return
-	var expected_ids := ["01", "02", "03", "04", "05"]
+	var expected_ids := ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10"]
 	for index in range(catalog.count()):
 		var definition: Dictionary = catalog.load_level(index)
 		if not _assert(not definition.is_empty() and definition["id"] == expected_ids[index], "mission identity / JSON %d" % index):
@@ -32,6 +32,11 @@ func _initialize() -> void:
 		[["engineer", 3, 3], ["firefighter", 4, 1], ["firefighter", 7, 1]],
 		[["engineer", 3, 3], ["firefighter", 3, 1], ["firefighter", 5, 1], ["firefighter", 8, 1]],
 		[["engineer", 4, 3], ["engineer", 5, 3], ["firefighter", 4, 1], ["firefighter", 7, 1], ["firefighter", 10, 1]],
+		[["engineer", 5, 3], ["firefighter", 6, 1], ["firefighter", 9, 1]],
+		[["firefighter", 3, 3], ["firefighter", 2, 1], ["engineer", 6, 3], ["firefighter", 7, 1], ["firefighter", 10, 1]],
+		[["firefighter", 4, 3], ["firefighter", 3, 1], ["engineer", 6, 3], ["firefighter", 4, 1], ["firefighter", 9, 1]],
+		[["engineer", 4, 3], ["engineer", 5, 3], ["engineer", 7, 2], ["firefighter", 8, 1], ["firefighter", 10, 1]],
+		[["firefighter", 3, 3], ["firefighter", 2, 1], ["engineer", 6, 3], ["engineer", 8, 1], ["engineer", 12, 1]],
 	]
 	for index in range(catalog.count()):
 		var mission = RescueLevel.new(catalog.load_level(index))
@@ -44,6 +49,15 @@ func _initialize() -> void:
 				return
 		if not _assert(mission.rescued, "mission %d wins" % index):
 			return
+		if index >= 5:
+			if not _assert(mission.has_gate and mission.gate_is_open(), "late mission gate powered %d" % index):
+				return
+			if not _assert(mission.undo() and not mission.rescued, "late mission exit journey undo %d" % index):
+				return
+			var last: Array = actions_by_level[index].back()
+			mission.select_role(last[0])
+			if not _assert(_navigate(mission, Vector2i(last[1], last[2])) and mission.rescued, "late mission replay wins %d" % index):
+				return
 
 	var save_path := "user://rescue_campaign_test.json"
 	if FileAccess.file_exists(save_path):
@@ -69,7 +83,7 @@ func _initialize() -> void:
 	if not _assert(reloaded.best.is_empty() and not reloaded.unlocked(1, catalog), "invalid progress falls back safely"):
 		return
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(save_path))
-	print("PASS: five validated/solvable missions, saved unlock progression and corrupt save handling")
+	print("PASS: ten validated/solvable missions, atomic undo, saved unlock progression and corrupt save handling")
 	quit(0)
 
 func _navigate(mission: RefCounted, target: Vector2i) -> bool:

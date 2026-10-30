@@ -1,0 +1,12 @@
+{
+  "id": "07",
+  "title": "Blocked Passage",
+  "hint": "The engineer cannot pass the flames. Clear them, step aside, then power the gate.",
+  "rows": [
+    "#############",
+    "#F.....C.GX.#",
+    "#..##########",
+    "#E.f..Bs....#",
+    "#############"
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "id": "10",
+  "title": "Final Dispatch",
+  "hint": "Clear the blocked corridor first; the engineer must cross the yard to reach the civilian.",
+  "rows": [
+    "###############",
+    "#F...#..C..GX.#",
+    "#..###..#######",
+    "#E.f..Bs......#",
+    "#..#..........#",
+    "###############"
+  ]
+}
