@@ -62,9 +62,11 @@ func _initialize() -> void:
 	# Engineer cannot clear fire; firefighter cannot push crates; occupants block movement.
 	if not _check(level.select_role(level.ENGINEER), "Select engineer for invalid-action checks"):
 		return
-	if not _check(not level.act(Vector2i(1, 1)), "Other rescuer blocks tile"):
+	if not _check(level.act(Vector2i(1, 2)), "Engineer walks toward firefighter"):
 		return
-	if not _check(level.act(Vector2i(2, 3)), "Walk to crate again"):
+	if not _check(not level.act(Vector2i(1, 1)), "Other rescuer blocks adjacent tile"):
+		return
+	if not _check(level.act(Vector2i(1, 3)) and level.act(Vector2i(2, 3)), "Return to crate corridor"):
 		return
 	if not _check(level.select_role(level.FIREFIGHTER), "Switch to firefighter"):
 		return
@@ -75,7 +77,21 @@ func _initialize() -> void:
 	if not _check(level.undo() and not level.fire_cleared, "Undo fire action"):
 		return
 
-	print("PASS: first Rescue Team puzzle, rules, undo and full winning path")
+	# Isolate role restrictions and the locked gate without changing the scenario.
+	var restrictions = RescueLevel.new()
+	restrictions.positions[restrictions.ENGINEER] = Vector2i(2, 1)
+	restrictions.select_role(restrictions.ENGINEER)
+	if not _check(not restrictions.act(Vector2i(3, 1)) and not restrictions.fire_cleared, "Engineer cannot extinguish fire"):
+		return
+	restrictions.positions[restrictions.FIREFIGHTER] = Vector2i(2, 3)
+	restrictions.select_role(restrictions.FIREFIGHTER)
+	if not _check(not restrictions.act(Vector2i(3, 3)) and restrictions.crate_pos == Vector2i(3, 3), "Firefighter cannot push crate"):
+		return
+	restrictions.positions[restrictions.FIREFIGHTER] = Vector2i(6, 1)
+	if not _check(not restrictions.act(Vector2i(7, 1)) and not restrictions.gate_is_open(), "Locked gate blocks movement"):
+		return
+
+	print("PASS: first Rescue Team puzzle, role restrictions, undo and full winning path")
 	quit(0)
 
 func _check(condition: bool, description: String) -> bool:
