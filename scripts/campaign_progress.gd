@@ -12,7 +12,11 @@ func load_progress() -> void:
 	best.clear()
 	if not FileAccess.file_exists(path):
 		return
-	var parsed: Variant = JSON.parse_string(FileAccess.get_file_as_string(path))
+	var parser := JSON.new()
+	# Parsing errors in user data are expected; avoid emitting engine error logs.
+	if parser.parse(FileAccess.get_file_as_string(path)) != OK:
+		return
+	var parsed: Variant = parser.data
 	if not parsed is Dictionary or parsed.get("version") != 1 or not parsed.get("best") is Dictionary:
 		return
 	var catalog = preload("res://scripts/level_catalog.gd").new()
