@@ -39,3 +39,7 @@ CI uses a **new debug signing key per run**, so uninstall the previous build bef
 - **Not yet completed:** ten-level campaign, professional original graphics/sound, broad real-device acceptance, 20–40 external playtesters and commercial validation.
 
 Use original or properly licensed game assets only. Check [AGENTS.md](AGENTS.md), [docs/architecture.md](docs/architecture.md), and [docs/game-design.md](docs/game-design.md) before development.
+
+## UI direction
+
+The mobile interface uses a dark navy / teal rescue-operations palette, differentiated character selection, stronger status readability and a scrollable mission list with READY / COMPLETE / LOCKED labels. The map remains programmatically rendered placeholder art; this UI milestone deliberately does not alter puzzle rules. Real-device layout and touch testing is still required.

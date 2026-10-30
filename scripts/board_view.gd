@@ -6,9 +6,9 @@ var route_preview: Array[Vector2i] = []
 var animated_role: String = ""
 var animated_position: Vector2 = Vector2.ZERO
 
-const FLOOR = Color("#24374a")
-const WALL = Color("#101927")
-const GRID = Color("#172434")
+const FLOOR = Color("#243b50")
+const WALL = Color("#102132")
+const GRID = Color("#172c3d")
 const TEXT = Color("#ffffff")
 
 func _ready() -> void:
@@ -43,14 +43,16 @@ func _draw() -> void:
 				"gate": color = Color("#923c49")
 				"open_gate": color = Color("#36734c")
 			draw_rect(rect, color, true)
-			draw_rect(rect, GRID, false, 1.5)
+			draw_rect(rect, GRID, false, 1.0)
+			if tile == "wall":
+				draw_line(rect.position + Vector2(4, 4), rect.position + Vector2(rect.size.x - 4, 4), Color("#2a4760"), 2.0)
 			var center := rect.get_center()
 			if tile == "switch":
 				draw_arc(center, step * 0.28, 0.0, TAU, 28, Color("#8dd4ff"), 3.0)
 			elif tile == "gate":
-				_draw_icon(center, "LOCK", step * 0.24)
+				_draw_icon(center, "GATE", step * 0.19)
 			elif tile == "open_gate":
-				_draw_icon(center, "OPEN", step * 0.24)
+				_draw_icon(center, "OPEN", step * 0.20)
 			elif tile == "exit":
 				_draw_icon(center, "EXIT", step * 0.23)
 
@@ -81,6 +83,7 @@ func _draw_marker(cell: Vector2, origin: Vector2, step: float, color: Color, sym
 	if is_box:
 		draw_rect(Rect2(center - Vector2.ONE * step * 0.32, Vector2.ONE * step * 0.64), color, true)
 	else:
+		draw_circle(center + Vector2(1, 3), step * 0.35, Color("#091622", 0.75))
 		draw_circle(center, step * 0.33, color)
 	_draw_icon(center, symbol, step * (0.22 if symbol.length() > 1 else 0.38))
 
