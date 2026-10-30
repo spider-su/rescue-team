@@ -1,5 +1,5 @@
 extends Control
-## Five-mission prototype: mission picker, automatic routing and local unlocks.
+## Ten-mission vertical slice: scrollable mission picker, routing and saved unlocks.
 const RescueLevel = preload("res://scripts/rescue_level.gd")
 const BoardView = preload("res://scripts/board_view.gd")
 const LevelCatalog = preload("res://scripts/level_catalog.gd")
@@ -22,6 +22,7 @@ var engineer_button: Button
 var undo_button: Button
 var restart_button: Button
 var next_button: Button
+var menu_scroll: ScrollContainer
 var menu_panel: VBoxContainer
 var play_panel: VBoxContainer
 var level_buttons: Array[Button] = []
@@ -50,17 +51,24 @@ func _build_ui() -> void:
 	title_label.text = "RESCUE TEAM"
 	title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title_label.add_theme_font_size_override("font_size", 37)
+	title_label.add_theme_color_override("font_color", Color("#f9d795"))
 	layout.add_child(title_label)
 
 	subtitle_label = Label.new()
 	subtitle_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	subtitle_label.add_theme_font_size_override("font_size", 19)
+	subtitle_label.add_theme_color_override("font_color", Color("#a4c4cf"))
 	layout.add_child(subtitle_label)
 
+	menu_scroll = ScrollContainer.new()
+	menu_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	menu_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	menu_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	layout.add_child(menu_scroll)
 	menu_panel = VBoxContainer.new()
-	menu_panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	menu_panel.add_theme_constant_override("separation", 14)
-	layout.add_child(menu_panel)
+	menu_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	menu_panel.add_theme_constant_override("separation", 12)
+	menu_scroll.add_child(menu_panel)
 
 	var instructions := Label.new()
 	instructions.text = "Choose a mission. Complete one to unlock the next."
@@ -72,8 +80,9 @@ func _build_ui() -> void:
 
 	for index in range(catalog.count()):
 		var button := Button.new()
-		button.custom_minimum_size.y = 98
-		button.add_theme_font_size_override("font_size", 23)
+		button.custom_minimum_size.y = 84
+		button.add_theme_font_size_override("font_size", 21)
+		_style_button(button, Color("#203b50"), Color("#2d5368"))
 		button.pressed.connect(_start_level.bind(index))
 		menu_panel.add_child(button)
 		level_buttons.append(button)
@@ -94,8 +103,10 @@ func _build_ui() -> void:
 	roles.add_theme_constant_override("separation", 10)
 	play_panel.add_child(roles)
 	firefighter_button = _button("FIREFIGHTER", roles)
+	_style_button(firefighter_button, Color("#914b3f"), Color("#c2614d"))
 	firefighter_button.pressed.connect(_on_role.bind(level.FIREFIGHTER))
 	engineer_button = _button("ENGINEER", roles)
+	_style_button(engineer_button, Color("#255d85"), Color("#397eac"))
 	engineer_button.pressed.connect(_on_role.bind(level.ENGINEER))
 
 	board = BoardView.new()
@@ -110,22 +121,27 @@ func _build_ui() -> void:
 	status_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	status_label.custom_minimum_size.y = 70
 	status_label.add_theme_font_size_override("font_size", 20)
+	status_label.add_theme_color_override("font_color", Color("#dceef5"))
 	play_panel.add_child(status_label)
 
 	var commands := HBoxContainer.new()
 	commands.add_theme_constant_override("separation", 8)
 	play_panel.add_child(commands)
 	undo_button = _button("UNDO", commands)
+	_style_button(undo_button, Color("#34465b"), Color("#405b74"))
 	undo_button.pressed.connect(_on_undo)
 	restart_button = _button("RESTART", commands)
+	_style_button(restart_button, Color("#34465b"), Color("#405b74"))
 	restart_button.pressed.connect(_on_restart)
 	var levels_button := _button("LEVELS", commands)
+	_style_button(levels_button, Color("#34465b"), Color("#405b74"))
 	levels_button.pressed.connect(_show_menu)
 
 	next_button = Button.new()
 	next_button.text = "NEXT MISSION"
 	next_button.custom_minimum_size.y = 72
 	next_button.add_theme_font_size_override("font_size", 21)
+	_style_button(next_button, Color("#29765b"), Color("#389971"))
 	next_button.pressed.connect(_next_level)
 	play_panel.add_child(next_button)
 
@@ -145,18 +161,41 @@ func _button(label: String, container: HBoxContainer) -> Button:
 	container.add_child(button)
 	return button
 
+func _style_button(button: Button, base: Color, hover: Color) -> void:
+	var normal := StyleBoxFlat.new()
+	normal.bg_color = base
+	normal.set_corner_radius_all(16)
+	normal.set_border_width_all(2)
+	normal.border_color = Color("#597188")
+	var hovered := normal.duplicate()
+	hovered.bg_color = hover
+	var pressed := normal.duplicate()
+	pressed.bg_color = hover.darkened(0.18)
+	var disabled := normal.duplicate()
+	disabled.bg_color = Color("#202d3b")
+	disabled.border_color = Color("#324252")
+	button.add_theme_stylebox_override("normal", normal)
+	button.add_theme_stylebox_override("hover", hovered)
+	button.add_theme_stylebox_override("pressed", pressed)
+	button.add_theme_stylebox_override("disabled", disabled)
+	button.add_theme_color_override("font_color", Color("#f1f7fa"))
+	button.add_theme_color_override("font_hover_color", Color.WHITE)
+	button.add_theme_color_override("font_disabled_color", Color("#8293a2"))
+
 func _show_menu() -> void:
 	if moving:
 		return
-	menu_panel.visible = true
+	menu_scroll.visible = true
 	play_panel.visible = false
 	subtitle_label.text = "MISSIONS  /  FIELD OPERATIONS"
 	for index in range(catalog.count()):
 		var data: Dictionary = catalog.load_level(index)
 		var button: Button = level_buttons[index]
 		button.disabled = not progress.unlocked(index, catalog)
-		var prefix := "✓" if progress.is_complete(data["id"]) else ("▶" if not button.disabled else "🔒")
-		button.text = "%s  %s  —  %s" % [prefix, data["id"], data["title"]]
+		var state := "DONE" if progress.is_complete(data["id"]) else ("PLAY" if not button.disabled else "LOCKED")
+		button.text = "%s   %s   %s" % [data["id"], data["title"], state]
+		if progress.is_complete(data["id"]):
+			button.text += "  |  BEST %d" % progress.best[data["id"]]
 
 func _start_level(index: int) -> void:
 	if moving or not progress.unlocked(index, catalog):
@@ -169,7 +208,7 @@ func _start_level(index: int) -> void:
 	board.level = level
 	board.route_preview.clear()
 	board.clear_animation()
-	menu_panel.visible = false
+	menu_scroll.visible = false
 	play_panel.visible = true
 	subtitle_label.text = "MISSION %s  /  %s" % [level.level_id, level.title.to_upper()]
 	hint_label.text = level.hint + "\nTap a distant tile to walk; select a rescuer to switch."
