@@ -35,7 +35,7 @@ Prefer a small focused PR for each increment; do not combine all milestones in o
 
 - [x] Project bootstrapped from Godot game-template and identity set.
 - [x] CI workflow configured for `main`, feature branches and pull requests.
-- [ ] CI green **in this repository** (must be verified from Actions).
+- [x] CI green **in this repository** — [initial successful workflow run](https://github.com/spider-su/rescue-team/actions/runs/41079474191), including Android debug APK artifact. Device smoke test still pending.
 - [ ] Rescue puzzle gameplay implemented.
 - [ ] On-device smoke test completed.
 - [ ] Commercial metrics validated.
