@@ -2,7 +2,7 @@
 
 **An original, touch-first 2D rescue puzzle game for Android.** Built in **Godot 4.7.2 stable (GDScript)**.
 
-> **Current status: Phase 1 playable prototype.** One original cooperative rescue puzzle is implemented. Ten curated levels, original artwork and broader device playtesting are still planned. The initial Android happy-path test passed on 2026-10-30 (installed APK and completed Mission 01, user reported).
+> **Current status: Phase 1 playable prototype.** Three original, progressively varied cooperative rescue puzzles are implemented. Ten curated levels, original artwork and broader device playtesting are still planned. The initial Android happy-path test passed on 2026-10-30 (installed APK and completed Mission 01, user reported).
 
 ## Game vision
 
@@ -36,7 +36,7 @@ godot --headless --path . --editor --import --quit
 godot --headless --path . --script res://tests/test_rescue_level.gd
 ```
 
-Play **Mission 01: The Locked Corridor**. Select the engineer (E), move right and push the crate (BOX) onto the blue switch to open the gate. Then select the firefighter (F), extinguish the fire, pick up the civilian (C), and reach EXIT. Tap a distant reachable square to walk there automatically. Tap the fire or crate to approach and interact; locked gates are not bypassed. Each destination tap can be undone in one step. UNDO and RESTART are provided. The project owner installed the APK on Android and successfully completed Mission 01 on 2026-10-30. Device model, OS version, broader touch ergonomics and lifecycle behavior have not been independently verified.
+Play **Mission 01: The Locked Corridor**. Select the engineer (E), move right and push the crate (BOX) onto the blue switch to open the gate. Then select the firefighter (F), extinguish the fire, pick up the civilian (C), and reach EXIT. Use PREVIOUS/NEXT to switch between unlocked missions (progress saved locally after a rescue). Tap a distant reachable square to walk there automatically. Tap the fire or crate to approach and interact; locked gates are not bypassed. Each destination tap can be undone in one step. UNDO and RESTART are provided. The project owner installed the APK on Android and successfully completed Mission 01 on 2026-10-30. Device model, OS version, broader touch ergonomics and lifecycle behavior have not been independently verified.
 
 ## Android APK / CI
 
