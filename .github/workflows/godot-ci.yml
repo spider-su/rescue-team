@@ -67,6 +67,9 @@ jobs:
       - name: Verify Old Town solutions, ranger rules and save compatibility
         run: godot --headless --path . --script res://tests/test_old_town.gd
 
+      - name: Verify audio assets, settings and app lifecycle
+        run: godot --headless --path . --script res://tests/test_audio.gd
+
       - name: Boot the game scene headlessly
         run: godot --headless --path . --quit-after 5
 

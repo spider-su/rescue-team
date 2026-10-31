@@ -12,6 +12,7 @@ Choose an unlocked mission. Tap a rescuer or their portrait to select them, then
 - Blocked routes show a short message from the selected hero, with varied obstacle-specific hints. The popup disappears after 4.5 seconds or your next action and never blocks tapping.
 - **UNDO**, **RESTART** and **LEVELS** remain available during play, except while movement is animating.
 - Completion shows actual move count, saved best, replay, undo rescue and the next unlocked mission. The final mission returns to the campaign.
+- Original background music and action sounds have independent **MUSIC** / **SOUND** toggles in the mission menu; choices persist offline.
 - Progress is saved offline through atomic replacement. A failed save is reported instead of announcing an unlock.
 - Tall play areas may rotate a mission's visual grid clockwise; routes and taps use the original mission coordinates. No mission rules change.
 - Location tabs group missions 01–10 (Coastal District) and 11–20 (Old Town Quarantine). Mission 10 unlocks the second location.
@@ -26,6 +27,7 @@ godot --headless --path . --editor --import --quit
 godot --headless --path . --script res://tests/test_rescue_level.gd
 godot --headless --path . --script res://tests/test_campaign.gd
 godot --headless --path . --script res://tests/test_old_town.gd
+godot --headless --path . --script res://tests/test_audio.gd
 godot --headless --path . --script res://tests/test_rescue_ui.gd
 godot --headless --path . --quit-after 5
 ```
@@ -46,6 +48,7 @@ See [Android release and device scenarios](docs/android-release.md). APK export 
 
 ## Design and assets
 
+- [Music, effects and listening scenario](docs/audio.md); [original audio sources](assets/audio/README.md).
 - [Game design](docs/game-design.md), [roadmap](docs/roadmap.md), [architecture](docs/architecture.md), [level format](docs/level-format.md).
 - [Coastal UI specification and validation](docs/coastal-ui.md), [Old Town chapter, scroll fix and ranger rules](docs/old-town.md).
 - [Artwork provenance and generation prompts](assets/coastal/README.md). [Old Town artwork and prompts](assets/old-town/README.md). Fonts include their SIL Open Font Licenses under `assets/fonts/`.
