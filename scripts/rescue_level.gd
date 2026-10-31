@@ -28,6 +28,11 @@ var level_id: String = ""
 var location_id: String = "coast"
 var title: String = ""
 var hint: String = ""
+var water: Dictionary = {}
+var valve_pos := Vector2i(-1, -1)
+var bridge_pos := Vector2i(-1, -1)
+var water_drained := false
+var bridge_built := false
 var has_fire: bool = false
 var has_crate: bool = false
 var has_gate: bool = false
@@ -46,6 +51,11 @@ func _init(definition: Dictionary = {}) -> void:
 
 func reset() -> void:
 	blocked_reason = ""
+	water.clear()
+	valve_pos = Vector2i(-1, -1)
+	bridge_pos = Vector2i(-1, -1)
+	water_drained = false
+	bridge_built = false
 	walls.clear()
 	positions.clear()
 	infected.clear()
@@ -62,6 +72,9 @@ func reset() -> void:
 		for x in range(width):
 			var cell := Vector2i(x, y)
 			match rows[y].substr(x, 1):
+				"V": valve_pos = cell
+				"~": water[cell] = true
+				"=": bridge_pos = cell
 				"#": walls[cell] = true
 				"F": positions[FIREFIGHTER] = cell
 				"E": positions[ENGINEER] = cell
@@ -91,7 +104,7 @@ func select_role(role: String) -> bool:
 	if rescued or not positions.has(role):
 		return false
 	selected = role
-	message = {FIREFIGHTER: "Firefighter clears fire.", ENGINEER: "Engineer pushes crates.", RANGER: "Ranger stuns adjacent infected. Tap one to approach safely."}[role]
+	message = {FIREFIGHTER: "Firefighter clears fire.", ENGINEER: ("Engineer turns valves and repairs bridges." if valve_pos.x >= 0 else "Engineer pushes crates."), RANGER: "Ranger stuns adjacent infected. Tap one to approach safely."}[role]
 	return true
 
 
@@ -113,6 +126,11 @@ func plan_route(target: Vector2i) -> Array[Vector2i]:
 	# Keep the current adjacent interaction semantics and their feedback.
 	if absi(target.x - start.x) + absi(target.y - start.y) == 1:
 		return [target]
+	if target == valve_pos or (target == bridge_pos and not bridge_built):
+		if selected != ENGINEER:
+			_reject("The engineer operates valves and repairs bridges.", "valve" if target == valve_pos else "bridge")
+			return []
+		return _route_to_interaction(target, false)
 	if infected.has(target):
 		if selected != RANGER:
 			_reject("Only the ranger can clear infected. Select the violet portrait.", "infected")
@@ -131,6 +149,8 @@ func plan_route(target: Vector2i) -> Array[Vector2i]:
 	if not _can_enter(target):
 		if target == gate_pos and not gate_is_open():
 			_reject("The gate needs the crate on the blue switch.", "gate")
+		elif water.has(target) and not water_drained:
+			_reject("Floodwater blocks that tile. Turn the valve first.", "water")
 		else:
 			_reject("That destination is blocked.", "rescuer")
 		return []
@@ -212,6 +232,26 @@ func act(target: Vector2i) -> bool:
 		return _reject("Tap an adjacent tile. Select a rescuer to switch.")
 	if walls.has(target) or not _inside(target):
 		return _reject("A wall blocks that route.", "wall")
+	if target == valve_pos:
+		if selected != ENGINEER:
+			return _reject("Only the engineer can operate this valve.", "valve")
+		if water_drained:
+			return _reject("The valve is already open.")
+		_record()
+		water_drained = true
+		actions += 1
+		message = "Water drained! Flooded tiles are now safe."
+		return true
+	if target == bridge_pos and not bridge_built:
+		if selected != ENGINEER:
+			return _reject("Only the engineer can repair the bridge.", "bridge")
+		if not water_drained:
+			return _reject("Drain the water before repairing this bridge.", "water")
+		_record()
+		bridge_built = true
+		actions += 1
+		message = "Bridge repaired! Everyone can cross."
+		return true
 	if infected.has(target):
 		if selected != RANGER:
 			return _reject("Only the ranger can clear infected. Select the violet portrait.", "infected")
@@ -245,6 +285,8 @@ func act(target: Vector2i) -> bool:
 	if not _can_enter(target):
 		if target == gate_pos and not gate_is_open():
 			return _reject("The gate needs the crate on the blue switch.", "gate")
+		if water.has(target) and not water_drained:
+			return _reject("Floodwater blocks that tile. Turn the valve first.", "water")
 		return _reject("That tile is blocked.", "rescuer")
 
 	_record()
@@ -264,6 +306,8 @@ func undo() -> bool:
 	if history.is_empty():
 		return _reject("Nothing to undo.")
 	var previous: Dictionary = history.pop_back()
+	water_drained = previous["water_drained"]
+	bridge_built = previous["bridge_built"]
 	positions = previous["positions"].duplicate()
 	infected = previous["infected"].duplicate()
 	crate_pos = previous["crate_pos"]
@@ -276,6 +320,12 @@ func undo() -> bool:
 	return true
 
 func tile_at(cell: Vector2i) -> String:
+	if cell == valve_pos:
+		return "valve_open" if water_drained else "valve"
+	if cell == bridge_pos:
+		return "bridge" if bridge_built else "broken_bridge"
+	if water.has(cell) and not water_drained:
+		return "water"
 	if walls.has(cell):
 		return "wall"
 	if cell == gate_pos:
@@ -291,6 +341,8 @@ func _inside(cell: Vector2i) -> bool:
 
 func _can_enter(cell: Vector2i) -> bool:
 	if not _inside(cell) or walls.has(cell):
+		return false
+	if cell == valve_pos or (cell == bridge_pos and not bridge_built) or (water.has(cell) and not water_drained):
 		return false
 	if infected.has(cell):
 		return false
@@ -310,6 +362,7 @@ func _can_push_into(cell: Vector2i) -> bool:
 
 func _record() -> void:
 	history.append({
+		"water_drained": water_drained, "bridge_built": bridge_built,
 		"positions": positions.duplicate(),
 		"infected": infected.duplicate(),
 		"crate_pos": crate_pos,
@@ -349,6 +402,12 @@ func _route_blocker(target: Vector2i) -> String:
 		path.push_front(cell)
 		cell = previous[cell]
 	for step in path:
+		if water.has(step) and not water_drained:
+			return "water"
+		if step == bridge_pos and not bridge_built:
+			return "bridge"
+		if step == valve_pos:
+			return "valve"
 		if has_fire and step == fire_pos and not fire_cleared:
 			return "fire"
 		if has_gate and step == gate_pos and not gate_is_open():

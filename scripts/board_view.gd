@@ -3,6 +3,7 @@ extends Control
 signal cell_tapped(cell: Vector2i)
 const UI = preload("res://scripts/coastal_style.gd")
 var level: RefCounted
+var hint_target := Vector2i(-1, -1)
 var route_preview: Array[Vector2i] = []
 var animated_role: String = ""
 var animated_position: Vector2 = Vector2.ZERO
@@ -18,7 +19,7 @@ var effect_role: String = ""
 var effect_from: Vector2i = Vector2i(-1, -1)
 var effect_to: Vector2i = Vector2i(-1, -1)
 ## Diagnostic counters used in the existing animated UI regression suite.
-var animation_counts: Dictionary = {"walk": 0, "spray": 0, "push": 0, "pickup": 0, "celebrate": 0, "stun": 0}
+var animation_counts: Dictionary = {"walk": 0, "spray": 0, "push": 0, "pickup": 0, "celebrate": 0, "stun": 0, "valve": 0}
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
@@ -85,10 +86,15 @@ func _draw() -> void:
 				_draw_wall(rect, x + y)
 			else:
 				_draw_floor(rect, x + y)
+				_draw_flood_tile(tile, rect, center, step)
 				if tile in ["switch", "gate", "open_gate", "exit"]:
 					_draw_art(tile, center, step * 1.02)
 					if tile == "exit":
 						_draw_word(center + Vector2(0, step * 0.26), "EXIT", int(step * 0.18), Color.WHITE)
+	if hint_target.x >= 0:
+		var target: Vector2 = cell_center(Vector2(hint_target), metrics)
+		draw_rect(Rect2(target - Vector2.ONE * step * 0.46, Vector2.ONE * step * 0.92), Color("#ffb522"), false, 4)
+		_draw_word(target - Vector2(0, step * 0.18), "?", int(step * 0.4), Color("#fff5b5"))
 	# Route follows the exact planned model cells, including on rotated boards.
 	for cell in route_preview:
 		draw_circle(cell_center(Vector2(cell), metrics), step * 0.075, Color("#2bb9bd"), true, -1, true)
@@ -184,6 +190,8 @@ func _draw_effects(metrics: Dictionary, step: float) -> void:
 			draw_set_transform(lift, 0.0, Vector2.ONE * (1.0 - effect_progress * 0.32))
 			_draw_person("civilian", Vector2.ZERO, step)
 			draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+		"valve":
+			draw_arc(center, step * (0.15 + effect_progress * 0.4), 0, TAU, 24, Color("#71dbe9", fade), 4, true)
 		"stun":
 			draw_arc(center, step * (0.2 + effect_progress * 0.38), 0, TAU, 28, Color(UI.VIOLET, fade), 4, true)
 			for i in range(4):
@@ -275,3 +283,25 @@ func _gui_input(event: InputEvent) -> void:
 		if cell != Vector2i(-1, -1):
 			cell_tapped.emit(cell)
 			accept_event()
+
+func _draw_flood_tile(tile: String, rect: Rect2, center: Vector2, step: float) -> void:
+	if tile == "water":
+		draw_rect(rect.grow(-1), Color("#3b9bbb"))
+		for i in range(3):
+			draw_arc(center + Vector2((i - 1) * step * 0.22, step * 0.05), step * 0.18, 0.1, 2.8, 12, Color("#a4e9ee"), 2, true)
+	elif tile in ["valve", "valve_open"]:
+		draw_circle(center, step * 0.34, Color("#456875"))
+		draw_arc(center, step * 0.27, 0, TAU, 24, Color("#79dbb0") if tile == "valve_open" else Color("#f4ae51"), 4, true)
+		for direction in [Vector2.RIGHT, Vector2.DOWN]:
+			draw_line(center - direction * step * 0.25, center + direction * step * 0.25, Color("#eaf3e7"), 3, true)
+	elif tile in ["bridge", "broken_bridge"]:
+		draw_rect(rect.grow(-1), Color("#39819c"))
+		for i in range(4):
+			if tile == "broken_bridge" and i in [1, 2]:
+				continue
+			draw_rect(Rect2(rect.position + Vector2(step * 0.1, step * (0.12 + i * 0.2)), Vector2(step * 0.8, step * 0.16)), Color("#bf8d50"))
+		if tile == "broken_bridge":
+			_draw_word(center + Vector2(0, step * 0.18), "!", int(step * 0.45), Color("#fff0c1"))
+
+func animate_valve(role: String, target: Vector2i) -> void:
+	await _animate_effect("valve", role, target, target, 0.3)

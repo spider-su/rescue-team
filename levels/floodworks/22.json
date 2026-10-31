@@ -1,0 +1,15 @@
+{
+  "id": "22",
+  "location": "floodworks",
+  "title": "Bridge the Gap",
+  "hint": "Engineer: turn the valve to drain water, then repair the broken bridge.",
+  "rows": [
+    "###########",
+    "#F.~.=f.CX#",
+    "#...#######",
+    "#E.V......#",
+    "###########"
+  ],
+  "three_star_moves": 20,
+  "two_star_moves": 27
+}

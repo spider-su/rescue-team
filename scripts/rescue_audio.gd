@@ -122,7 +122,7 @@ func _save_settings() -> void:
 static func snapshot(level: RefCounted) -> Dictionary:
 	return {"position": level.positions[level.selected], "fire": level.fire_cleared,
 		"crate": level.crate_pos, "gate": level.gate_is_open(), "infected": level.infected.size(),
-		"carrying": level.carrying_role, "rescued": level.rescued}
+		"drained": level.water_drained, "bridge": level.bridge_built, "carrying": level.carrying_role, "rescued": level.rescued}
 
 func play_action(before: Dictionary, level: RefCounted) -> void:
 	if not before["rescued"] and level.rescued:
@@ -131,6 +131,10 @@ func play_action(before: Dictionary, level: RefCounted) -> void:
 		play_cue("pickup")
 	elif not before["gate"] and level.gate_is_open():
 		play_cue("gate")
+	elif not before["drained"] and level.water_drained:
+		play_cue("gate")
+	elif not before["bridge"] and level.bridge_built:
+		play_cue("crate")
 	elif before["crate"] != level.crate_pos:
 		play_cue("crate")
 	elif not before["fire"] and level.fire_cleared:

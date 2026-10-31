@@ -1,0 +1,15 @@
+{
+  "id": "21",
+  "location": "floodworks",
+  "title": "Open the Sluice",
+  "hint": "Engineer: turn the valve to drain water, then repair the broken bridge.",
+  "rows": [
+    "###########",
+    "#F.~.C.X..#",
+    "#...#######",
+    "#E.V......#",
+    "###########"
+  ],
+  "three_star_moves": 8,
+  "two_star_moves": 12
+}

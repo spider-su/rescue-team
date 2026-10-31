@@ -1,6 +1,9 @@
 extends RefCounted
 ## Cosmetic variation only. Puzzle rules and saves never use randomness.
 const LINES = {
+	"water": ["Too much water! Let's turn the valve first.", "The engineer can drain this route at the valve.", "Flooded passage ahead. We need to drain it.", "Open the valve before we cross the water."],
+	"bridge": ["This bridge needs the engineer's repair.", "We need a safe crossing. Engineer, you're up!", "Let's repair that broken bridge first.", "The engineer can fix this gap after the water drains."],
+	"valve": ["We need the engineer at this valve.", "The engineer can turn that wheel.", "Ask the engineer to drain the passage.", "That's the valve. Engineer, can you open it?"],
 	"fire": ["Can't walk through the fire! We need the firefighter.", "Too hot to cross. Let's put those flames out first.", "Fire ahead! The firefighter can clear it.", "That route is burning. Let's make it safe first."],
 	"gate": ["We need to open the gate first!", "Gate's locked. Get the crate onto the blue switch.", "No way through yet. Let's power that gate.", "The blue switch opens this gate. Engineer, you're up!"],
 	"infected": ["Infected ahead! We need the ranger.", "Let's have the ranger clear that passage.", "That way isn't safe. Ranger, bring the stun shield!", "Hold up! The ranger needs to contain them first."],

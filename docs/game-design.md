@@ -1,6 +1,6 @@
 # Rescue Team — game concept (working design)
 
-**Status:** twenty original data-driven missions across Coastal District and Old Town Quarantine are implemented. The owner requested the second location and third specialist after trying the coastal UI. The new ranger contains zombie-like infected with a stun shield; there are no combat timers or damage systems. Original synthesized theme music and action effects are implemented with separate persistent toggles. Audio listening tests, difficulty tuning and detailed device acceptance remain separate.
+**Status:** twenty campaign missions and three optional Floodworks trials across Coastal District and Old Town Quarantine are implemented. The owner requested the second location and third specialist after trying the coastal UI. The new ranger contains zombie-like infected with a stun shield; there are no combat timers or damage systems. Original synthesized theme music and action effects are implemented with separate persistent toggles. Audio listening tests, difficulty tuning and detailed device acceptance remain separate.
 
 ## Player promise
 
@@ -53,7 +53,7 @@ Ship only after every level has at least one verified solution and tests for unw
 
 ## MVP scope
 
-**Included in the owner-approved expansion:** 3 playable rescuer types, civilian extraction, fire/objects/mechanisms/infected interactions, 20 hand-authored missions in two locations, pause/restart/undo, local progress, simple original 2D presentation, optional sound toggle, offline Android install.
+**Included in the owner-approved expansion:** 3 playable rescuer types, civilian extraction, fire/objects/mechanisms/infected interactions, 20 campaign missions plus 3 optional trials, contextual teaching/layered hints, offline unfinished-mission resume, pause/restart/undo, local progress, simple original 2D presentation, optional sound toggle, offline Android install.
 
 **Not included:** online accounts, multiplayer, analytics, ad SDKs, IAP, leaderboards, AI level generation, energy/life systems, 3D, complex story or long campaigns.
 
@@ -68,3 +68,7 @@ Ship only after every level has at least one verified solution and tests for unw
 ## IP
 
 The project takes inspiration from an old **gameplay genre**, not original titles, mechanics implementation code, art, levels, names, dialogue or music. Use assets with documented commercial rights and license notices.
+
+## Approved puzzle-polish increment
+
+Star targets now use actual saved step units; existing best scores keep their format. First-five-mission teaching and free layered hints support the learning curve. Unfinished missions restore through validated action replay, including undo. Optional trials after 05 introduce engineer valves, draining routes and bridge repair in three authored cooperative puzzles; see [rules and device scenarios](puzzle-polish.md). These trials prototype interaction depth before another content expansion.

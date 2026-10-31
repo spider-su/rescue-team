@@ -6,9 +6,9 @@ const Progress = preload("res://scripts/campaign_progress.gd")
 
 func _initialize() -> void:
 	var catalog = Catalog.new()
-	if not _assert(catalog.count() == 20, "twenty curated missions"):
+	if not _assert(catalog.count() == 23, "twenty campaign missions and three trials"):
 		return
-	var expected_ids := ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20"]
+	var expected_ids := ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23"]
 	for index in range(catalog.count()):
 		var definition: Dictionary = catalog.load_level(index)
 		if not _assert(not definition.is_empty() and definition["id"] == expected_ids[index], "mission identity / JSON %d" % index):
@@ -26,23 +26,12 @@ func _initialize() -> void:
 		return
 
 	# This covers the gradual learning curve (civilian, fire, crate/gate, both, two pushes).
-	var actions_by_level: Array = [
-		[["firefighter", 3, 1], ["firefighter", 5, 1]],
-		[["firefighter", 3, 1], ["firefighter", 5, 1], ["firefighter", 7, 1]],
-		[["engineer", 3, 3], ["firefighter", 4, 1], ["firefighter", 7, 1]],
-		[["engineer", 3, 3], ["firefighter", 3, 1], ["firefighter", 5, 1], ["firefighter", 8, 1]],
-		[["engineer", 4, 3], ["engineer", 5, 3], ["firefighter", 4, 1], ["firefighter", 7, 1], ["firefighter", 10, 1]],
-		[["engineer", 4, 3], ["engineer", 5, 3], ["firefighter", 2, 1], ["firefighter", 7, 1], ["firefighter", 10, 1]],
-		[["engineer", 3, 3], ["engineer", 4, 3], ["engineer", 5, 3], ["firefighter", 5, 1], ["firefighter", 7, 1], ["firefighter", 10, 1]],
-		[["engineer", 5, 3], ["firefighter", 3, 1], ["firefighter", 8, 1], ["firefighter", 10, 1]],
-		[["engineer", 3, 3], ["engineer", 4, 3], ["engineer", 5, 3], ["firefighter", 2, 1], ["firefighter", 8, 1], ["firefighter", 10, 1]],
-		[["engineer", 2, 3], ["engineer", 3, 3], ["engineer", 4, 3], ["engineer", 5, 3], ["firefighter", 5, 1], ["firefighter", 7, 1], ["firefighter", 10, 1]],
-	]
-	for index in range(actions_by_level.size()):
+	var solutions: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://tests/fixtures/coastal_solutions.json"))
+	for index in range(solutions.size()):
 		var mission = RescueLevel.new(catalog.load_level(index))
 		if not _assert(mission.width > 0 and mission.height > 0, "loaded board dimensions %d" % index):
 			return
-		for item in actions_by_level[index]:
+		for item in solutions["%02d" % (index + 1)]:
 			if not _assert(mission.select_role(item[0]), "select role in mission %d" % index):
 				return
 			if not _assert(_navigate(mission, Vector2i(item[1], item[2])), "legal solution for mission %d, target %s" % [index, Vector2i(item[1], item[2])]):
@@ -56,9 +45,9 @@ func _initialize() -> void:
 	var progress = Progress.new(save_path)
 	if not _assert(progress.unlocked(0, catalog) and not progress.unlocked(1, catalog), "only first mission initially unlocked"):
 		return
-	if not _assert(progress.stars_for("01", 2) == 3 and progress.stars_for("01", 4) == 2 and progress.stars_for("01", 5) == 1, "star tier boundaries"):
+	if not _assert(progress.stars_for("01", 4) == 3 and progress.stars_for("01", 6) == 2 and progress.stars_for("01", 7) == 1, "star tier boundaries"):
 		return
-	if not _assert(progress.stars_for("11", 9) == 3 and progress.stars_for("20", 26) == 2 and progress.stars_for("bogus", 1) == 0, "old town thresholds and unknown ids"):
+	if not _assert(progress.stars_for("11", 42) == 3 and progress.stars_for("20", 126) == 2 and progress.stars_for("bogus", 1) == 0, "old town thresholds and unknown ids"):
 		return
 	if not _assert(progress.record_victory("01", 12), "write first completion"):
 		return

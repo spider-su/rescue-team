@@ -35,12 +35,13 @@ godot --headless --path . --script res://tests/test_rescue_level.gd
 godot --headless --path . --script res://tests/test_campaign.gd
 godot --headless --path . --script res://tests/test_old_town.gd
 godot --headless --path . --script res://tests/test_audio.gd
+godot --headless --path . --script res://tests/test_puzzle_polish.gd
 godot --headless --path . --script res://tests/test_rescue_ui.gd
 mkdir -p build
 godot --headless --path . --export-debug "Android" build/game-debug.apk
 ```
 
-This exports the **twenty-mission, two-location rescue game**. The new scrolling, ranger and Old Town chapter still need physical-device acceptance; use the [Old Town device scenario](old-town.md#verification-and-device-scenario). The owner reported the preceding coastal UI working but scrolling being difficult; device/OS details were not provided.
+This exports the **twenty-mission campaign with three optional Floodworks trials**. The new scrolling, ranger and Old Town chapter still need physical-device acceptance; use the [Old Town device scenario](old-town.md#verification-and-device-scenario). The owner reported the preceding coastal UI working but scrolling being difficult; device/OS details were not provided.
 
 ## Regression playtest: progress and crate safety (pending on device)
 
@@ -71,3 +72,7 @@ On a smaller phone, verify the entire message fits and the portrait matches the 
 ## Audio listening and interruptions
 
 Use the [audio device scenario](audio.md#android-listening-scenario-pending) to verify music loops, action sounds, independent saved mutes, background/resume and native output/focus changes. These checks remain pending on hardware.
+
+## Fair scoring, hints, resume and Floodworks
+
+Run the [puzzle-polish device scenario](puzzle-polish.md#validation-and-on-device-scenario), including an existing v1 score save, partial-walk interruption, restored undo and valve/bridge prerequisite behavior. These additions have automated coverage; Android usability remains pending.

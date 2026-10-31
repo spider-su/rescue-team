@@ -36,3 +36,9 @@ A `RescueLevel` instance keeps the parsed definition and resets to its own map. 
 Progress is stored locally as JSON in `user://rescue_progress_v1.json` containing version 1 and a map of completed level IDs to best move counts. Only the next level after a completed predecessor unlocks; corrupted or unknown records are safely ignored. There is no online account or cloud synchronization.
 
 The explicit manifest groups IDs 01–10 in Coastal District and 11–20 in Old Town Quarantine. IDs 01–10 and the progress-file format are unchanged. See [Old Town rules, walkthrough counts and device scenario](old-town.md).
+
+## Floodworks and authored score targets
+
+The manifest also includes optional Floodworks IDs 21–23 (unlocked after 05). `V` is one engineer-operated valve, `~` is flooded floor, and `=` is at most one repairable bridge. Water/bridge content requires a valve. The engineer must drain the water before repairing a bridge; both transitions are deterministic and undoable.
+
+All shipped maps specify integer `three_star_moves` and `two_star_moves` (0 ≤ three ≤ two ≤ 100000) in the existing saved step metric, not destination-tap counts. Small rule-test fixtures may omit these presentation fields. Original solutions now live in `tests/fixtures/coastal_solutions.json`; other fixtures are `old_town_solutions.json` and `floodworks_solutions.json`. The polish suite replays all 23 reference solutions and checks three-star results.

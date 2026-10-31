@@ -1,0 +1,16 @@
+{
+  "id": "23",
+  "location": "floodworks",
+  "title": "The Floodworks Relay",
+  "hint": "Engineer: turn the valve to drain water, then repair the broken bridge.",
+  "rows": [
+    "#############",
+    "#F.~.=f.ZGCX#",
+    "#...#########",
+    "#E.V..B.s...#",
+    "#R..........#",
+    "#############"
+  ],
+  "three_star_moves": 59,
+  "two_star_moves": 74
+}

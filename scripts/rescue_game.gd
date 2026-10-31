@@ -5,6 +5,8 @@ const BoardView = preload("res://scripts/board_view.gd")
 const LevelCatalog = preload("res://scripts/level_catalog.gd")
 const CampaignProgress = preload("res://scripts/campaign_progress.gd")
 const MissionScroll = preload("res://scripts/mission_scroll.gd")
+const MissionSession = preload("res://scripts/mission_session.gd")
+const Guidance = preload("res://scripts/mission_guidance.gd")
 const RescueAudio = preload("res://scripts/rescue_audio.gd")
 const HeroLines = preload("res://scripts/hero_lines.gd")
 const UI = preload("res://scripts/coastal_style.gd")
@@ -54,6 +56,15 @@ var status_portrait: TextureRect
 var _safe_margin: MarginContainer
 var _hero: TextureRect
 var _victory_saved: bool = false
+var session_path := "user://rescue_session_v1.json"
+var session: RefCounted
+var commands: Array = []
+var hint_stage := 0
+var guidance_key := ""
+var resume_saved := true
+var resume_button: Button
+var hint_button: Button
+var pending_resume: Dictionary = {}
 var audio: Node
 var audio_settings_path := "user://rescue_audio_v1.cfg"
 var music_button: Button
@@ -74,6 +85,7 @@ var hero_popup_timer: Timer
 
 func _ready() -> void:
 	texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+	session = MissionSession.new(session_path)
 	audio = RescueAudio.new()
 	audio.settings_path = audio_settings_path
 	add_child(audio)
@@ -84,6 +96,8 @@ func _ready() -> void:
 	_show_menu()
 
 func _notification(what: int) -> void:
+	if what == NOTIFICATION_APPLICATION_PAUSED and is_instance_valid(session) and screen == "play":
+		_checkpoint()
 	if what == NOTIFICATION_WM_GO_BACK_REQUEST:
 		if screen == "menu":
 			get_tree().quit()
@@ -156,6 +170,10 @@ func _build_menu(shell: VBoxContainer) -> void:
 	audio_notice.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	menu_panel.add_child(audio_notice)
 	_refresh_audio_controls()
+	resume_button = _button("RESUME MISSION", "play", UI.BLUE)
+	resume_button.custom_minimum_size.y = 64
+	resume_button.pressed.connect(_resume_mission)
+	menu_panel.add_child(resume_button)
 	var locations := HBoxContainer.new()
 	locations.add_theme_constant_override("separation", 12)
 	menu_panel.add_child(locations)
@@ -316,7 +334,7 @@ func _build_play(shell: VBoxContainer) -> void:
 	feedback_row.add_theme_constant_override("separation", 12)
 	feedback.add_child(feedback_row)
 	status_portrait = UI.picture(UI.portrait(level.FIREFIGHTER))
-	status_portrait.custom_minimum_size = Vector2(64, 64)
+	status_portrait.custom_minimum_size = Vector2(48, 48)
 	status_portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	feedback_row.add_child(status_portrait)
 	status_label = UI.label("", 24)
@@ -324,6 +342,11 @@ func _build_play(shell: VBoxContainer) -> void:
 	status_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	status_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	feedback_row.add_child(status_label)
+	hint_button = _button("HINT")
+	hint_button.custom_minimum_size = Vector2(82, 64)
+	hint_button.add_theme_font_size_override("font_size", 21)
+	hint_button.pressed.connect(_on_hint)
+	feedback_row.add_child(hint_button)
 	var commands := HBoxContainer.new()
 	commands.add_theme_constant_override("separation", 12)
 	play_panel.add_child(commands)
@@ -371,6 +394,8 @@ func _build_hero_popup() -> void:
 	add_child(hero_popup_timer)
 
 func _show_blocked_popup() -> void:
+	hero_popup.offset_top = -160
+	hero_popup_text.add_theme_font_size_override("font_size", 25)
 	var line: String = hero_lines.next_line(level.blocked_reason)
 	if line.is_empty():
 		return
@@ -379,7 +404,7 @@ func _show_blocked_popup() -> void:
 	status_label.text = line
 	audio.play_cue("blocked")
 	hero_popup.show()
-	hero_popup_timer.start()
+	hero_popup_timer.start(4.5)
 
 func _hide_hero_popup() -> void:
 	hero_popup.hide()
@@ -535,11 +560,11 @@ func _show_menu() -> void:
 	var completed := 0
 	var location: Dictionary = catalog.LOCATIONS[location_index]
 	district_label.text = location["title"].to_upper()
-	_hero.texture = UI.HARBOR if location_index == 0 else UI.OLD_TOWN
+	_hero.texture = UI.OLD_TOWN if location_index == 1 else UI.HARBOR
 	for i in range(location_buttons.size()):
-		location_buttons[i].text = "COASTAL DISTRICT\nMissions 01–10" if i == 0 else "OLD TOWN\nMissions 11–20"
+		location_buttons[i].text = ["COAST\n01–10", "OLD TOWN\n11–20", "FLOODWORKS\n21–23"][i]
 		UI.button(location_buttons[i], UI.NAVY if i == location_index else UI.PAPER, i == location_index)
-		location_buttons[i].add_theme_font_size_override("font_size", 25)
+		location_buttons[i].add_theme_font_size_override("font_size", 22)
 	var first_available := -1
 	for index in range(catalog.count()):
 		var data: Dictionary = catalog.load_level(index)
@@ -568,6 +593,13 @@ func _show_menu() -> void:
 	profile_bar.value = xp % 100
 	var badges: Array[String] = progress.earned_badges()
 	profile_badges.text = "Badges: " + (", ".join(badges) if not badges.is_empty() else "Complete a rescue to earn your first badge")
+	pending_resume = session.restore(catalog)
+	resume_button.visible = not pending_resume.is_empty() and progress.unlocked(pending_resume["index"], catalog)
+	if resume_button.visible:
+		resume_button.text = "RESUME %s • %s" % [pending_resume["level"].level_id, pending_resume["level"].title.to_upper()]
+		resume_button.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	if location_index == 2 and not progress.unlocked(20, catalog):
+		completion_label.text += " • Complete Coastal mission 05 to enter"
 	if location_index == 1 and not progress.unlocked(10, catalog):
 		completion_label.text += " • Complete Coastal mission 10 to enter"
 
@@ -577,6 +609,9 @@ func _start_level(index: int) -> void:
 	var data: Dictionary = catalog.load_level(index)
 	if data.is_empty():
 		return
+	commands = []
+	hint_stage = 0
+	guidance_key = ""
 	current_index = index
 	var next_location: int = catalog.location_for(index)
 	if next_location != location_index:
@@ -592,6 +627,7 @@ func _start_level(index: int) -> void:
 	board.clear_animation()
 	_show_screen("play")
 	_refresh()
+	_checkpoint()
 
 func _on_role(role: String) -> void:
 	if moving:
@@ -602,6 +638,7 @@ func _on_role(role: String) -> void:
 	level.select_role(role)
 	board.route_preview.clear()
 	_refresh()
+	_checkpoint()
 
 func _on_cell_tapped(cell: Vector2i) -> void:
 	if moving or level.rescued:
@@ -623,6 +660,8 @@ func _on_cell_tapped(cell: Vector2i) -> void:
 	_follow_route(route)
 
 func _follow_route(route: Array[Vector2i]) -> void:
+	var batch := {"role": level.selected, "cells": []}
+	commands.append(batch)
 	var undo_from: int = level.history.size()
 	for cell in route:
 		var role: String = level.selected
@@ -635,9 +674,13 @@ func _follow_route(route: Array[Vector2i]) -> void:
 		var before: Dictionary = RescueAudio.snapshot(level)
 		if not level.act(cell):
 			break
+		batch["cells"].append([cell.x, cell.y])
 		audio.play_action(before, level)
 		_refresh()
-		if fire_action:
+		_checkpoint()
+		if cell == level.valve_pos or (cell == level.bridge_pos and before["bridge"] != level.bridge_built):
+			await board.animate_valve(role, cell)
+		elif fire_action:
 			await board.animate_spray(role, cell)
 		elif crate_action:
 			await board.animate_push(role, from, crate_before, level.crate_pos)
@@ -649,6 +692,8 @@ func _follow_route(route: Array[Vector2i]) -> void:
 			await board.animate_step(role, from, level.positions[role])
 		if not board.route_preview.is_empty():
 			board.route_preview.pop_front()
+	if batch["cells"].is_empty():
+		commands.pop_back()
 	var was_blocked: bool = not level.blocked_reason.is_empty()
 	level.collapse_history(undo_from)
 	board.route_preview.clear()
@@ -658,6 +703,7 @@ func _follow_route(route: Array[Vector2i]) -> void:
 		_victory_new_best = _victory_saved and (_best_before_mission < 0 or level.actions < _best_before_mission)
 		if not _victory_saved:
 			level.message = "Rescue complete, but saving progress failed. Replay to try again."
+		resume_saved = session.clear()
 		_show_screen("victory")
 	moving = false
 	_refresh()
@@ -668,24 +714,31 @@ func _on_undo() -> void:
 	if moving:
 		return
 	if level.undo():
+		if not commands.is_empty():
+			commands.pop_back()
 		audio.play_cue("undo")
 	board.route_preview.clear()
 	_show_screen("play")
 	_refresh()
+	_checkpoint()
 
 func _on_restart() -> void:
 	if moving:
 		return
 	audio.play_cue("restart")
+	commands = []
+	hint_stage = 0
+	guidance_key = ""
 	level.reset()
 	board.route_preview.clear()
 	_show_screen("play")
 	_refresh()
+	_checkpoint()
 
 func _next_level() -> void:
 	if moving:
 		return
-	if current_index + 1 < catalog.count() and progress.unlocked(current_index + 1, catalog):
+	if current_index not in [19, 22] and current_index + 1 < catalog.count() and progress.unlocked(current_index + 1, catalog):
 		_start_level(current_index + 1)
 	else:
 		_show_menu()
@@ -710,17 +763,31 @@ func _refresh() -> void:
 	back_button.disabled = moving
 	moves_label.text = "Moves\n%02d" % level.actions
 	objective_label.text = "Bring the civilian to the exit" if level.carrying_role.is_empty() else "Civilian on board. Reach the green exit."
+	var goal: Dictionary = Guidance.goal(level)
+	if guidance_key != goal["key"]:
+		guidance_key = goal["key"]
+		hint_stage = 0
+	board.hint_target = goal["target"] if hint_stage >= 2 else Vector2i(-1, -1)
+	hint_button.text = "HINT" if hint_stage == 0 else ("SHOW" if hint_stage == 1 else "REPEAT")
+	hint_button.disabled = moving or level.rescued
+	if current_index < 5 and not progress.is_complete(level.level_id):
+		objective_label.text = "Training: " + goal["nudge"]
+		objective_label.add_theme_font_size_override("font_size", 22)
+	else:
+		objective_label.add_theme_font_size_override("font_size", 26)
 	status_label.text = level.message
+	if not resume_saved:
+		status_label.text += " Resume could not be saved."
 	status_portrait.texture = UI.portrait(level.selected)
 	if screen == "victory":
-		victory_illustration.texture = UI.VICTORY if location_index == 0 else UI.OLD_TOWN
+		victory_illustration.texture = UI.OLD_TOWN if location_index == 1 else UI.VICTORY
 		victory_moves.text = str(level.actions)
 		victory_best.text = str(progress.best.get(level.level_id, "—"))
 		var tier: int = progress.earned_stars(level.level_id) if _victory_saved else 0
 		victory_stars.text = ("★".repeat(tier) + "☆".repeat(3 - tier)) if _victory_saved else "—"
 		var saved: bool = _victory_saved
-		victory_message.text = ("New personal best!" if _victory_new_best else ("Perfect Rescue!" if progress.earned_stars(level.level_id) == 3 else "Everyone is safe.")) if saved else level.message
-		var has_next: bool = current_index + 1 < catalog.count()
+		victory_message.text = ("New personal best!" if _victory_new_best else ("Three-star Rescue!" if progress.earned_stars(level.level_id) == 3 else "Everyone is safe.")) if saved else level.message
+		var has_next: bool = current_index not in [19, 22] and current_index + 1 < catalog.count()
 		if saved and has_next:
 			var next: Dictionary = catalog.load_level(current_index + 1)
 			if catalog.location_for(current_index + 1) != location_index:
@@ -728,10 +795,59 @@ func _refresh() -> void:
 			else:
 				victory_next.text = "%s  %s\nNext mission available" % [next["id"], next["title"].to_upper()]
 		elif saved:
-			victory_next.text = "ALL LOCATIONS COMPLETE\nAll 20 rescues completed. Well done!"
+			victory_next.text = "CHAPTER COMPLETE\nReturn to missions or improve a best score." if location_index == 2 else "CHAPTER COMPLETE\nTry optional Floodworks trials or replay for more stars."
 		else:
 			victory_next.text = "Progress could not be saved. Please replay to try again."
+		if saved and progress.earned_stars(level.level_id) < 3:
+			victory_next.text += "\nThree stars: %d moves or fewer" % progress.star_targets[level.level_id]["three"]
 		next_button.text = ("NEXT LOCATION" if catalog.location_for(current_index + 1) != location_index else "NEXT MISSION") if has_next else "ALL MISSIONS"
 		next_button.disabled = not saved
 		victory_undo.disabled = level.history.is_empty()
 	board.queue_redraw()
+
+func _checkpoint() -> void:
+	# Isolated UI fixtures do not replace a real catalog mission's checkpoint.
+	if catalog.load_level(current_index)["id"] != level.level_id or level.rescued:
+		return
+	resume_saved = session.save_session(level, commands, hint_stage)
+	if not resume_saved:
+		status_label.text = level.message + " Resume could not be saved."
+
+func _resume_mission() -> void:
+	if moving:
+		return
+	var restored: Dictionary = session.restore(catalog)
+	if restored.is_empty() or not progress.unlocked(restored["index"], catalog):
+		_show_menu()
+		return
+	current_index = restored["index"]
+	location_index = catalog.location_for(current_index)
+	level = restored["level"]
+	commands = restored["commands"]
+	hint_stage = restored["hint_stage"]
+	guidance_key = Guidance.goal(level)["key"]
+	resume_saved = true
+	_best_before_mission = int(progress.best.get(level.level_id, -1))
+	_victory_saved = false
+	_victory_new_best = false
+	board.level = level
+	board.clear_animation()
+	board.route_preview.clear()
+	_show_screen("play")
+	_refresh()
+	audio.play_cue("ui")
+
+func _on_hint() -> void:
+	if moving or level.rescued:
+		return
+	var goal: Dictionary = Guidance.goal(level)
+	hint_stage = mini(2, hint_stage + 1)
+	_refresh()
+	hero_popup.offset_top = -minf(220, board.size.y - 24)
+	hero_popup_text.add_theme_font_size_override("font_size", 22)
+	hero_popup_text.text = ("Hint: " if hint_stage == 1 else "Try this: ") + goal["nudge" if hint_stage == 1 else "detail"]
+	hero_popup_portrait.texture = UI.portrait(goal["role"])
+	hero_popup.show()
+	hero_popup_timer.start(7.5)
+	audio.play_cue("ui")
+	_checkpoint()
