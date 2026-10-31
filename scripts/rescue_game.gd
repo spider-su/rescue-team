@@ -33,6 +33,10 @@ var play_panel: VBoxContainer
 var victory_panel: VBoxContainer
 var victory_scroll: ScrollContainer
 var level_buttons: Array[Button] = []
+var profile_rank: Label
+var profile_xp: Label
+var profile_bar: ProgressBar
+var profile_badges: Label
 var completion_label: Label
 var moves_label: Label
 var moves_card: PanelContainer
@@ -119,6 +123,7 @@ func _build_menu(shell: VBoxContainer) -> void:
 	completion_label = UI.label("", 23)
 	completion_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	menu_panel.add_child(completion_label)
+	_build_profile(menu_panel)
 	_hero = UI.picture(UI.HARBOR, 290)
 	menu_panel.add_child(_hero)
 	menu_scroll = ScrollContainer.new()
@@ -145,6 +150,35 @@ func _build_menu(shell: VBoxContainer) -> void:
 	footer.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	footer.custom_minimum_size.y = 44
 	menu_panel.add_child(footer)
+
+func _build_profile(parent: VBoxContainer) -> void:
+	var panel := PanelContainer.new()
+	panel.add_theme_stylebox_override("panel", UI.box(Color("#e6eff0"), UI.LINE, 18, 12))
+	parent.add_child(panel)
+	var content := VBoxContainer.new()
+	content.add_theme_constant_override("separation", 5)
+	panel.add_child(content)
+	var identity := HBoxContainer.new()
+	identity.add_theme_constant_override("separation", 12)
+	content.add_child(identity)
+	var portrait := UI.picture(UI.portrait("firefighter"))
+	portrait.custom_minimum_size = Vector2(92, 92)
+	identity.add_child(portrait)
+	var details := VBoxContainer.new()
+	details.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	identity.add_child(details)
+	profile_rank = UI.label("RESCUE RECRUIT", 29, true)
+	details.add_child(profile_rank)
+	profile_xp = UI.label("Level 1 · 0 XP", 22)
+	details.add_child(profile_xp)
+	profile_bar = ProgressBar.new()
+	profile_bar.custom_minimum_size.y = 14
+	profile_bar.max_value = 100
+	profile_bar.show_percentage = false
+	content.add_child(profile_bar)
+	profile_badges = UI.label("", 20, false, UI.MUTED)
+	profile_badges.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	content.add_child(profile_badges)
 
 func _mission_card(index: int) -> Button:
 	var data: Dictionary = catalog.load_level(index)
@@ -394,6 +428,12 @@ func _show_menu() -> void:
 		var name_label: Label = button.find_child("MissionTitle", true, false)
 		name_label.modulate = Color("#7d8888") if button.disabled else Color.WHITE
 	completion_label.text = "%d / %d rescued  •  ★ %d / %d" % [completed, catalog.count(), progress.total_stars(), catalog.count() * 3]
+	var xp: int = progress.total_xp()
+	profile_rank.text = progress.rescuer_rank().to_upper()
+	profile_xp.text = "Level %d  ·  %d XP  ·  %d to next" % [progress.rescuer_level(), xp, 100 - xp % 100]
+	profile_bar.value = xp % 100
+	var badges := progress.earned_badges()
+	profile_badges.text = "Badges: " + (", ".join(badges) if not badges.is_empty() else "Complete a rescue to earn your first badge")
 
 func _start_level(index: int) -> void:
 	if moving or not progress.unlocked(index, catalog):
