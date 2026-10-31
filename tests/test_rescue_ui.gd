@@ -44,6 +44,7 @@ func _run() -> void:
 	await _settle()
 	_check(game.screen == "play", "Mission card starts the actual play scene")
 	_check_controls_fit()
+	await _test_hero_popup()
 	await _tap(Vector2i(3, 1))
 	_check(game.level.carrying_role == game.level.FIREFIGHTER, "Board tap walks and collects civilian")
 	game.undo_button.pressed.emit()
@@ -289,3 +290,35 @@ func _check(condition: bool, description: String) -> void:
 	if not condition:
 		failed = true
 		push_error("FAIL: " + description)
+
+func _test_hero_popup() -> void:
+	game.level = Level.new({"id": "popup", "title": "Popup test", "hint": "", "rows": ["###########", "#F.f...CX.#", "###########", "#E..BsG...#", "###########"]})
+	game.board.level = game.level
+	game._refresh()
+	await _settle()
+	await _tap(Vector2i(7, 1))
+	_check(game.hero_popup.visible and game.level.blocked_reason == "fire" and game.hero_popup_text.text.begins_with("Firefighter:"), "Unreachable tap displays active hero's obstacle popup")
+	var previous: String = game.hero_popup_text.text
+	await _tap(Vector2i(7, 1))
+	_check(game.hero_popup_text.text != previous and game.level.actions == 0, "Repeated rejection varies dialogue without moving hero")
+	for dimensions in [Vector2i(540, 960), Vector2i(720, 1280)]:
+		viewport.size = dimensions
+		await _settle()
+		_check(game.board.get_global_rect().encloses(game.hero_popup.get_global_rect()), "Popup fits board on portrait screen")
+		_check(game.hero_popup_text.get_line_count() <= game.hero_popup_text.get_visible_line_count(), "Popup dialogue fits without clipping")
+		await _capture("hero-popup-%dx%d" % [dimensions.x, dimensions.y])
+	game.hero_popup_timer.timeout.emit()
+	_check(not game.hero_popup.visible, "Popup dismisses on timeout")
+	await _tap(Vector2i(7, 1))
+	game.engineer_button.pressed.emit()
+	_check(not game.hero_popup.visible, "Switching hero dismisses stale popup")
+	await _tap(Vector2i(7, 1))
+	_check(game.hero_popup_text.text.begins_with("Engineer:"), "Popup speaker follows selected hero")
+	game.level.positions[game.level.ENGINEER] = Vector2i(2, 1)
+	await _tap(Vector2i(3, 1))
+	_check(game.hero_popup.visible and game.level.blocked_reason == "fire" and game.level.actions == 0, "Adjacent rejected interaction also shows popup without moving")
+	game.level.positions[game.level.ENGINEER] = Vector2i(1, 3)
+	await _tap(Vector2i(2, 3))
+	_check(not game.hero_popup.visible and game.level.actions == 1, "Popup passes through taps and clears on valid move")
+	game._start_level(0)
+	await _settle()

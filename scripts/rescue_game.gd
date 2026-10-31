@@ -5,6 +5,7 @@ const BoardView = preload("res://scripts/board_view.gd")
 const LevelCatalog = preload("res://scripts/level_catalog.gd")
 const CampaignProgress = preload("res://scripts/campaign_progress.gd")
 const MissionScroll = preload("res://scripts/mission_scroll.gd")
+const HeroLines = preload("res://scripts/hero_lines.gd")
 const UI = preload("res://scripts/coastal_style.gd")
 const ICONS = {
 	"back": preload("res://assets/ui/back.svg"), "undo": preload("res://assets/ui/undo.svg"),
@@ -52,6 +53,11 @@ var status_portrait: TextureRect
 var _safe_margin: MarginContainer
 var _hero: TextureRect
 var _victory_saved: bool = false
+var hero_lines = HeroLines.new()
+var hero_popup: PanelContainer
+var hero_popup_text: Label
+var hero_popup_portrait: TextureRect
+var hero_popup_timer: Timer
 
 func _ready() -> void:
 	texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
@@ -233,6 +239,7 @@ func _build_play(shell: VBoxContainer) -> void:
 	board.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	board.cell_tapped.connect(_on_cell_tapped)
 	play_panel.add_child(board)
+	_build_hero_popup()
 	var feedback := PanelContainer.new()
 	feedback.add_theme_stylebox_override("panel", UI.box(Color("#e2edf0"), Color("#c9dce1"), 16, 12))
 	play_panel.add_child(feedback)
@@ -264,6 +271,49 @@ func _build_play(shell: VBoxContainer) -> void:
 	hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	play_panel.add_child(hint)
+
+func _build_hero_popup() -> void:
+	hero_popup = PanelContainer.new()
+	hero_popup.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
+	hero_popup.offset_left = 12
+	hero_popup.offset_right = -12
+	hero_popup.offset_top = -160
+	hero_popup.offset_bottom = -12
+	hero_popup.add_theme_stylebox_override("panel", UI.box(UI.PAPER, UI.ORANGE, 18, 14))
+	board.add_child(hero_popup)
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 12)
+	hero_popup.add_child(row)
+	hero_popup_portrait = UI.picture(UI.portrait(level.FIREFIGHTER))
+	hero_popup_portrait.custom_minimum_size = Vector2(72, 72)
+	hero_popup_portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	row.add_child(hero_popup_portrait)
+	hero_popup_text = UI.label("", 25)
+	hero_popup_text.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	hero_popup_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	hero_popup_text.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	row.add_child(hero_popup_text)
+	_ignore_mouse(hero_popup)
+	hero_popup.hide()
+	hero_popup_timer = Timer.new()
+	hero_popup_timer.one_shot = true
+	hero_popup_timer.wait_time = 4.5
+	hero_popup_timer.timeout.connect(hero_popup.hide)
+	add_child(hero_popup_timer)
+
+func _show_blocked_popup() -> void:
+	var line: String = hero_lines.next_line(level.blocked_reason)
+	if line.is_empty():
+		return
+	hero_popup_text.text = level.selected.capitalize() + ": " + line
+	hero_popup_portrait.texture = UI.portrait(level.selected)
+	status_label.text = line
+	hero_popup.show()
+	hero_popup_timer.start()
+
+func _hide_hero_popup() -> void:
+	hero_popup.hide()
+	hero_popup_timer.stop()
 
 func _role_button(role: String, row: HBoxContainer) -> Button:
 	var button := _button("")
@@ -386,6 +436,7 @@ func _update_safe_area() -> void:
 		_hero.custom_minimum_size.y = clampf(size.y * 0.17, 140, 220)
 
 func _show_screen(next_screen: String) -> void:
+	_hide_hero_popup()
 	screen = next_screen
 	if screen != "menu":
 		menu_scroll.stop_scrolling()
@@ -459,6 +510,7 @@ func _start_level(index: int) -> void:
 func _on_role(role: String) -> void:
 	if moving:
 		return
+	_hide_hero_popup()
 	level.select_role(role)
 	board.route_preview.clear()
 	_refresh()
@@ -470,10 +522,12 @@ func _on_cell_tapped(cell: Vector2i) -> void:
 		if level.positions[role] == cell:
 			_on_role(role)
 			return
+	_hide_hero_popup()
 	var route: Array[Vector2i] = level.plan_route(cell)
 	if route.is_empty():
 		board.route_preview.clear()
 		_refresh()
+		_show_blocked_popup()
 		return
 	board.route_preview = route.duplicate()
 	moving = true
@@ -493,6 +547,7 @@ func _follow_route(route: Array[Vector2i]) -> void:
 			await board.animate_step(level.selected, from, level.positions[level.selected])
 		if not board.route_preview.is_empty():
 			board.route_preview.pop_front()
+	var was_blocked: bool = not level.blocked_reason.is_empty()
 	level.collapse_history(undo_from)
 	board.route_preview.clear()
 	moving = false
@@ -502,6 +557,8 @@ func _follow_route(route: Array[Vector2i]) -> void:
 			level.message = "Rescue complete, but saving progress failed. Replay to try again."
 		_show_screen("victory")
 	_refresh()
+	if was_blocked:
+		_show_blocked_popup()
 
 func _on_undo() -> void:
 	if moving:

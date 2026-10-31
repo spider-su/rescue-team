@@ -22,6 +22,7 @@ var rescued: bool = false
 var selected: String = FIREFIGHTER
 var actions: int = 0
 var message: String = ""
+var blocked_reason: String = ""
 var history: Array[Dictionary] = []
 var level_id: String = ""
 var location_id: String = "coast"
@@ -44,6 +45,7 @@ func _init(definition: Dictionary = {}) -> void:
 	reset()
 
 func reset() -> void:
+	blocked_reason = ""
 	walls.clear()
 	positions.clear()
 	infected.clear()
@@ -97,11 +99,12 @@ func select_role(role: String) -> bool:
 ## interactive destinations: move beside them, then use the existing act() rule.
 ## Obstacles are never bypassed and no switches/fire are solved automatically.
 func plan_route(target: Vector2i) -> Array[Vector2i]:
+	blocked_reason = ""
 	if rescued:
 		_reject("Rescue completed. Tap RESTART to play again.")
 		return []
 	if not _inside(target) or walls.has(target):
-		_reject("A wall blocks that destination.")
+		_reject("A wall blocks that destination.", "wall")
 		return []
 	var start: Vector2i = positions[selected]
 	if target == start:
@@ -112,28 +115,28 @@ func plan_route(target: Vector2i) -> Array[Vector2i]:
 		return [target]
 	if infected.has(target):
 		if selected != RANGER:
-			_reject("Only the ranger can clear infected. Select the violet portrait.")
+			_reject("Only the ranger can clear infected. Select the violet portrait.", "infected")
 			return []
 		return _route_to_interaction(target, false)
 	if has_fire and target == fire_pos and not fire_cleared:
 		if selected != FIREFIGHTER:
-			_reject("Only the firefighter can extinguish flames.")
+			_reject("Only the firefighter can extinguish flames.", "fire")
 			return []
 		return _route_to_interaction(target, false)
 	if has_crate and target == crate_pos:
 		if selected != ENGINEER:
-			_reject("Only the engineer can move the crate.")
+			_reject("Only the engineer can move the crate.", "crate")
 			return []
 		return _route_to_interaction(target, true)
 	if not _can_enter(target):
 		if target == gate_pos and not gate_is_open():
-			_reject("The gate needs the crate on the blue switch.")
+			_reject("The gate needs the crate on the blue switch.", "gate")
 		else:
-			_reject("That destination is blocked.")
+			_reject("That destination is blocked.", "rescuer")
 		return []
 	var route := _shortest_path(start, target)
 	if route.is_empty():
-		_reject("No safe route. Clear hazards or move another rescuer.")
+		_reject("No safe route. Clear hazards or move another rescuer.", _route_blocker(target))
 	return route
 
 func _route_to_interaction(target: Vector2i, pushing_crate: bool) -> Array[Vector2i]:
@@ -161,7 +164,7 @@ func _route_to_interaction(target: Vector2i, pushing_crate: bool) -> Array[Vecto
 			best = route.duplicate()
 			best.append(target)
 	if best.is_empty():
-		_reject("No safe approach. Move obstacles or choose another target.")
+		_reject("No safe approach. Move obstacles or choose another target.", "push" if pushing_crate else _route_blocker(target))
 	return best
 
 func _shortest_path(start: Vector2i, target: Vector2i) -> Array[Vector2i]:
@@ -200,6 +203,7 @@ func collapse_history(from_index: int) -> void:
 	history.append(before)
 
 func act(target: Vector2i) -> bool:
+	blocked_reason = ""
 	if rescued:
 		return _reject("Rescue completed. Tap RESTART to play again.")
 	var current: Vector2i = positions[selected]
@@ -207,10 +211,10 @@ func act(target: Vector2i) -> bool:
 	if absi(direction.x) + absi(direction.y) != 1:
 		return _reject("Tap an adjacent tile. Select a rescuer to switch.")
 	if walls.has(target) or not _inside(target):
-		return _reject("A wall blocks that route.")
+		return _reject("A wall blocks that route.", "wall")
 	if infected.has(target):
 		if selected != RANGER:
-			return _reject("Only the ranger can clear infected. Select the violet portrait.")
+			return _reject("Only the ranger can clear infected. Select the violet portrait.", "infected")
 		_record()
 		infected.erase(target)
 		actions += 1
@@ -219,7 +223,7 @@ func act(target: Vector2i) -> bool:
 
 	if target == fire_pos and not fire_cleared:
 		if selected != FIREFIGHTER:
-			return _reject("Only the firefighter can extinguish flames.")
+			return _reject("Only the firefighter can extinguish flames.", "fire")
 		_record()
 		fire_cleared = true
 		message = "Fire cleared. Walk through the corridor!"
@@ -227,10 +231,10 @@ func act(target: Vector2i) -> bool:
 
 	if target == crate_pos:
 		if selected != ENGINEER:
-			return _reject("Only the engineer can move the crate.")
+			return _reject("Only the engineer can move the crate.", "crate")
 		var destination := target + direction
 		if not _can_push_into(destination):
-			return _reject("The crate cannot be pushed in that direction.")
+			return _reject("The crate cannot be pushed in that direction.", "push")
 		_record()
 		crate_pos = destination
 		positions[selected] = target
@@ -240,8 +244,8 @@ func act(target: Vector2i) -> bool:
 
 	if not _can_enter(target):
 		if target == gate_pos and not gate_is_open():
-			return _reject("The gate needs the crate on the blue switch.")
-		return _reject("That tile is blocked.")
+			return _reject("The gate needs the crate on the blue switch.", "gate")
+		return _reject("That tile is blocked.", "rescuer")
 
 	_record()
 	positions[selected] = target
@@ -316,6 +320,43 @@ func _record() -> void:
 		"actions": actions,
 	})
 
-func _reject(reason: String) -> bool:
+func _reject(reason: String, obstacle: String = "") -> bool:
+	blocked_reason = obstacle
 	message = reason
 	return false
+
+## Explain an unreachable destination using the first blocker on a shortest
+## wall-respecting corridor. This diagnostic never changes the playable route.
+func _route_blocker(target: Vector2i) -> String:
+	var start: Vector2i = positions[selected]
+	var queue: Array[Vector2i] = [start]
+	var previous: Dictionary = {start: start}
+	var cursor := 0
+	while cursor < queue.size() and not previous.has(target):
+		var current := queue[cursor]
+		cursor += 1
+		for direction in [Vector2i.RIGHT, Vector2i.LEFT, Vector2i.UP, Vector2i.DOWN]:
+			var neighbor: Vector2i = current + direction
+			if not _inside(neighbor) or walls.has(neighbor) or previous.has(neighbor):
+				continue
+			previous[neighbor] = current
+			queue.append(neighbor)
+	if not previous.has(target):
+		return "route"
+	var path: Array[Vector2i] = []
+	var cell := target
+	while cell != start:
+		path.push_front(cell)
+		cell = previous[cell]
+	for step in path:
+		if has_fire and step == fire_pos and not fire_cleared:
+			return "fire"
+		if has_gate and step == gate_pos and not gate_is_open():
+			return "gate"
+		if infected.has(step):
+			return "infected"
+		if has_crate and step == crate_pos:
+			return "crate"
+		if not _can_enter(step):
+			return "rescuer"
+	return "route"

@@ -60,3 +60,9 @@ This exports the **twenty-mission, two-location rescue game**. The new scrolling
 A green CI result means **export verified**, not a physically tested game or store-ready release.
 
 Godot reference: https://docs.godotengine.org/en/4.7/tutorials/export/exporting_for_android.html
+
+## Regression playtest: hero obstacle messages (pending on device)
+
+Use the APK commit recorded on the PR. Select the engineer and tap fire, then tap a destination beyond the fire in a blocked corridor. A portrait popup must explain the fire without moving anyone or changing undo history. Repeat to see different wording. Tap a locked gate and a destination behind it: the hero should explain opening the gate with the blue switch. Check wall, crate, blocked push and Old Town infected messages. Each category has four lines, with no immediate repeats.
+
+On a smaller phone, verify the entire message fits and the portrait matches the selected hero. Wait 4.5 seconds for dismissal, then repeat and switch heroes, restart or return to missions: stale popups must disappear. Tap a reachable tile while the popup is visible: movement must work immediately. Complete a normal rescue and undo it to check unchanged rules. Record device/OS, APK commit and results; desktop screenshots and headless checks do not establish device ergonomics.

@@ -9,6 +9,7 @@ Twenty hand-authored missions across two locations combine a firefighter, engine
 Choose an unlocked mission. Tap a rescuer or their portrait to select them, then tap a destination to walk the safe shortest route. The firefighter extinguishes fire; the engineer pushes crates onto blue switches to open gates; the ranger stuns adjacent infected blockers in Old Town. Pick up the civilian and reach the green exit.
 
 - Each destination tap is one undo step, even when it walks several tiles.
+- Blocked routes show a short message from the selected hero, with varied obstacle-specific hints. The popup disappears after 4.5 seconds or your next action and never blocks tapping.
 - **UNDO**, **RESTART** and **LEVELS** remain available during play, except while movement is animating.
 - Completion shows actual move count, saved best, replay, undo rescue and the next unlocked mission. The final mission returns to the campaign.
 - Progress is saved offline through atomic replacement. A failed save is reported instead of announcing an unlock.

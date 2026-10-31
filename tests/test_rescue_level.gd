@@ -4,6 +4,8 @@ const RescueLevel = preload("res://scripts/rescue_level.gd")
 const Catalog = preload("res://scripts/level_catalog.gd")
 
 func _initialize() -> void:
+	if not _test_blocked_reasons():
+		return
 	var level = RescueLevel.new(Catalog.new().load_level(3))
 	if not _check(level.width == 11 and level.height == 5, "Board dimensions"):
 		return
@@ -175,3 +177,32 @@ func _check(condition: bool, description: String) -> bool:
 	push_error("FAIL: " + description)
 	quit(1)
 	return false
+
+func _test_blocked_reasons() -> bool:
+	for marker in ["f", "G", "B", "Z"]:
+		var fixture := {"id": "blocked", "title": "Blocked route", "hint": "", "rows": ["###########", "#F.%s...CX.#" % marker, "###########", "#ER..BsGf.#", "###########"]}
+		# Only one of each optional obstacle is supported.
+		if marker == "f":
+			fixture.rows[3] = "#ER..BsG..#"
+		elif marker == "G":
+			fixture.rows[3] = "#ER..Bs.f.#"
+		elif marker == "B":
+			fixture.rows[3] = "#ER...sGf.#"
+		var mission = RescueLevel.new(fixture)
+		var expected: String = {"f": "fire", "G": "gate", "B": "crate", "Z": "infected"}[marker]
+		if not _check(mission.plan_route(Vector2i(7, 1)).is_empty() and mission.blocked_reason == expected, "Unreachable destination explains the blocking " + expected):
+			return false
+		if not _check(mission.actions == 0 and mission.history.is_empty() and mission.positions[mission.FIREFIGHTER] == Vector2i(1, 1), "Diagnostic does not mutate puzzle"):
+			return false
+		mission.plan_route(Vector2i(2, 1))
+		if not _check(mission.blocked_reason.is_empty(), "Valid route clears stale rejection"):
+			return false
+	var lines = preload("res://scripts/hero_lines.gd").new()
+	for reason in lines.LINES:
+		var previous := ""
+		for i in range(30):
+			var line: String = lines.next_line(reason)
+			if not _check(line in lines.LINES[reason] and line != previous, "Message variation stays relevant without immediate repeats"):
+				return false
+			previous = line
+	return true
