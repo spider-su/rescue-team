@@ -56,18 +56,27 @@ func _initialize() -> void:
 	var progress = Progress.new(save_path)
 	if not _assert(progress.unlocked(0, catalog) and not progress.unlocked(1, catalog), "only first mission initially unlocked"):
 		return
+	if not _assert(progress.stars_for("01", 2) == 3 and progress.stars_for("01", 4) == 2 and progress.stars_for("01", 5) == 1, "star tier boundaries"):
+		return
+	if not _assert(progress.stars_for("11", 9) == 3 and progress.stars_for("20", 26) == 2 and progress.stars_for("bogus", 1) == 0, "old town thresholds and unknown ids"):
+		return
 	if not _assert(progress.record_victory("01", 12), "write first completion"):
 		return
 	if not _assert(progress.unlocked(1, catalog) and not progress.unlocked(2, catalog), "only next mission unlocks"):
 		return
-	if not _assert(progress.record_victory("01", 16) and progress.best["01"] == 12, "preserve best move count"):
+	if not _assert(progress.record_victory("01", 16) and progress.best["01"] == 12 and progress.earned_stars("01") == 1, "worse replay preserves best and stars"):
 		return
 	if not _assert(not progress.record_victory("bogus", 1) and not progress.record_victory("02", -1), "reject unknown / negative progress"):
 		return
 	var reloaded = Progress.new(save_path)
-	if not _assert(reloaded.is_complete("01") and reloaded.best["01"] == 12 and reloaded.unlocked(1, catalog), "progress survives app restart"):
+	if not _assert(reloaded.is_complete("01") and reloaded.best["01"] == 12 and reloaded.earned_stars("01") == 1 and reloaded.unlocked(1, catalog), "stars derive from existing save after restart"):
 		return
 	if not _test_safe_saves(progress, catalog):
+		return
+	if not _assert(progress.record_victory("01", 2) and progress.earned_stars("01") == 3 and progress.total_stars() == 3 and progress.total_xp() == 110, "better replay upgrades stars and XP"):
+		return
+	reloaded = Progress.new(save_path)
+	if not _assert(reloaded.best["01"] == 2 and reloaded.earned_stars("01") == 3, "upgraded stars derive from saved best after restart"):
 		return
 	var corrupt := FileAccess.open(save_path, FileAccess.WRITE)
 	corrupt.store_string("{not json")

@@ -43,3 +43,7 @@ Make every rescue satisfying, reward mastery, and motivate replay without timers
 5. Add brief animation/sound and test on Android.
 
 Do not add currency, shop, backend, ads, analytics, streaks, or time pressure in this milestone.
+
+## Implementation note
+
+The presentation layer now plays short, deterministic, skippable-on-screen-change tween sequences for walking, water spray, crate push, civilian pickup, ranger stun, and rescue celebration. The score thresholds for 11–20 use the tested reference completion routes; these are achievable, not proven optimal. Rewards retain the v1 save schema and are derived from saved best moves. Real-device animation comfort and reduced-motion accessibility are follow-up validation items.
