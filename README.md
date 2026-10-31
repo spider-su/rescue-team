@@ -2,12 +2,15 @@
 
 An original Android-first rescue puzzle game in **Godot 4.7.2 stable / GDScript**.
 
-Twenty hand-authored missions across two locations combine a firefighter, engineer and (in Old Town) a containment ranger to clear hazards, open routes and carry civilians to safety. The coastal UI uses original illustrated human characters, a harbor mission picker, an adaptive puzzle board and a dedicated completion screen. The original Mission 01 had an owner-reported Android happy-path playtest; **the new chapter and scrolling changes still need physical-device acceptance**.
+Twenty campaign missions and three optional Floodworks trials combine a firefighter, engineer and (in Old Town and trial 23) a containment ranger to clear hazards, open routes and carry civilians to safety. The coastal UI uses original illustrated human characters, a harbor mission picker, an adaptive puzzle board and a dedicated completion screen. The original Mission 01 had an owner-reported Android happy-path playtest; **the new chapter and scrolling changes still need physical-device acceptance**.
 
 ## Play
 
 Choose an unlocked mission. Tap a rescuer or their portrait to select them, then tap a destination to walk the safe shortest route. The firefighter extinguishes fire; the engineer pushes crates onto blue switches to open gates; the ranger stuns adjacent infected blockers in Old Town. Pick up the civilian and reach the green exit.
 
+- The first five missions offer contextual teaching. **HINT**, then **SHOW**, gives progressively clearer help and highlights an object without affecting stars.
+- **RESUME** restores an unfinished mission, including hazards, carrying state and grouped undo.
+- Stars use authored targets in the same step units as existing scores; old best scores remain valid.
 - Each destination tap is one undo step, even when it walks several tiles.
 - Blocked routes show a short message from the selected hero, with varied obstacle-specific hints. The popup disappears after 4.5 seconds or your next action and never blocks tapping.
 - **UNDO**, **RESTART** and **LEVELS** remain available during play, except while movement is animating.
@@ -16,6 +19,7 @@ Choose an unlocked mission. Tap a rescuer or their portrait to select them, then
 - Progress is saved offline through atomic replacement. A failed save is reported instead of announcing an unlock.
 - Tall play areas may rotate a mission's visual grid clockwise; routes and taps use the original mission coordinates. No mission rules change.
 - Location tabs group missions 01–10 (Coastal District) and 11–20 (Old Town Quarantine). Mission 10 unlocks the second location.
+- Optional Floodworks trials (21–23) unlock after 05: the engineer drains water with a valve and repairs bridges, opening routes for teammates.
 - Swipe over cards or the illustration to scroll with momentum. A drag cancels the card tap; existing coastal scores remain valid. Completion also scrolls on smaller displays.
 
 ## Develop and verify
@@ -28,6 +32,7 @@ godot --headless --path . --script res://tests/test_rescue_level.gd
 godot --headless --path . --script res://tests/test_campaign.gd
 godot --headless --path . --script res://tests/test_old_town.gd
 godot --headless --path . --script res://tests/test_audio.gd
+godot --headless --path . --script res://tests/test_puzzle_polish.gd
 godot --headless --path . --script res://tests/test_rescue_ui.gd
 godot --headless --path . --quit-after 5
 ```
@@ -48,6 +53,7 @@ See [Android release and device scenarios](docs/android-release.md). APK export 
 
 ## Design and assets
 
+- [Fair stars, hints, resume and Floodworks rules/device scenario](docs/puzzle-polish.md).
 - [Music, effects and listening scenario](docs/audio.md); [original audio sources](assets/audio/README.md).
 - [Game design](docs/game-design.md), [roadmap](docs/roadmap.md), [architecture](docs/architecture.md), [level format](docs/level-format.md).
 - [Coastal UI specification and validation](docs/coastal-ui.md), [Old Town chapter, scroll fix and ranger rules](docs/old-town.md).

@@ -47,3 +47,7 @@ Do not add currency, shop, backend, ads, analytics, streaks, or time pressure in
 ## Implementation note
 
 The presentation layer now plays short, deterministic, skippable-on-screen-change tween sequences for walking, water spray, crate push, civilian pickup, ranger stun, and rescue celebration. The score thresholds for 11–20 use the tested reference completion routes; these are achievable, not proven optimal. Rewards retain the v1 save schema and are derived from saved best moves. Real-device animation comfort and reduced-motion accessibility are follow-up validation items.
+
+## Corrected score units
+
+The shipped reference thresholds previously used destination-tap counts against saved per-step scores. Targets now live in each map as `three_star_moves`/`two_star_moves`, using the actual saved counter, with all 23 full reference routes required to earn three stars. Existing v1 best values are retained and stars re-derived. Achievable reference routes are not optimality proofs. Optional trial completions cannot substitute for completing Old Town when deriving its badge. See `puzzle-polish.md`.

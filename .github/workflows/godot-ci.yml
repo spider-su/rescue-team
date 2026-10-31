@@ -70,6 +70,9 @@ jobs:
       - name: Verify audio assets, settings and app lifecycle
         run: godot --headless --path . --script res://tests/test_audio.gd
 
+      - name: Verify fair stars, Floodworks and resumable puzzle journals
+        run: godot --headless --path . --script res://tests/test_puzzle_polish.gd
+
       - name: Boot the game scene headlessly
         run: godot --headless --path . --quit-after 5
 

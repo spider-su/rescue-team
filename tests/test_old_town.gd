@@ -8,7 +8,7 @@ func _initialize() -> void:
 	var catalog = Catalog.new()
 	var solutions: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://tests/fixtures/old_town_solutions.json"))
 	var layouts: Dictionary = {}
-	_check(catalog.count() == 20 and solutions.size() == 10, "Two locations with ten missions each")
+	_check(catalog.count() == 23 and solutions.size() == 10, "Two locations with ten missions each")
 	for index in range(10, 20):
 		var data: Dictionary = catalog.load_level(index)
 		if data.is_empty():

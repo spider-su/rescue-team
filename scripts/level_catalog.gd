@@ -21,15 +21,19 @@ const PATHS = [
 	"res://levels/old-town/18.json",
 	"res://levels/old-town/19.json",
 	"res://levels/old-town/20.json",
+	"res://levels/floodworks/21.json",
+	"res://levels/floodworks/22.json",
+	"res://levels/floodworks/23.json",
 ]
 const LOCATIONS = [
 	{"id": "coast", "title": "Coastal District", "first": 0, "count": 10},
 	{"id": "old-town", "title": "Old Town Quarantine", "first": 10, "count": 10},
+	{"id": "floodworks", "title": "Floodworks Trials", "first": 20, "count": 3},
 ]
-const ALLOWED = ".#FERCXfBsGZ"
+const ALLOWED = ".#FERCXfBsGZV~="
 
 func location_for(index: int) -> int:
-	return 0 if index < 10 else 1
+	return 0 if index < 10 else (1 if index < 20 else 2)
 
 func count() -> int:
 	return PATHS.size()
@@ -58,12 +62,19 @@ func validate(data: Dictionary) -> String:
 			return "missing " + key
 	if not data["id"] is String or String(data["id"]).is_empty():
 		return "invalid id"
-	if data.get("location", "coast") not in ["coast", "old-town"]:
+	if data.get("location", "coast") not in ["coast", "old-town", "floodworks"]:
 		return "unknown location"
 	if not data["title"] is String or String(data["title"]).is_empty():
 		return "invalid title"
 	if not data["hint"] is String or not data["rows"] is Array:
 		return "invalid hint or rows"
+	if data.has("three_star_moves") or data.has("two_star_moves"):
+		var three: Variant = data.get("three_star_moves", -1)
+		var two: Variant = data.get("two_star_moves", -1)
+		if not (three is int or three is float) or not (two is int or two is float):
+			return "star targets must be numbers"
+		if three < 0 or two < three or two > 100000 or three != floor(three) or two != floor(two):
+			return "invalid star targets"
 	var rows: Array = data["rows"]
 	if rows.size() < 3 or rows.size() > 24:
 		return "board height must be 3..24"
@@ -87,13 +98,15 @@ func validate(data: Dictionary) -> String:
 	for marker in ["F", "E", "C", "X"]:
 		if counts.get(marker, 0) != 1:
 			return "expected exactly one " + marker
-	for marker in ["f", "B", "s", "G"]:
+	for marker in ["f", "B", "s", "G", "V", "="]:
 		if counts.get(marker, 0) > 1:
 			return "multiple " + marker + " tiles unsupported"
 	if counts.get("R", 0) > 1 or counts.get("Z", 0) > 6:
 		return "at most one ranger and six infected supported"
 	if counts.get("Z", 0) > 0 and counts.get("R", 0) != 1:
 		return "infected require a ranger"
+	if (counts.get("~", 0) > 0 or counts.get("=", 0) > 0) and counts.get("V", 0) != 1:
+		return "flooded routes and bridges require one valve"
 	var any_gate: bool = counts.get("B", 0) > 0 or counts.get("s", 0) > 0 or counts.get("G", 0) > 0
 	if any_gate and not (counts.get("B", 0) == 1 and counts.get("s", 0) == 1 and counts.get("G", 0) == 1):
 		return "crate, switch and gate must be specified together"

@@ -56,3 +56,11 @@ Prefer a small focused PR for each increment; do not combine all milestones in o
 
 - [x] Original theme music and twelve action effects, independent persistent mutes and lifecycle suspension; automated audio/UI coverage.
 - [ ] Android listening, interruption and route-change acceptance; see `docs/audio.md`.
+
+## Approved next increment (2026-10-31)
+
+- [x] Correct star units with authored step targets and full reference-solution reward assertions; retain v1 score compatibility.
+- [x] Contextual teaching for 01–05 and two-stage hints with object highlighting.
+- [x] Validated, atomic unfinished-mission checkpoints with partial-walk resume and grouped undo.
+- [x] Three optional Floodworks trials after 05: valve → drained route → repaired bridge, combined with existing specialists.
+- [ ] Android acceptance and external-player validation under `docs/puzzle-polish.md`.

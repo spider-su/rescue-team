@@ -4,19 +4,16 @@ const SAVE_PATH = "user://rescue_progress_v1.json"
 var path: String
 var best: Dictionary = {}
 
-## Three-star targets are achieved reference tap counts, never invented perfect scores.
-## Old Town targets come from the tested solution fixtures (not proven optimal).
-const THREE_STAR_MOVES = {"10":6,"11":9,"12":11,"13":11,"14":13,"15":14,"16":18,"17":17,"18":17,"19":14,"20":24,"01":2,"02":3,"03":3,"04":4,"05":5,"06":5,"07":6,"08":4,"09":6}
+## Authored targets use the same step metric as existing version-1 best scores.
+var star_targets: Dictionary = {}
 
 func stars_for(level_id: String, actions: int) -> int:
-	if not THREE_STAR_MOVES.has(level_id) or actions < 0:
+	if not star_targets.has(level_id) or actions < 0:
 		return 0
-	var target: int = THREE_STAR_MOVES[level_id]
-	if actions <= target:
+	var targets: Dictionary = star_targets[level_id]
+	if actions <= targets["three"]:
 		return 3
-	if actions <= target + 2:
-		return 2
-	return 1
+	return 2 if actions <= targets["two"] else 1
 
 func earned_stars(level_id: String) -> int:
 	if not best.has(level_id):
@@ -62,12 +59,19 @@ func earned_badges() -> Array[String]:
 		result.append("Perfect Planner")
 	if perfect >= 10:
 		result.append("Master Rescuer")
-	if best.size() >= 20:
+	var old_town_complete := true
+	for id in range(11, 21):
+		old_town_complete = old_town_complete and best.has(str(id))
+	if old_town_complete:
 		result.append("Old Town Protector")
 	return result
 
 
 func _init(file_path: String = SAVE_PATH) -> void:
+	var catalog = preload("res://scripts/level_catalog.gd").new()
+	for i in range(catalog.count()):
+		var data: Dictionary = catalog.load_level(i)
+		star_targets[data["id"]] = {"three": data["three_star_moves"], "two": data["two_star_moves"]}
 	path = file_path
 	load_progress()
 
@@ -99,6 +103,8 @@ func is_complete(level_id: String) -> bool:
 func unlocked(index: int, catalog: RefCounted) -> bool:
 	if index < 0 or index >= catalog.count():
 		return false
+	if index == 20:
+		return is_complete("05") # Optional trials never block the original campaign.
 	if index == 0:
 		return true
 	var prior: Dictionary = catalog.load_level(index - 1)

@@ -11,6 +11,7 @@ var viewport: SubViewport
 var capture_dir := ""
 var failed := false
 var heard_cues: Dictionary = {}
+const TEST_SESSION = "user://rescue_ui_session_test.json"
 const TEST_AUDIO = "user://rescue_ui_audio_test.cfg"
 const TEST_SAVE = "user://rescue_ui_test.json"
 
@@ -21,6 +22,7 @@ func _initialize() -> void:
 	_run.call_deferred()
 
 func _run() -> void:
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(TEST_SESSION))
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(TEST_AUDIO))
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(TEST_SAVE))
 	viewport = SubViewport.new()
@@ -30,10 +32,11 @@ func _run() -> void:
 	game = MainScene.instantiate()
 	game.progress = Progress.new(TEST_SAVE)
 	game.audio_settings_path = TEST_AUDIO
+	game.session_path = TEST_SESSION
 	viewport.add_child(game)
 	game.audio.cue_played.connect(func(cue: String): heard_cues[cue] = true)
 	await _settle()
-	_check(game.screen == "menu" and game.level_buttons.size() == 20 and game.location_buttons.size() == 2, "Mission picker groups twenty cards into two locations")
+	_check(game.screen == "menu" and game.level_buttons.size() == 23 and game.location_buttons.size() == 3, "Mission picker groups twenty cards into two locations")
 	_check(game.level_buttons[1].disabled, "Uncompleted next mission is visibly locked")
 	game.location_buttons[1].pressed.emit()
 	await _settle()
@@ -56,7 +59,27 @@ func _run() -> void:
 	_check(game.screen == "play", "Mission card starts the actual play scene")
 	_check_controls_fit()
 	await _test_hero_popup()
+	_check(game.objective_label.text.begins_with("Training:"), "First mission offers contextual training")
+	game.hint_button.pressed.emit()
+	_check(game.hint_stage == 1 and game.board.hint_target.x == -1, "First hint is a strategic nudge")
+	game.hint_button.pressed.emit()
+	_check(game.hint_stage == 2 and game.board.hint_target == game.level.civilian_pos, "Second hint highlights the objective without moving")
+	for dimensions in [Vector2i(540, 960), Vector2i(720, 1280)]:
+		viewport.size = dimensions
+		await _settle()
+		_check(game.board.get_global_rect().encloses(game.hero_popup.get_global_rect()), "Layered hint fits portrait board")
+		_check(game.hero_popup_text.get_line_count() <= game.hero_popup_text.get_visible_line_count(), "Specific hint text fits without clipping")
+		_check_controls_fit()
+		await _capture("layered-hint-%dx%d" % [dimensions.x, dimensions.y])
+	game._show_menu()
+	_check(game.resume_button.visible, "Menu offers a validated unfinished mission")
+	game.resume_button.pressed.emit()
+	_check(game.hint_stage == 2 and game.board.hint_target == game.level.civilian_pos, "Resume restores revealed hint stage")
 	await _tap(Vector2i(3, 1))
+	_check(game.hint_stage == 0 and game.board.hint_target.x == -1, "Progress changes the guidance goal and clears its highlight")
+	game._show_menu()
+	game.resume_button.pressed.emit()
+	_check(game.level.carrying_role == game.level.FIREFIGHTER and game.level.history.size() == 1, "Resume reconstructs carrying state and grouped undo")
 	_check(game.level.carrying_role == game.level.FIREFIGHTER, "Board tap walks and collects civilian")
 	game.undo_button.pressed.emit()
 	_check(game.level.carrying_role.is_empty() and game.level.actions == 0, "Undo button restores whole tap route")
@@ -155,6 +178,14 @@ func _run() -> void:
 	_check(game.board.animation_counts["stun"] >= 1, "Ranger stun visual played in Old Town")
 	game.next_button.pressed.emit()
 	_check(game.screen == "menu" and game.completion_label.text.begins_with("10 / 10 complete") and game.location_index == 1, "Final completion returns to completed Old Town group")
+	var trials: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://tests/fixtures/floodworks_solutions.json"))
+	for i in range(20, 23):
+		game._start_level(i)
+		for step in trials[game.level.level_id]:
+			game._on_role(step[0])
+			await _tap(Vector2i(step[1], step[2]))
+		_check(game.screen == "victory" and game.progress.earned_stars(game.level.level_id) == 3, "Optional Floodworks trial wins with achievable three-star score")
+	_check(game.next_button.text == "ALL MISSIONS", "Trials finish without another campaign unlock")
 	# A failed save must not be presented as a successful unlock, even on replay.
 	viewport.size = Vector2i(720, 1280)
 	game._start_level(0)
@@ -173,8 +204,9 @@ func _run() -> void:
 	viewport.queue_free()
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(TEST_SAVE))
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(TEST_AUDIO))
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(TEST_SESSION))
 	if not failed:
-		print("PASS: two-location UI, card swipes, ranger rescue, progression, adaptive input and portrait layouts")
+		print("PASS: three-location UI, layered hints, resume/undo, fair stars, Floodworks, adaptive input and portrait layouts")
 	quit(1 if failed else 0)
 
 func _test_swipe() -> void:
