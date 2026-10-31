@@ -38,6 +38,7 @@ var moves_label: Label
 var moves_card: PanelContainer
 var back_button: Button
 var victory_moves: Label
+var victory_stars: Label
 var victory_best: Label
 var victory_next: Label
 var victory_message: Label
@@ -281,6 +282,7 @@ func _build_victory(shell: VBoxContainer) -> void:
 	var scores := HBoxContainer.new()
 	results.add_child(scores)
 	victory_moves = _score_column("Moves", scores)
+	victory_stars = _score_column("Stars", scores)
 	victory_best = _score_column("Best", scores)
 	var upcoming := PanelContainer.new()
 	upcoming.add_theme_stylebox_override("panel", UI.box(Color("#e6efdf"), Color("#adc7a6"), 14, 16))
@@ -387,10 +389,11 @@ func _show_menu() -> void:
 		UI.button(button, Color("#ffedc3") if index == first_available and not complete else UI.PAPER, index == first_available and not complete)
 		var badge: TextureRect = button.find_child("MissionState", true, false)
 		badge.texture = ICONS["check" if complete else ("lock" if button.disabled else "play")]
+		button.tooltip_text = "Mission %s: %s  •  %d/3 stars" % [data["id"], data["title"], progress.earned_stars(data["id"])]
 		badge.modulate = UI.GREEN if complete else (UI.MUTED if button.disabled else UI.ORANGE)
 		var name_label: Label = button.find_child("MissionTitle", true, false)
 		name_label.modulate = Color("#7d8888") if button.disabled else Color.WHITE
-	completion_label.text = "%d / %d complete" % [completed, catalog.count()]
+	completion_label.text = "%d / %d rescued  •  ★ %d / %d" % [completed, catalog.count(), progress.total_stars(), catalog.count() * 3]
 
 func _start_level(index: int) -> void:
 	if moving or not progress.unlocked(index, catalog):
@@ -500,8 +503,9 @@ func _refresh() -> void:
 	if screen == "victory":
 		victory_moves.text = str(level.actions)
 		victory_best.text = str(progress.best.get(level.level_id, "—"))
+		victory_stars.text = ("★".repeat(progress.earned_stars(level.level_id)) + "☆".repeat(3 - progress.earned_stars(level.level_id))) if _victory_saved else "—"
 		var saved: bool = _victory_saved
-		victory_message.text = "Everyone is safe." if saved else level.message
+		victory_message.text = ("Perfect Rescue!" if progress.earned_stars(level.level_id) == 3 else "Everyone is safe.") if saved else level.message
 		var has_next: bool = current_index + 1 < catalog.count()
 		if saved and has_next:
 			var next: Dictionary = catalog.load_level(current_index + 1)
