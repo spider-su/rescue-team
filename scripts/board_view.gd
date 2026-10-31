@@ -238,7 +238,7 @@ func animate_push(role: String, actor_from: Vector2i, crate_from: Vector2i, crat
 func animate_pickup(role: String, actor_from: Vector2i, civilian_at: Vector2i) -> void:
 	animated_role = role
 	animated_position = Vector2(actor_from)
-	await _animate_effect("pickup", role, civilian_at, civilian_at, 0.28)
+	await _animate_effect("pickup", role, actor_from, civilian_at, 0.28)
 
 func animate_stun(role: String, target: Vector2i) -> void:
 	await _animate_effect("stun", role, target, target, 0.24)
@@ -265,7 +265,7 @@ func _set_effect_progress(value: float) -> void:
 	if effect_kind == "push":
 		animated_position = Vector2(effect_from).lerp(Vector2(level.positions[effect_role]), value)
 	elif effect_kind == "pickup":
-		animated_position = Vector2(level.positions[effect_role]).lerp(Vector2(effect_to), value)
+		animated_position = Vector2(effect_from).lerp(Vector2(effect_to), value)
 	queue_redraw()
 
 func _gui_input(event: InputEvent) -> void:
