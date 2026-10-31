@@ -59,6 +59,13 @@ var audio_settings_path := "user://rescue_audio_v1.cfg"
 var music_button: Button
 var sound_button: Button
 var audio_notice: Label
+var _best_before_mission: int = -1
+var _victory_new_best: bool = false
+var victory_stars: Label
+var profile_rank: Label
+var profile_xp: Label
+var profile_bar: ProgressBar
+var profile_badges: Label
 var hero_lines = HeroLines.new()
 var hero_popup: PanelContainer
 var hero_popup_text: Label
@@ -181,6 +188,7 @@ func _build_menu(shell: VBoxContainer) -> void:
 	list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	list.add_theme_constant_override("separation", 12)
 	list_margin.add_child(list)
+	_build_profile(list)
 	_hero = UI.picture(UI.HARBOR, 210)
 	list.add_child(_hero)
 	for index in range(catalog.count()):
@@ -212,6 +220,26 @@ func _toggle_sound() -> void:
 	audio.play_cue("ui")
 	_refresh_audio_controls()
 
+func _build_profile(parent: VBoxContainer) -> void:
+	var panel := PanelContainer.new()
+	panel.add_theme_stylebox_override("panel", UI.box(Color("#e6eff0"), UI.LINE, 18, 10))
+	parent.add_child(panel)
+	var content := VBoxContainer.new()
+	content.add_theme_constant_override("separation", 4)
+	panel.add_child(content)
+	profile_rank = UI.label("RESCUE RECRUIT", 26, true)
+	content.add_child(profile_rank)
+	profile_xp = UI.label("Level 1 · 0 XP", 21)
+	content.add_child(profile_xp)
+	profile_bar = ProgressBar.new()
+	profile_bar.custom_minimum_size.y = 12
+	profile_bar.max_value = 100
+	profile_bar.show_percentage = false
+	content.add_child(profile_bar)
+	profile_badges = UI.label("", 19, false, UI.MUTED)
+	profile_badges.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	content.add_child(profile_badges)
+
 func _open_mission(index: int) -> void:
 	if not menu_scroll.is_dragging():
 		_start_level(index)
@@ -225,7 +253,7 @@ func _mission_card(index: int) -> Button:
 	var data: Dictionary = catalog.load_level(index)
 	var button := _button("")
 	button.custom_minimum_size.y = 104
-	button.tooltip_text = "Mission %s: %s" % [data["id"], data["title"]]
+	button.tooltip_text = "Mission %s: %s  ·  %d/3 stars" % [data["id"], data["title"], progress.earned_stars(data["id"])]
 	var row := HBoxContainer.new()
 	row.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	row.offset_left = 14
@@ -406,6 +434,7 @@ func _build_victory(shell: VBoxContainer) -> void:
 	var scores := HBoxContainer.new()
 	results.add_child(scores)
 	victory_moves = _score_column("Moves", scores)
+	victory_stars = _score_column("Stars", scores)
 	victory_best = _score_column("Best", scores)
 	var upcoming := PanelContainer.new()
 	upcoming.add_theme_stylebox_override("panel", UI.box(Color("#e6efdf"), Color("#adc7a6"), 14, 16))
@@ -488,6 +517,8 @@ func _show_screen(next_screen: String) -> void:
 	victory_scroll.visible = screen == "victory"
 	if screen == "victory":
 		victory_scroll.reset_scroll()
+		victory_illustration.modulate.a = 0.0
+		create_tween().tween_property(victory_illustration, "modulate:a", 1.0, 0.28)
 	back_button.visible = screen != "menu"
 	moves_card.visible = screen == "play"
 	if screen == "menu":
@@ -526,7 +557,17 @@ func _show_menu() -> void:
 		badge.modulate = UI.GREEN if complete else (UI.MUTED if button.disabled else UI.ORANGE)
 		var name_label: Label = button.find_child("MissionTitle", true, false)
 		name_label.modulate = Color("#7d8888") if button.disabled else Color.WHITE
-	completion_label.text = "%d / %d complete" % [completed, location["count"]]
+	var location_stars := 0
+	for i in range(location["first"], location["first"] + location["count"]):
+		var item: Dictionary = catalog.load_level(i)
+		location_stars += progress.earned_stars(item["id"])
+	completion_label.text = "%d / %d complete  •  ★ %d / %d" % [completed, location["count"], location_stars, location["count"] * 3]
+	var xp: int = progress.total_xp()
+	profile_rank.text = progress.rescuer_rank().to_upper()
+	profile_xp.text = "Level %d · %d XP · %d to next" % [progress.rescuer_level(), xp, 100 - xp % 100]
+	profile_bar.value = xp % 100
+	var badges: Array[String] = progress.earned_badges()
+	profile_badges.text = "Badges: " + (", ".join(badges) if not badges.is_empty() else "Complete a rescue to earn your first badge")
 	if location_index == 1 and not progress.unlocked(10, catalog):
 		completion_label.text += " • Complete Coastal mission 10 to enter"
 
@@ -543,6 +584,8 @@ func _start_level(index: int) -> void:
 	location_index = next_location
 	_victory_saved = false
 	audio.play_cue("ui")
+	_best_before_mission = int(progress.best.get(data["id"], -1))
+	_victory_new_best = false
 	level = RescueLevel.new(data)
 	board.level = level
 	board.route_preview.clear()
@@ -582,27 +625,41 @@ func _on_cell_tapped(cell: Vector2i) -> void:
 func _follow_route(route: Array[Vector2i]) -> void:
 	var undo_from: int = level.history.size()
 	for cell in route:
-		var from: Vector2i = level.positions[level.selected]
+		var role: String = level.selected
+		var from: Vector2i = level.positions[role]
+		var fire_action: bool = level.has_fire and cell == level.fire_pos and not level.fire_cleared
+		var crate_action: bool = level.has_crate and cell == level.crate_pos
+		var crate_before: Vector2i = level.crate_pos
+		var infected_action: bool = level.infected.has(cell)
+		var pickup_action: bool = cell == level.civilian_pos and level.carrying_role.is_empty()
 		var before: Dictionary = RescueAudio.snapshot(level)
 		if not level.act(cell):
 			break
 		audio.play_action(before, level)
 		_refresh()
-		if level.positions[level.selected] == from:
-			await board.animate_action(cell, level.selected)
+		if fire_action:
+			await board.animate_spray(role, cell)
+		elif crate_action:
+			await board.animate_push(role, from, crate_before, level.crate_pos)
+		elif infected_action:
+			await board.animate_stun(role, cell)
+		elif pickup_action:
+			await board.animate_pickup(role, from, cell)
 		else:
-			await board.animate_step(level.selected, from, level.positions[level.selected])
+			await board.animate_step(role, from, level.positions[role])
 		if not board.route_preview.is_empty():
 			board.route_preview.pop_front()
 	var was_blocked: bool = not level.blocked_reason.is_empty()
 	level.collapse_history(undo_from)
 	board.route_preview.clear()
-	moving = false
 	if level.rescued:
+		await board.animate_victory(level.carrying_role)
 		_victory_saved = progress.record_victory(level.level_id, level.actions)
+		_victory_new_best = _victory_saved and (_best_before_mission < 0 or level.actions < _best_before_mission)
 		if not _victory_saved:
 			level.message = "Rescue complete, but saving progress failed. Replay to try again."
 		_show_screen("victory")
+	moving = false
 	_refresh()
 	if was_blocked:
 		_show_blocked_popup()
@@ -659,8 +716,10 @@ func _refresh() -> void:
 		victory_illustration.texture = UI.VICTORY if location_index == 0 else UI.OLD_TOWN
 		victory_moves.text = str(level.actions)
 		victory_best.text = str(progress.best.get(level.level_id, "—"))
+		var tier: int = progress.earned_stars(level.level_id) if _victory_saved else 0
+		victory_stars.text = ("★".repeat(tier) + "☆".repeat(3 - tier)) if _victory_saved else "—"
 		var saved: bool = _victory_saved
-		victory_message.text = "Everyone is safe." if saved else level.message
+		victory_message.text = ("New personal best!" if _victory_new_best else ("Perfect Rescue!" if progress.earned_stars(level.level_id) == 3 else "Everyone is safe.")) if saved else level.message
 		var has_next: bool = current_index + 1 < catalog.count()
 		if saved and has_next:
 			var next: Dictionary = catalog.load_level(current_index + 1)
