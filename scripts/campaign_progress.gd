@@ -2,7 +2,46 @@ extends RefCounted
 ## Monotonic local-only unlocks; progress does not depend on ephemeral CI debug keys.
 const SAVE_PATH = "user://rescue_progress_v1.json"
 var path: String
+const THREE_STAR_MOVES = {"01": 2, "02": 3, "03": 3, "04": 4, "05": 5, "06": 5, "07": 6, "08": 4, "09": 6, "10": 6}
 var best: Dictionary = {}
+
+func stars_for(level_id: String, actions: int) -> int:
+	if not THREE_STAR_MOVES.has(level_id) or actions < 0:
+		return 0
+	var target: int = THREE_STAR_MOVES[level_id]
+	if actions <= target:
+		return 3
+	if actions <= target + 2:
+		return 2
+	return 1
+
+func earned_stars(level_id: String) -> int:
+	if not best.has(level_id):
+		return 0
+	return stars_for(level_id, int(best[level_id]))
+
+func total_stars() -> int:
+	var total := 0
+	for id in best:
+		total += earned_stars(id)
+	return total
+
+func earned_badges() -> Array[String]:
+	var result: Array[String] = []
+	if best.size() > 0:
+		result.append("First Rescue")
+	if best.size() >= 10:
+		result.append("Harbor Guardian")
+	var perfect := 0
+	for id in best:
+		if earned_stars(id) == 3:
+			perfect += 1
+	if perfect > 0:
+		result.append("Perfect Planner")
+	if perfect == 10:
+		result.append("Master Rescuer")
+	return result
+
 
 func _init(file_path: String = SAVE_PATH) -> void:
 	path = file_path
