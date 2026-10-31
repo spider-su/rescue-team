@@ -116,7 +116,7 @@ func _run() -> void:
 	viewport.size = Vector2i(720, 1280)
 	game._show_menu()
 	await _settle()
-	_check(game.profile_rank != null and game.profile_bar != null and game.progress.earned_stars("11") > 0, "Reward profile and Old Town stars survive location changes")
+	_check(game.profile_rank != null and game.profile_bar != null and game.progress.earned_stars("10") > 0, "Reward profile and Old Town stars survive location changes")
 	_check(game.menu_scroll.scroll_vertical == 0, "Entering a new location starts at its banner and first mission")
 	await _capture("old-town-missions")
 	game.level_buttons[10].pressed.emit()

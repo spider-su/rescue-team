@@ -605,7 +605,6 @@ func _follow_route(route: Array[Vector2i]) -> void:
 	var was_blocked: bool = not level.blocked_reason.is_empty()
 	level.collapse_history(undo_from)
 	board.route_preview.clear()
-	moving = false
 	if level.rescued:
 		await board.animate_victory(level.carrying_role)
 		_victory_saved = progress.record_victory(level.level_id, level.actions)
@@ -613,6 +612,7 @@ func _follow_route(route: Array[Vector2i]) -> void:
 		if not _victory_saved:
 			level.message = "Rescue complete, but saving progress failed. Replay to try again."
 		_show_screen("victory")
+	moving = false
 	_refresh()
 	if was_blocked:
 		_show_blocked_popup()
