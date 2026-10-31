@@ -56,6 +56,8 @@ func _initialize() -> void:
 	var progress = Progress.new(save_path)
 	if not _assert(progress.unlocked(0, catalog) and not progress.unlocked(1, catalog), "only first mission initially unlocked"):
 		return
+	if not _assert(progress.stars_for("01", 2) == 3 and progress.stars_for("01", 4) == 2 and progress.stars_for("01", 5) == 1, "star tier boundaries"):
+		return
 	if not _assert(progress.record_victory("01", 12), "write first completion"):
 		return
 	if not _assert(progress.unlocked(1, catalog) and not progress.unlocked(2, catalog), "only next mission unlocks"):
