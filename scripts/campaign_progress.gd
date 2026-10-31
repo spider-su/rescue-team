@@ -26,6 +26,22 @@ func total_stars() -> int:
 		total += earned_stars(id)
 	return total
 
+func total_xp() -> int:
+	return best.size() * 50 + total_stars() * 20
+
+func rescuer_level() -> int:
+	return total_xp() / 100 + 1
+
+func rescuer_rank() -> String:
+	var level: int = rescuer_level()
+	if level >= 10:
+		return "Coastal Legend"
+	if level >= 6:
+		return "Rescue Captain"
+	if level >= 3:
+		return "Rescue Specialist"
+	return "Rescue Recruit"
+
 func earned_badges() -> Array[String]:
 	var result: Array[String] = []
 	if best.size() > 0:
