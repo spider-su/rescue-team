@@ -1,0 +1,19 @@
+{
+  "id": "16",
+  "location": "old-town",
+  "title": "Long Relay",
+  "hint": "Ranger clears infected; firefighter clears flames. Deliver the crate across the market and down the long lane.",
+  "rows": [
+    "###########",
+    "#F.f.Z.Z.C#",
+    "#...#####.#",
+    "#R...Z..#.#",
+    "#.#.#.#.#.#",
+    "#E.B....#G#",
+    "#.#.#.#.#.#",
+    "#.......#.#",
+    "#...#.#.#.#",
+    "#......s#X#",
+    "###########"
+  ]
+}

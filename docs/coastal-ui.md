@@ -1,5 +1,7 @@
 # Coastal rescue UI
 
+This records the original coastal implementation. The current chapter grouping, swipe fix and third specialist are described in [Old Town expansion](old-town.md).
+
 The approved direction is an original human rescue squad in a warm coastal town. This implements the mission picker, active puzzle and completion screens from the UI sketch using real Godot controls and the existing deterministic missions.
 
 ## Presentation

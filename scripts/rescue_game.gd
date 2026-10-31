@@ -4,6 +4,7 @@ const RescueLevel = preload("res://scripts/rescue_level.gd")
 const BoardView = preload("res://scripts/board_view.gd")
 const LevelCatalog = preload("res://scripts/level_catalog.gd")
 const CampaignProgress = preload("res://scripts/campaign_progress.gd")
+const MissionScroll = preload("res://scripts/mission_scroll.gd")
 const UI = preload("res://scripts/coastal_style.gd")
 const ICONS = {
 	"back": preload("res://assets/ui/back.svg"), "undo": preload("res://assets/ui/undo.svg"),
@@ -23,6 +24,11 @@ var objective_label: Label
 var status_label: Label
 var firefighter_button: Button
 var engineer_button: Button
+var ranger_button: Button
+var location_buttons: Array[Button] = []
+var location_index: int = 0
+var district_label: Label
+var victory_illustration: TextureRect
 var undo_button: Button
 var restart_button: Button
 var levels_button: Button
@@ -52,6 +58,7 @@ func _ready() -> void:
 	_build_ui()
 	resized.connect(_update_safe_area)
 	_update_safe_area()
+	location_index = 1 if progress.is_complete("10") else 0
 	_show_menu()
 
 func _notification(what: int) -> void:
@@ -112,38 +119,60 @@ func _build_menu(shell: VBoxContainer) -> void:
 	menu_panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	menu_panel.add_theme_constant_override("separation", 10)
 	shell.add_child(menu_panel)
-	var district := UI.label("COASTAL DISTRICT", 32, true)
-	district.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	menu_panel.add_child(district)
+	var locations := HBoxContainer.new()
+	locations.add_theme_constant_override("separation", 12)
+	menu_panel.add_child(locations)
+	for index in range(catalog.LOCATIONS.size()):
+		var button := _button("")
+		button.add_theme_font_size_override("font_size", 25)
+		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		button.pressed.connect(_select_location.bind(index))
+		locations.add_child(button)
+		location_buttons.append(button)
+	district_label = UI.label("", 30, true)
+	district_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	menu_panel.add_child(district_label)
 	completion_label = UI.label("", 23)
 	completion_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	completion_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	menu_panel.add_child(completion_label)
-	_hero = UI.picture(UI.HARBOR, 290)
-	menu_panel.add_child(_hero)
-	menu_scroll = ScrollContainer.new()
+	menu_scroll = MissionScroll.new()
 	menu_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	menu_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	menu_scroll.follow_focus = true
-	menu_scroll.scroll_deadzone = 12
 	menu_panel.add_child(menu_scroll)
 	var list_margin := MarginContainer.new()
+	list_margin.mouse_filter = Control.MOUSE_FILTER_PASS
 	list_margin.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	for edge in ["left", "right"]:
-		list_margin.add_theme_constant_override("margin_" + edge, 16)
+		list_margin.add_theme_constant_override("margin_" + edge, 12)
 	menu_scroll.add_child(list_margin)
 	var list := VBoxContainer.new()
+	list.mouse_filter = Control.MOUSE_FILTER_PASS
 	list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	list.add_theme_constant_override("separation", 12)
 	list_margin.add_child(list)
+	_hero = UI.picture(UI.HARBOR, 210)
+	list.add_child(_hero)
 	for index in range(catalog.count()):
 		var button := _mission_card(index)
-		button.pressed.connect(_start_level.bind(index))
+		button.mouse_filter = Control.MOUSE_FILTER_PASS
+		button.pressed.connect(_open_mission.bind(index))
 		list.add_child(button)
 		level_buttons.append(button)
-	var footer := UI.label("Choose your next rescue.  •  Scroll for all 10 missions", 22, false, UI.MUTED)
+	var footer := UI.label("Swipe anywhere to browse • Tap a mission to play", 22, false, UI.MUTED)
 	footer.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	footer.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	footer.custom_minimum_size.y = 44
 	menu_panel.add_child(footer)
+
+func _open_mission(index: int) -> void:
+	if not menu_scroll.is_dragging():
+		_start_level(index)
+
+func _select_location(index: int) -> void:
+	location_index = index
+	menu_scroll.reset_scroll()
+	_show_menu()
 
 func _mission_card(index: int) -> Button:
 	var data: Dictionary = catalog.load_level(index)
@@ -177,8 +206,9 @@ func _mission_card(index: int) -> Button:
 
 func _mission_thumbnail(index: int) -> AtlasTexture:
 	var texture := AtlasTexture.new()
-	texture.atlas = UI.HARBOR
-	texture.region = Rect2(600 + (index % 3) * 240, 140 + (index % 2) * 160, 360, 280)
+	texture.atlas = UI.HARBOR if catalog.location_for(index) == 0 else UI.OLD_TOWN
+	var dimensions := texture.atlas.get_size()
+	texture.region = Rect2(dimensions * Vector2(0.1 + (index % 3) * 0.25, 0.1 + (index % 2) * 0.2), dimensions * Vector2(0.28, 0.32))
 	return texture
 
 func _build_play(shell: VBoxContainer) -> void:
@@ -196,6 +226,7 @@ func _build_play(shell: VBoxContainer) -> void:
 	play_panel.add_child(roles)
 	firefighter_button = _role_button(level.FIREFIGHTER, roles)
 	engineer_button = _role_button(level.ENGINEER, roles)
+	ranger_button = _role_button(level.RANGER, roles)
 	board = BoardView.new()
 	board.level = level
 	board.custom_minimum_size.y = 300
@@ -241,24 +272,26 @@ func _role_button(role: String, row: HBoxContainer) -> Button:
 	button.tooltip_text = "Select " + role
 	button.pressed.connect(_on_role.bind(role))
 	row.add_child(button)
-	var content := HBoxContainer.new()
+	var content := VBoxContainer.new()
 	content.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	content.offset_left = 8
-	content.offset_right = -8
+	content.offset_left = 4
+	content.offset_right = -4
+	content.offset_top = 2
+	content.offset_bottom = -2
+	content.add_theme_constant_override("separation", 0)
 	button.add_child(content)
 	var portrait := UI.picture(UI.portrait(role))
-	portrait.custom_minimum_size = Vector2(100, 100)
+	portrait.custom_minimum_size.y = 68
 	portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	content.add_child(portrait)
-	var text := UI.label(role.to_upper(), 27, true)
-	text.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	text.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var text := UI.label(role.to_upper(), 24, true)
+	text.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	content.add_child(text)
 	_ignore_mouse(content)
 	return button
 
 func _build_victory(shell: VBoxContainer) -> void:
-	victory_scroll = ScrollContainer.new()
+	victory_scroll = MissionScroll.new()
 	victory_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	victory_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	victory_scroll.follow_focus = true
@@ -268,9 +301,9 @@ func _build_victory(shell: VBoxContainer) -> void:
 	victory_panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	victory_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	victory_scroll.add_child(victory_panel)
-	var illustration := UI.picture(UI.VICTORY, 280)
-	illustration.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	victory_panel.add_child(illustration)
+	victory_illustration = UI.picture(UI.VICTORY, 280)
+	victory_illustration.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	victory_panel.add_child(victory_illustration)
 	victory_message = UI.label("Everyone is safe.", 43, true)
 	victory_message.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	victory_message.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -350,16 +383,18 @@ func _update_safe_area() -> void:
 	for i in range(4):
 		_safe_margin.add_theme_constant_override("margin_" + ["left", "top", "right", "bottom"][i], int(insets[i]))
 	if is_instance_valid(_hero):
-		_hero.custom_minimum_size.y = clampf(size.y * 0.23, 200, 310)
+		_hero.custom_minimum_size.y = clampf(size.y * 0.17, 140, 220)
 
 func _show_screen(next_screen: String) -> void:
 	screen = next_screen
+	if screen != "menu":
+		menu_scroll.stop_scrolling()
 	menu_panel.visible = screen == "menu"
 	play_panel.visible = screen == "play"
 	victory_panel.visible = screen == "victory"
 	victory_scroll.visible = screen == "victory"
 	if screen == "victory":
-		victory_scroll.scroll_vertical = 0
+		victory_scroll.reset_scroll()
 	back_button.visible = screen != "menu"
 	moves_card.visible = screen == "play"
 	if screen == "menu":
@@ -374,15 +409,23 @@ func _show_menu() -> void:
 		return
 	_show_screen("menu")
 	var completed := 0
+	var location: Dictionary = catalog.LOCATIONS[location_index]
+	district_label.text = location["title"].to_upper()
+	_hero.texture = UI.HARBOR if location_index == 0 else UI.OLD_TOWN
+	for i in range(location_buttons.size()):
+		location_buttons[i].text = "COASTAL DISTRICT\nMissions 01–10" if i == 0 else "OLD TOWN\nMissions 11–20"
+		UI.button(location_buttons[i], UI.NAVY if i == location_index else UI.PAPER, i == location_index)
+		location_buttons[i].add_theme_font_size_override("font_size", 25)
 	var first_available := -1
 	for index in range(catalog.count()):
 		var data: Dictionary = catalog.load_level(index)
 		var button := level_buttons[index]
+		button.visible = catalog.location_for(index) == location_index
 		var complete: bool = progress.is_complete(data["id"])
 		button.disabled = not progress.unlocked(index, catalog)
-		if complete:
+		if complete and button.visible:
 			completed += 1
-		elif not button.disabled and first_available < 0:
+		elif button.visible and not button.disabled and first_available < 0:
 			first_available = index
 		UI.button(button, Color("#ffedc3") if index == first_available and not complete else UI.PAPER, index == first_available and not complete)
 		var badge: TextureRect = button.find_child("MissionState", true, false)
@@ -390,7 +433,9 @@ func _show_menu() -> void:
 		badge.modulate = UI.GREEN if complete else (UI.MUTED if button.disabled else UI.ORANGE)
 		var name_label: Label = button.find_child("MissionTitle", true, false)
 		name_label.modulate = Color("#7d8888") if button.disabled else Color.WHITE
-	completion_label.text = "%d / %d complete" % [completed, catalog.count()]
+	completion_label.text = "%d / %d complete" % [completed, location["count"]]
+	if location_index == 1 and not progress.unlocked(10, catalog):
+		completion_label.text += " • Complete Coastal mission 10 to enter"
 
 func _start_level(index: int) -> void:
 	if moving or not progress.unlocked(index, catalog):
@@ -399,6 +444,10 @@ func _start_level(index: int) -> void:
 	if data.is_empty():
 		return
 	current_index = index
+	var next_location: int = catalog.location_for(index)
+	if next_location != location_index:
+		menu_scroll.reset_scroll()
+	location_index = next_location
 	_victory_saved = false
 	level = RescueLevel.new(data)
 	board.level = level
@@ -417,7 +466,7 @@ func _on_role(role: String) -> void:
 func _on_cell_tapped(cell: Vector2i) -> void:
 	if moving or level.rescued:
 		return
-	for role in [level.FIREFIGHTER, level.ENGINEER]:
+	for role in level.positions:
 		if level.positions[role] == cell:
 			_on_role(role)
 			return
@@ -439,7 +488,7 @@ func _follow_route(route: Array[Vector2i]) -> void:
 			break
 		_refresh()
 		if level.positions[level.selected] == from:
-			await get_tree().create_timer(0.12).timeout
+			await board.animate_action(cell, level.selected)
 		else:
 			await board.animate_step(level.selected, from, level.positions[level.selected])
 		if not board.route_preview.is_empty():
@@ -479,15 +528,18 @@ func _next_level() -> void:
 		_show_menu()
 
 func _refresh() -> void:
-	for role_button in [firefighter_button, engineer_button]:
-		var role: String = level.FIREFIGHTER if role_button == firefighter_button else level.ENGINEER
+	for role in [level.FIREFIGHTER, level.ENGINEER, level.RANGER]:
+		var role_button: Button = {level.FIREFIGHTER: firefighter_button, level.ENGINEER: engineer_button, level.RANGER: ranger_button}[role]
+		role_button.visible = level.positions.has(role)
+		if not role_button.visible:
+			continue
 		var selected: bool = level.selected == role
-		var color: Color = (UI.ORANGE if role == level.FIREFIGHTER else UI.BLUE) if selected else Color("#e0e8e7")
+		var color: Color = ({level.FIREFIGHTER: UI.ORANGE, level.ENGINEER: UI.BLUE, level.RANGER: UI.VIOLET}[role]) if selected else Color("#e0e8e7")
 		UI.button(role_button, color, selected)
 		# Disable repeated taps during motion without hiding the active specialist.
 		role_button.add_theme_stylebox_override("disabled", UI.box(color, UI.ORANGE if selected else UI.LINE, 15, 12))
 		var caption: Label = role_button.get_child(0).get_child(1)
-		caption.add_theme_color_override("font_color", Color.WHITE if selected and role == level.ENGINEER else UI.INK)
+		caption.add_theme_color_override("font_color", Color.WHITE if selected and role != level.FIREFIGHTER else UI.INK)
 		role_button.disabled = moving or level.rescued
 	undo_button.disabled = moving or level.history.is_empty()
 	restart_button.disabled = moving
@@ -498,6 +550,7 @@ func _refresh() -> void:
 	status_label.text = level.message
 	status_portrait.texture = UI.portrait(level.selected)
 	if screen == "victory":
+		victory_illustration.texture = UI.VICTORY if location_index == 0 else UI.OLD_TOWN
 		victory_moves.text = str(level.actions)
 		victory_best.text = str(progress.best.get(level.level_id, "—"))
 		var saved: bool = _victory_saved
@@ -505,12 +558,15 @@ func _refresh() -> void:
 		var has_next: bool = current_index + 1 < catalog.count()
 		if saved and has_next:
 			var next: Dictionary = catalog.load_level(current_index + 1)
-			victory_next.text = "%s  %s\nNext mission available" % [next["id"], next["title"].to_upper()]
+			if catalog.location_for(current_index + 1) != location_index:
+				victory_next.text = "OLD TOWN QUARANTINE\nNew location unlocked • Ranger joins the crew"
+			else:
+				victory_next.text = "%s  %s\nNext mission available" % [next["id"], next["title"].to_upper()]
 		elif saved:
-			victory_next.text = "COASTAL DISTRICT COMPLETE\nAll 10 missions rescued. Well done!"
+			victory_next.text = "ALL LOCATIONS COMPLETE\nAll 20 rescues completed. Well done!"
 		else:
 			victory_next.text = "Progress could not be saved. Please replay to try again."
-		next_button.text = "NEXT MISSION" if has_next else "ALL MISSIONS"
+		next_button.text = ("NEXT LOCATION" if catalog.location_for(current_index + 1) != location_index else "NEXT MISSION") if has_next else "ALL MISSIONS"
 		next_button.disabled = not saved
 		victory_undo.disabled = level.history.is_empty()
 	board.queue_redraw()

@@ -1,0 +1,19 @@
+{
+  "id": "14",
+  "location": "old-town",
+  "title": "Corner Delivery",
+  "hint": "Ranger clears infected; firefighter clears flames. Push right, then approach the crate from above.",
+  "rows": [
+    "###########",
+    "#F..f.Z..C#",
+    "#...#####.#",
+    "#R...Z..#.#",
+    "#.#.#.#.#.#",
+    "#E.B....#G#",
+    "#.#.#.#.#.#",
+    "#....s..#.#",
+    "#...#...#.#",
+    "#.......#X#",
+    "###########"
+  ]
+}

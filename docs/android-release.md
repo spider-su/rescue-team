@@ -33,12 +33,13 @@ Local build: install matching Godot 4.7.2 editor/export templates, Android SDK a
 godot --headless --path . --editor --import --quit
 godot --headless --path . --script res://tests/test_rescue_level.gd
 godot --headless --path . --script res://tests/test_campaign.gd
+godot --headless --path . --script res://tests/test_old_town.gd
 godot --headless --path . --script res://tests/test_rescue_ui.gd
 mkdir -p build
 godot --headless --path . --export-debug "Android" build/game-debug.apk
 ```
 
-This exports the **ten-mission coastal rescue game**. The redesigned UI's physical-device acceptance is pending; use the [coastal UI on-device scenarios](coastal-ui.md#on-device-acceptance-scenario-pending). The initial Mission 01 owner-reported playtest predates this redesign.
+This exports the **twenty-mission, two-location rescue game**. The new scrolling, ranger and Old Town chapter still need physical-device acceptance; use the [Old Town device scenario](old-town.md#verification-and-device-scenario). The owner reported the preceding coastal UI working but scrolling being difficult; device/OS details were not provided.
 
 ## Regression playtest: progress and crate safety (pending on device)
 

@@ -3,11 +3,13 @@ extends RefCounted
 const LevelCatalog = preload("res://scripts/level_catalog.gd")
 const FIREFIGHTER = "firefighter"
 const ENGINEER = "engineer"
+const RANGER = "ranger"
 
 var width: int = 0
 var height: int = 0
 var walls: Dictionary = {}
 var positions: Dictionary = {}
+var infected: Dictionary = {}
 var fire_pos: Vector2i = Vector2i(-1, -1)
 var crate_pos: Vector2i = Vector2i(-1, -1)
 var switch_pos: Vector2i = Vector2i(-1, -1)
@@ -22,6 +24,7 @@ var actions: int = 0
 var message: String = ""
 var history: Array[Dictionary] = []
 var level_id: String = ""
+var location_id: String = "coast"
 var title: String = ""
 var hint: String = ""
 var has_fire: bool = false
@@ -35,6 +38,7 @@ func _init(definition: Dictionary = {}) -> void:
 	assert(LevelCatalog.new().validate(definition).is_empty(), "Invalid mission data")
 	_definition = definition.duplicate(true)
 	level_id = definition["id"]
+	location_id = definition.get("location", "coast")
 	title = definition["title"]
 	hint = definition["hint"]
 	reset()
@@ -42,6 +46,7 @@ func _init(definition: Dictionary = {}) -> void:
 func reset() -> void:
 	walls.clear()
 	positions.clear()
+	infected.clear()
 	fire_pos = Vector2i(-1, -1)
 	crate_pos = Vector2i(-1, -1)
 	switch_pos = Vector2i(-1, -1)
@@ -58,6 +63,8 @@ func reset() -> void:
 				"#": walls[cell] = true
 				"F": positions[FIREFIGHTER] = cell
 				"E": positions[ENGINEER] = cell
+				"R": positions[RANGER] = cell
+				"Z": infected[cell] = true
 				"f": fire_pos = cell
 				"B": crate_pos = cell
 				"s": switch_pos = cell
@@ -82,7 +89,7 @@ func select_role(role: String) -> bool:
 	if rescued or not positions.has(role):
 		return false
 	selected = role
-	message = "Firefighter clears fire." if role == FIREFIGHTER else "Engineer pushes crates."
+	message = {FIREFIGHTER: "Firefighter clears fire.", ENGINEER: "Engineer pushes crates.", RANGER: "Ranger stuns adjacent infected. Tap one to approach safely."}[role]
 	return true
 
 
@@ -103,6 +110,11 @@ func plan_route(target: Vector2i) -> Array[Vector2i]:
 	# Keep the current adjacent interaction semantics and their feedback.
 	if absi(target.x - start.x) + absi(target.y - start.y) == 1:
 		return [target]
+	if infected.has(target):
+		if selected != RANGER:
+			_reject("Only the ranger can clear infected. Select the violet portrait.")
+			return []
+		return _route_to_interaction(target, false)
 	if has_fire and target == fire_pos and not fire_cleared:
 		if selected != FIREFIGHTER:
 			_reject("Only the firefighter can extinguish flames.")
@@ -196,6 +208,14 @@ func act(target: Vector2i) -> bool:
 		return _reject("Tap an adjacent tile. Select a rescuer to switch.")
 	if walls.has(target) or not _inside(target):
 		return _reject("A wall blocks that route.")
+	if infected.has(target):
+		if selected != RANGER:
+			return _reject("Only the ranger can clear infected. Select the violet portrait.")
+		_record()
+		infected.erase(target)
+		actions += 1
+		message = "Infected contained. The tile is now safe for everyone."
+		return true
 
 	if target == fire_pos and not fire_cleared:
 		if selected != FIREFIGHTER:
@@ -241,6 +261,7 @@ func undo() -> bool:
 		return _reject("Nothing to undo.")
 	var previous: Dictionary = history.pop_back()
 	positions = previous["positions"].duplicate()
+	infected = previous["infected"].duplicate()
 	crate_pos = previous["crate_pos"]
 	fire_cleared = previous["fire_cleared"]
 	carrying_role = previous["carrying_role"]
@@ -267,6 +288,8 @@ func _inside(cell: Vector2i) -> bool:
 func _can_enter(cell: Vector2i) -> bool:
 	if not _inside(cell) or walls.has(cell):
 		return false
+	if infected.has(cell):
+		return false
 	if (has_crate and cell == crate_pos) or (has_fire and cell == fire_pos and not fire_cleared):
 		return false
 	if cell == gate_pos and not gate_is_open():
@@ -284,6 +307,7 @@ func _can_push_into(cell: Vector2i) -> bool:
 func _record() -> void:
 	history.append({
 		"positions": positions.duplicate(),
+		"infected": infected.duplicate(),
 		"crate_pos": crate_pos,
 		"fire_cleared": fire_cleared,
 		"carrying_role": carrying_role,

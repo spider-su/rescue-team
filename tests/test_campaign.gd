@@ -6,9 +6,9 @@ const Progress = preload("res://scripts/campaign_progress.gd")
 
 func _initialize() -> void:
 	var catalog = Catalog.new()
-	if not _assert(catalog.count() == 10, "ten curated missions"):
+	if not _assert(catalog.count() == 20, "twenty curated missions"):
 		return
-	var expected_ids := ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10"]
+	var expected_ids := ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20"]
 	for index in range(catalog.count()):
 		var definition: Dictionary = catalog.load_level(index)
 		if not _assert(not definition.is_empty() and definition["id"] == expected_ids[index], "mission identity / JSON %d" % index):
@@ -38,7 +38,7 @@ func _initialize() -> void:
 		[["engineer", 3, 3], ["engineer", 4, 3], ["engineer", 5, 3], ["firefighter", 2, 1], ["firefighter", 8, 1], ["firefighter", 10, 1]],
 		[["engineer", 2, 3], ["engineer", 3, 3], ["engineer", 4, 3], ["engineer", 5, 3], ["firefighter", 5, 1], ["firefighter", 7, 1], ["firefighter", 10, 1]],
 	]
-	for index in range(catalog.count()):
+	for index in range(actions_by_level.size()):
 		var mission = RescueLevel.new(catalog.load_level(index))
 		if not _assert(mission.width > 0 and mission.height > 0, "loaded board dimensions %d" % index):
 			return

@@ -9,6 +9,7 @@ const TEAL = Color("#218a90")
 const ORANGE = Color("#e97d28")
 const BLUE = Color("#367fa6")
 const GREEN = Color("#508764")
+const VIOLET = Color("#72518e")
 const FONT = preload("res://assets/fonts/Barlow-Regular.ttf")
 const HEADING = preload("res://assets/fonts/BarlowCondensed-SemiBold.ttf")
 const HARBOR = preload("res://assets/coastal/harbor.png")
@@ -16,6 +17,8 @@ const BACKDROP = preload("res://assets/coastal/board-backdrop.png")
 const VICTORY = preload("res://assets/coastal/victory.png")
 const CREW = preload("res://assets/coastal/crew-atlas.png")
 const PROPS = preload("res://assets/coastal/props-atlas.png")
+const OLD_TOWN = preload("res://assets/old-town/location.png")
+const RANGER_ART = preload("res://assets/old-town/ranger-atlas.png")
 
 static func box(color: Color, border: Color = LINE, radius: int = 16, padding: int = 16) -> StyleBoxFlat:
 	var style := StyleBoxFlat.new()
@@ -38,7 +41,7 @@ static func button(control: Button, color: Color = PAPER, selected: bool = false
 	var focus := box(Color.TRANSPARENT, Color("#e8ac34"), 15, 0)
 	focus.set_border_width_all(4)
 	control.add_theme_stylebox_override("focus", focus)
-	var text := Color.WHITE if color in [NAVY, TEAL, BLUE] else INK
+	var text := Color.WHITE if color in [NAVY, TEAL, BLUE, VIOLET] else INK
 	for state in ["font_color", "font_hover_color", "font_pressed_color", "icon_normal_color", "icon_hover_color", "icon_pressed_color"]:
 		control.add_theme_color_override(state, text)
 	control.add_theme_color_override("font_disabled_color", MUTED)
@@ -58,6 +61,8 @@ static func label(text: String, font_size: int = 25, heading: bool = false, colo
 	return result
 
 static func portrait(role: String) -> AtlasTexture:
+	if role in ["ranger", "infected"]:
+		return _ranger_region(role, false)
 	var index: int = ["firefighter", "engineer", "civilian"].find(role)
 	var texture := AtlasTexture.new()
 	texture.atlas = CREW
@@ -65,10 +70,20 @@ static func portrait(role: String) -> AtlasTexture:
 	return texture
 
 static func sprite(role: String) -> AtlasTexture:
+	if role in ["ranger", "infected"]:
+		return _ranger_region(role, true)
 	var index: int = ["firefighter", "engineer", "civilian"].find(role)
 	var texture := AtlasTexture.new()
 	texture.atlas = CREW
 	texture.region = Rect2(index * 512 + 112, 560, 320, 448)
+	return texture
+
+static func _ranger_region(role: String, full_body: bool) -> AtlasTexture:
+	var texture := AtlasTexture.new()
+	texture.atlas = RANGER_ART
+	var cell := RANGER_ART.get_width() / 2
+	var column := 0 if role == "ranger" else 1
+	texture.region = Rect2(column * cell + 96, cell, cell - 160, cell) if full_body else Rect2(column * cell + 80, 0, cell - 160, cell - 160)
 	return texture
 
 static func prop(kind: String) -> AtlasTexture:

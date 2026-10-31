@@ -2,18 +2,19 @@
 
 An original Android-first rescue puzzle game in **Godot 4.7.2 stable / GDScript**.
 
-Ten hand-authored missions pair a firefighter and engineer to clear hazards, open routes and carry civilians to safety. The coastal UI uses original illustrated human characters, a harbor mission picker, an adaptive puzzle board and a dedicated completion screen. The original Mission 01 had an owner-reported Android happy-path playtest; **the redesigned ten-mission build still needs physical-device acceptance**.
+Twenty hand-authored missions across two locations combine a firefighter, engineer and (in Old Town) a containment ranger to clear hazards, open routes and carry civilians to safety. The coastal UI uses original illustrated human characters, a harbor mission picker, an adaptive puzzle board and a dedicated completion screen. The original Mission 01 had an owner-reported Android happy-path playtest; **the new chapter and scrolling changes still need physical-device acceptance**.
 
 ## Play
 
-Choose an unlocked mission. Tap a rescuer or their portrait to select them, then tap a destination to walk the safe shortest route. The firefighter extinguishes fire; the engineer pushes crates onto blue switches to open gates. Pick up the civilian and reach the green exit.
+Choose an unlocked mission. Tap a rescuer or their portrait to select them, then tap a destination to walk the safe shortest route. The firefighter extinguishes fire; the engineer pushes crates onto blue switches to open gates; the ranger stuns adjacent infected blockers in Old Town. Pick up the civilian and reach the green exit.
 
 - Each destination tap is one undo step, even when it walks several tiles.
 - **UNDO**, **RESTART** and **LEVELS** remain available during play, except while movement is animating.
 - Completion shows actual move count, saved best, replay, undo rescue and the next unlocked mission. The final mission returns to the campaign.
 - Progress is saved offline through atomic replacement. A failed save is reported instead of announcing an unlock.
 - Tall play areas may rotate a mission's visual grid clockwise; routes and taps use the original mission coordinates. No mission rules change.
-- All ten mission cards are accessible by scrolling. Completion also scrolls on smaller displays.
+- Location tabs group missions 01–10 (Coastal District) and 11–20 (Old Town Quarantine). Mission 10 unlocks the second location.
+- Swipe over cards or the illustration to scroll with momentum. A drag cancels the card tap; existing coastal scores remain valid. Completion also scrolls on smaller displays.
 
 ## Develop and verify
 
@@ -23,6 +24,7 @@ Open `project.godot` in standard Godot 4.7.2 and run F5. From the repository roo
 godot --headless --path . --editor --import --quit
 godot --headless --path . --script res://tests/test_rescue_level.gd
 godot --headless --path . --script res://tests/test_campaign.gd
+godot --headless --path . --script res://tests/test_old_town.gd
 godot --headless --path . --script res://tests/test_rescue_ui.gd
 godot --headless --path . --quit-after 5
 ```
@@ -44,8 +46,8 @@ See [Android release and device scenarios](docs/android-release.md). APK export 
 ## Design and assets
 
 - [Game design](docs/game-design.md), [roadmap](docs/roadmap.md), [architecture](docs/architecture.md), [level format](docs/level-format.md).
-- [Coastal UI specification and validation](docs/coastal-ui.md).
-- [Artwork provenance and generation prompts](assets/coastal/README.md). Fonts include their SIL Open Font Licenses under `assets/fonts/`.
+- [Coastal UI specification and validation](docs/coastal-ui.md), [Old Town chapter, scroll fix and ranger rules](docs/old-town.md).
+- [Artwork provenance and generation prompts](assets/coastal/README.md). [Old Town artwork and prompts](assets/old-town/README.md). Fonts include their SIL Open Font Licenses under `assets/fonts/`.
 - All missions and product artwork are original. No protected legacy game assets are used.
 
 Bootstrapped from the MIT-licensed [mobile_template/game-template](https://github.com/spider-su/mobile_template/tree/game-template). This is an independent product; port selected upstream fixes deliberately. Follow [AGENTS.md](AGENTS.md).

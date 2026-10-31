@@ -1,0 +1,19 @@
+{
+  "id": "19",
+  "location": "old-town",
+  "title": "Split Approach",
+  "hint": "Ranger clears infected; firefighter clears flames. Reach the crate from the right, then push down.",
+  "rows": [
+    "###########",
+    "#F...Z.Z.C#",
+    "#...#####.#",
+    "#R...Z..#.#",
+    "#.#f#.#.#.#",
+    "#E...B..#G#",
+    "#...###.#.#",
+    "#..s....#.#",
+    "#...#...#.#",
+    "#.......#X#",
+    "###########"
+  ]
+}

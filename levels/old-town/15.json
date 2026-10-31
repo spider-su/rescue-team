@@ -1,0 +1,19 @@
+{
+  "id": "15",
+  "location": "old-town",
+  "title": "Market Detour",
+  "hint": "Ranger clears infected; firefighter clears flames. Push down first, then move to the crate’s left.",
+  "rows": [
+    "###########",
+    "#F..f.Z.ZC#",
+    "#...#####.#",
+    "#R......#.#",
+    "#.#Z###.#.#",
+    "#E.B....#G#",
+    "#.#.#.#.#.#",
+    "#....s..#.#",
+    "#...#...#.#",
+    "#.......#X#",
+    "###########"
+  ]
+}
