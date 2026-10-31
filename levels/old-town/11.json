@@ -1,0 +1,19 @@
+{
+  "id": "11",
+  "location": "old-town",
+  "title": "First Containment",
+  "hint": "Ranger clears infected; firefighter clears flames. Power the gate with two crate pushes.",
+  "rows": [
+    "###########",
+    "#F.f.Z...C#",
+    "#...#####.#",
+    "#R......#.#",
+    "#...#.#.#.#",
+    "#E.B.s..#G#",
+    "#.#.#.#.#.#",
+    "#.......#.#",
+    "#...#...#.#",
+    "#.......#X#",
+    "###########"
+  ]
+}

@@ -28,14 +28,23 @@ func _run() -> void:
 	game.progress = Progress.new(TEST_SAVE)
 	viewport.add_child(game)
 	await _settle()
-	_check(game.screen == "menu" and game.level_buttons.size() == 10, "Mission picker starts with all ten cards")
+	_check(game.screen == "menu" and game.level_buttons.size() == 20 and game.location_buttons.size() == 2, "Mission picker groups twenty cards into two locations")
 	_check(game.level_buttons[1].disabled, "Uncompleted next mission is visibly locked")
+	game.location_buttons[1].pressed.emit()
+	await _settle()
+	_check(game.location_index == 1 and game.level_buttons[10].visible and not game.level_buttons[0].visible and game.level_buttons[10].disabled, "New location can be previewed while its missions remain locked")
+	game.location_buttons[0].pressed.emit()
+	await _settle()
+	await _test_swipe()
+	game.menu_scroll.reset_scroll()
+	await _settle()
 	game._start_level(1)
 	_check(game.screen == "menu", "Locked mission cannot be opened")
 	game.level_buttons[0].pressed.emit()
 	await _settle()
 	_check(game.screen == "play", "Mission card starts the actual play scene")
 	_check_controls_fit()
+	await _test_hero_popup()
 	await _tap(Vector2i(3, 1))
 	_check(game.level.carrying_role == game.level.FIREFIGHTER, "Board tap walks and collects civilian")
 	game.undo_button.pressed.emit()
@@ -87,7 +96,7 @@ func _run() -> void:
 	await _settle()
 	var scroll_rect: Rect2 = game.menu_scroll.get_global_rect()
 	_check(scroll_rect.intersects(game.level_buttons[9].get_global_rect()), "Last mission is reachable by scrolling")
-	# The last level leads back to the campaign instead of a nonexistent mission.
+	# Coastal completion unlocks the next location without dropping old scores.
 	for id in ["05", "06", "07", "08", "09"]:
 		game.progress.record_victory(id, 20)
 	game._start_level(9)
@@ -97,9 +106,38 @@ func _run() -> void:
 	game.firefighter_button.pressed.emit()
 	for x in [5, 7, 10]:
 		await _tap(Vector2i(x, 1))
-	_check(game.screen == "victory" and game.next_button.text == "ALL MISSIONS", "Final rescue shows completed campaign action")
+	_check(game.screen == "victory" and game.next_button.text == "NEXT LOCATION", "Coastal completion offers the new location")
 	game.next_button.pressed.emit()
-	_check(game.screen == "menu" and game.completion_label.text == "10 / 10 complete", "Final completion returns to all ten completed missions")
+	_check(game.screen == "play" and game.current_index == 10 and game.location_index == 1 and game.ranger_button.visible, "Next location begins mission 11 with ranger available")
+	viewport.size = Vector2i(720, 1280)
+	game._show_menu()
+	await _settle()
+	_check(game.menu_scroll.scroll_vertical == 0, "Entering a new location starts at its banner and first mission")
+	await _capture("old-town-missions")
+	game.level_buttons[10].pressed.emit()
+	await _settle()
+	for dimensions in [Vector2i(540, 960), Vector2i(720, 1600), Vector2i(720, 1280)]:
+		viewport.size = dimensions
+		await _settle()
+		_check_controls_fit()
+		await _capture("old-town-%dx%d" % [dimensions.x, dimensions.y])
+	await _capture("old-town-ranger")
+	var solutions: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://tests/fixtures/old_town_solutions.json"))
+	for step in solutions["11"]:
+		game._on_role(step[0])
+		await _tap(Vector2i(step[1], step[2]))
+	_check(game.screen == "victory" and game.progress.is_complete("11"), "New specialist and location complete through real animated board input")
+	await _capture("old-town-complete")
+	# Seed the middle missions to exercise the actual final mission and full result.
+	for id in range(12, 20):
+		game.progress.record_victory(str(id), 120)
+	game._start_level(19)
+	for step in solutions["20"]:
+		game._on_role(step[0])
+		await _tap(Vector2i(step[1], step[2]))
+	_check(game.screen == "victory" and game.next_button.text == "ALL MISSIONS", "Mission 20 offers completed campaign action")
+	game.next_button.pressed.emit()
+	_check(game.screen == "menu" and game.completion_label.text == "10 / 10 complete" and game.location_index == 1, "Final completion returns to completed Old Town group")
 	# A failed save must not be presented as a successful unlock, even on replay.
 	viewport.size = Vector2i(720, 1280)
 	game._start_level(0)
@@ -116,8 +154,86 @@ func _run() -> void:
 	viewport.queue_free()
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(TEST_SAVE))
 	if not failed:
-		print("PASS: coastal UI, animated rescue, victory/undo/replay, unlocks, adaptive grid input and portrait layouts")
+		print("PASS: two-location UI, card swipes, ranger rescue, progression, adaptive input and portrait layouts")
 	quit(1 if failed else 0)
+
+func _test_swipe() -> void:
+	# Send real pointer events through the viewport, not direct scrollbar assignments.
+	var start: Vector2 = game.level_buttons[0].get_global_rect().get_center()
+	var down := InputEventScreenTouch.new()
+	down.index = 0
+	down.pressed = true
+	down.position = start
+	viewport.push_input(down, true)
+	for offset in [40, 100, 180, 240]:
+		var drag := InputEventScreenDrag.new()
+		drag.index = 0
+		drag.position = start - Vector2(0, offset)
+		drag.relative = Vector2(0, -40)
+		viewport.push_input(drag, true)
+		await process_frame
+	var up := InputEventScreenTouch.new()
+	up.index = 0
+	up.pressed = false
+	up.position = start - Vector2(0, 240)
+	viewport.push_input(up, true)
+	var at_release: int = game.menu_scroll.scroll_vertical
+	await create_timer(0.08).timeout
+	await _settle()
+	_check(game.screen == "menu" and game.menu_scroll.scroll_vertical > 100, "Swipe starting on mission card scrolls without launching mission")
+	_check(game.menu_scroll.scroll_vertical > at_release, "Fling continues smoothly after release")
+	game.menu_scroll.reset_scroll()
+	await _settle()
+	# A normal tap still starts the card after a completed drag.
+	start = game.level_buttons[0].get_global_rect().get_center()
+	down.position = start
+	viewport.push_input(down, true)
+	up.position = start
+	viewport.push_input(up, true)
+	await _settle()
+	_check(game.screen == "play", "A short tap after scrolling starts exactly one mission")
+	game._show_menu()
+	await _settle()
+	# Desktop mouse dragging must work even without touchscreen hardware.
+	var press := InputEventMouseButton.new()
+	press.button_index = MOUSE_BUTTON_LEFT
+	press.pressed = true
+	press.position = game.level_buttons[0].get_global_rect().get_center()
+	viewport.push_input(press, true)
+	var motion := InputEventMouseMotion.new()
+	motion.button_mask = MOUSE_BUTTON_MASK_LEFT
+	motion.position = press.position - Vector2(0, 200)
+	motion.relative = Vector2(0, -200)
+	viewport.push_input(motion, true)
+	press.pressed = false
+	press.position = motion.position
+	viewport.push_input(press, true)
+	await _settle()
+	_check(game.screen == "menu" and game.menu_scroll.scroll_vertical > 100, "Mouse drag across cards also scrolls without activation")
+	for source in [game.level_buttons[1], game._hero]:
+		game.menu_scroll.reset_scroll()
+		await _settle()
+		start = source.get_global_rect().get_center()
+		down.position = start
+		viewport.push_input(down, true)
+		var drag := InputEventScreenDrag.new()
+		drag.index = 0
+		drag.position = start - Vector2(0, 140)
+		drag.relative = Vector2(0, -140)
+		viewport.push_input(drag, true)
+		up.position = drag.position
+		viewport.push_input(up, true)
+		await _settle()
+		_check(game.screen == "menu" and game.menu_scroll.scroll_vertical > 80, "Locked cards and location illustration also accept swipe scrolling")
+	game.menu_scroll.reset_scroll()
+	await _settle()
+	var wheel := InputEventMouseButton.new()
+	wheel.button_index = MOUSE_BUTTON_WHEEL_DOWN
+	wheel.pressed = true
+	wheel.position = game.level_buttons[0].get_global_rect().get_center()
+	viewport.push_input(wheel, true)
+	await _settle()
+	_check(game.screen == "menu" and game.menu_scroll.scroll_vertical > 0, "Mouse wheel scroll passes through mission cards")
 
 func _tap(cell: Vector2i, capture_name: String = "") -> void:
 	await _settle()
@@ -151,7 +267,9 @@ func _test_board_projection() -> void:
 
 func _check_controls_fit() -> void:
 	var bounds := Rect2(Vector2.ZERO, Vector2(viewport.size))
-	for control in [game.firefighter_button, game.engineer_button, game.undo_button, game.restart_button, game.levels_button]:
+	for control in [game.firefighter_button, game.engineer_button, game.ranger_button, game.undo_button, game.restart_button, game.levels_button]:
+		if not control.is_visible_in_tree():
+			continue
 		var rect: Rect2 = control.get_global_rect()
 		_check(bounds.encloses(rect) and rect.size.y >= 96, "Touch controls fit portrait viewport with large targets")
 	_check(game.board.size.y >= 300, "Board retains a usable display area")
@@ -172,3 +290,35 @@ func _check(condition: bool, description: String) -> void:
 	if not condition:
 		failed = true
 		push_error("FAIL: " + description)
+
+func _test_hero_popup() -> void:
+	game.level = Level.new({"id": "popup", "title": "Popup test", "hint": "", "rows": ["###########", "#F.f...CX.#", "###########", "#E..BsG...#", "###########"]})
+	game.board.level = game.level
+	game._refresh()
+	await _settle()
+	await _tap(Vector2i(7, 1))
+	_check(game.hero_popup.visible and game.level.blocked_reason == "fire" and game.hero_popup_text.text.begins_with("Firefighter:"), "Unreachable tap displays active hero's obstacle popup")
+	var previous: String = game.hero_popup_text.text
+	await _tap(Vector2i(7, 1))
+	_check(game.hero_popup_text.text != previous and game.level.actions == 0, "Repeated rejection varies dialogue without moving hero")
+	for dimensions in [Vector2i(540, 960), Vector2i(720, 1280)]:
+		viewport.size = dimensions
+		await _settle()
+		_check(game.board.get_global_rect().encloses(game.hero_popup.get_global_rect()), "Popup fits board on portrait screen")
+		_check(game.hero_popup_text.get_line_count() <= game.hero_popup_text.get_visible_line_count(), "Popup dialogue fits without clipping")
+		await _capture("hero-popup-%dx%d" % [dimensions.x, dimensions.y])
+	game.hero_popup_timer.timeout.emit()
+	_check(not game.hero_popup.visible, "Popup dismisses on timeout")
+	await _tap(Vector2i(7, 1))
+	game.engineer_button.pressed.emit()
+	_check(not game.hero_popup.visible, "Switching hero dismisses stale popup")
+	await _tap(Vector2i(7, 1))
+	_check(game.hero_popup_text.text.begins_with("Engineer:"), "Popup speaker follows selected hero")
+	game.level.positions[game.level.ENGINEER] = Vector2i(2, 1)
+	await _tap(Vector2i(3, 1))
+	_check(game.hero_popup.visible and game.level.blocked_reason == "fire" and game.level.actions == 0, "Adjacent rejected interaction also shows popup without moving")
+	game.level.positions[game.level.ENGINEER] = Vector2i(1, 3)
+	await _tap(Vector2i(2, 3))
+	_check(not game.hero_popup.visible and game.level.actions == 1, "Popup passes through taps and clears on valid move")
+	game._start_level(0)
+	await _settle()

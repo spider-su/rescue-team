@@ -7,11 +7,14 @@ var route_preview: Array[Vector2i] = []
 var animated_role: String = ""
 var animated_position: Vector2 = Vector2.ZERO
 var art: Dictionary = {}
+var action_cell := Vector2i(-1, -1)
+var action_progress: float = 0
+var action_role := ""
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	resized.connect(queue_redraw)
-	for role in ["firefighter", "engineer", "civilian"]:
+	for role in ["firefighter", "engineer", "ranger", "civilian", "infected"]:
 		art[role] = UI.sprite(role)
 	for prop in ["fire", "crate", "switch", "gate", "open_gate", "exit"]:
 		art[prop] = UI.prop(prop)
@@ -55,10 +58,11 @@ func _draw() -> void:
 	var origin: Vector2 = metrics["origin"]
 	# Calm water frames the workshop, keeping decorative detail off walkable tiles.
 	draw_style_box(UI.box(Color("#438d98"), Color("#357684"), 18, 0), Rect2(Vector2.ZERO, size))
-	var picture_size := UI.BACKDROP.get_size()
+	var backdrop: Texture2D = UI.OLD_TOWN if level.location_id == "old-town" else UI.BACKDROP
+	var picture_size := backdrop.get_size()
 	var cover_scale := maxf(size.x / picture_size.x, size.y / picture_size.y)
 	var source_size := size / cover_scale
-	draw_texture_rect_region(UI.BACKDROP, Rect2(Vector2(2, 2), size - Vector2(4, 4)), Rect2((picture_size - source_size) / 2, source_size))
+	draw_texture_rect_region(backdrop, Rect2(Vector2(2, 2), size - Vector2(4, 4)), Rect2((picture_size - source_size) / 2, source_size))
 	draw_rect(Rect2(Vector2(2, 2), size - Vector2(4, 4)), Color(0.13, 0.36, 0.4, 0.18))
 	var board_size := Vector2(metrics["columns"], metrics["rows"]) * step
 	draw_style_box(UI.box(Color("#b29b78"), Color("#847456"), 8, 0), Rect2(origin - Vector2(6, 4), board_size + Vector2(12, 14)))
@@ -83,9 +87,11 @@ func _draw() -> void:
 		_draw_art("fire", cell_center(Vector2(level.fire_pos), metrics), step * 1.08)
 	if level.has_crate:
 		_draw_art("crate", cell_center(Vector2(level.crate_pos), metrics), step * 0.98)
+	for cell in level.infected:
+		_draw_person("infected", cell_center(Vector2(cell), metrics), step)
 	if level.carrying_role.is_empty() and not level.rescued:
 		_draw_person("civilian", cell_center(Vector2(level.civilian_pos), metrics), step)
-	for role in [level.FIREFIGHTER, level.ENGINEER]:
+	for role in level.positions:
 		var position_on_grid: Vector2 = animated_position if animated_role == role else Vector2(level.positions[role])
 		var center := cell_center(position_on_grid, metrics)
 		if level.selected == role:
@@ -95,6 +101,10 @@ func _draw() -> void:
 		_draw_person(role, center, step)
 		if level.carrying_role == role:
 			_draw_person("civilian", center + Vector2(step * 0.27, step * 0.1), step * 0.55)
+	if action_cell.x >= 0:
+		var color: Color = UI.VIOLET if action_role == level.RANGER else UI.BLUE
+		color.a = 1.0 - action_progress
+		draw_arc(cell_center(Vector2(action_cell), metrics), step * (0.2 + action_progress * 0.4), 0, TAU, 32, color, 4, true)
 
 func _draw_floor(rect: Rect2, variation: int) -> void:
 	var floor_color := Color("#ecdec4") if variation % 2 == 0 else Color("#e4d3b5")
@@ -142,6 +152,20 @@ func _set_animated_position(value: Vector2) -> void:
 
 func clear_animation() -> void:
 	animated_role = ""
+	action_cell = Vector2i(-1, -1)
+	queue_redraw()
+
+func animate_action(cell: Vector2i, role: String) -> void:
+	action_cell = cell
+	action_role = role
+	action_progress = 0
+	var tween := create_tween()
+	tween.tween_method(_set_action_progress, 0.0, 1.0, 0.22)
+	await tween.finished
+	clear_animation()
+
+func _set_action_progress(value: float) -> void:
+	action_progress = value
 	queue_redraw()
 
 func _gui_input(event: InputEvent) -> void:

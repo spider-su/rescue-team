@@ -1,0 +1,19 @@
+{
+  "id": "20",
+  "location": "old-town",
+  "title": "Last Light Evacuation",
+  "hint": "Ranger clears infected; firefighter clears flames. Clear the lower lane, then deliver the crate up through the fire route.",
+  "rows": [
+    "###########",
+    "#F..Z.Z.ZC#",
+    "#...#####.#",
+    "#R..#s#.#.#",
+    "#..Z#f#.#.#",
+    "#E.B#...#G#",
+    "#.#..Z..#.#",
+    "#.......#.#",
+    "#...#.#.#.#",
+    "#.......#X#",
+    "###########"
+  ]
+}

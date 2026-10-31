@@ -1,0 +1,19 @@
+{
+  "id": "17",
+  "location": "old-town",
+  "title": "Reverse the Switch",
+  "hint": "Ranger clears infected; firefighter clears flames. Push right, up, then left to reach the recessed switch.",
+  "rows": [
+    "###########",
+    "#F..f.Z.ZC#",
+    "#...#####.#",
+    "#R.s....#.#",
+    "#.###Z#.#.#",
+    "#E.B....#G#",
+    "#.#.#.#.#.#",
+    "#.......#.#",
+    "#...#...#.#",
+    "#.......#X#",
+    "###########"
+  ]
+}

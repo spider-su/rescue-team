@@ -33,12 +33,13 @@ Local build: install matching Godot 4.7.2 editor/export templates, Android SDK a
 godot --headless --path . --editor --import --quit
 godot --headless --path . --script res://tests/test_rescue_level.gd
 godot --headless --path . --script res://tests/test_campaign.gd
+godot --headless --path . --script res://tests/test_old_town.gd
 godot --headless --path . --script res://tests/test_rescue_ui.gd
 mkdir -p build
 godot --headless --path . --export-debug "Android" build/game-debug.apk
 ```
 
-This exports the **ten-mission coastal rescue game**. The redesigned UI's physical-device acceptance is pending; use the [coastal UI on-device scenarios](coastal-ui.md#on-device-acceptance-scenario-pending). The initial Mission 01 owner-reported playtest predates this redesign.
+This exports the **twenty-mission, two-location rescue game**. The new scrolling, ranger and Old Town chapter still need physical-device acceptance; use the [Old Town device scenario](old-town.md#verification-and-device-scenario). The owner reported the preceding coastal UI working but scrolling being difficult; device/OS details were not provided.
 
 ## Regression playtest: progress and crate safety (pending on device)
 
@@ -59,3 +60,9 @@ This exports the **ten-mission coastal rescue game**. The redesigned UI's physic
 A green CI result means **export verified**, not a physically tested game or store-ready release.
 
 Godot reference: https://docs.godotengine.org/en/4.7/tutorials/export/exporting_for_android.html
+
+## Regression playtest: hero obstacle messages (pending on device)
+
+Use the APK commit recorded on the PR. Select the engineer and tap fire, then tap a destination beyond the fire in a blocked corridor. A portrait popup must explain the fire without moving anyone or changing undo history. Repeat to see different wording. Tap a locked gate and a destination behind it: the hero should explain opening the gate with the blue switch. Check wall, crate, blocked push and Old Town infected messages. Each category has four lines, with no immediate repeats.
+
+On a smaller phone, verify the entire message fits and the portrait matches the selected hero. Wait 4.5 seconds for dismissal, then repeat and switch heroes, restart or return to missions: stale popups must disappear. Tap a reachable tile while the popup is visible: movement must work immediately. Complete a normal rescue and undo it to check unchanged rules. Record device/OS, APK commit and results; desktop screenshots and headless checks do not establish device ergonomics.
