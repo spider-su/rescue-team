@@ -32,11 +32,13 @@ Local build: install matching Godot 4.7.2 editor/export templates, Android SDK a
 ```bash
 godot --headless --path . --editor --import --quit
 godot --headless --path . --script res://tests/test_rescue_level.gd
+godot --headless --path . --script res://tests/test_campaign.gd
+godot --headless --path . --script res://tests/test_rescue_ui.gd
 mkdir -p build
 godot --headless --path . --export-debug "Android" build/game-debug.apk
 ```
 
-This exports **Mission 01, the first original playable rescue puzzle**. Physical-device smoke testing is not yet recorded.
+This exports the **ten-mission coastal rescue game**. The redesigned UI's physical-device acceptance is pending; use the [coastal UI on-device scenarios](coastal-ui.md#on-device-acceptance-scenario-pending). The initial Mission 01 owner-reported playtest predates this redesign.
 
 ## Regression playtest: progress and crate safety (pending on device)
 

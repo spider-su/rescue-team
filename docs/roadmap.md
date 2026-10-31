@@ -36,10 +36,12 @@ Prefer a small focused PR for each increment; do not combine all milestones in o
 - [x] Project bootstrapped from Godot game-template and identity set.
 - [x] CI workflow configured for `main`, feature branches and pull requests.
 - [x] CI green **in this repository** — [initial successful workflow run](https://github.com/spider-su/rescue-team/actions/runs/41079474191), including Android debug APK artifact. Basic real-device Mission 01 completion was subsequently reported; broader smoke testing remains pending.
-- [x] Phase 1: one playable original rescue puzzle, two specialist abilities, fire, crate/switch/gate, civilian extraction, deterministic win path, undo and restart. Ten levels still pending.
+- [x] Phase 1: one playable original rescue puzzle, two specialist abilities, fire, crate/switch/gate, civilian extraction, deterministic win path, undo and restart. The campaign now has ten tested maps; broader device acceptance remains pending.
 - [x] **Initial Android happy-path playtest** (2026-10-30): project owner reports installing the APK and completing Mission 01 successfully; hardware/OS version and detailed input observations not recorded.
 - [ ] **New ten-level build device smoke test** (tap-to-move, menu navigation, unlock/save, pause/resume, smaller screens): still pending.
 - [ ] **Comprehensive device smoke test** still pending: touch ergonomics, undo/restart, app lifecycle, different screen sizes, accessibility and performance.
 - [x] Ten data-driven JSON missions with validated complete solutions, mission picker, monotonic offline unlocks and route animations (feature branch; CI/device verification pending).
-- [ ] Remaining ten missions and full ten-level vertical slice.
+- [x] Ten curated missions are implemented with deterministic solution tests. Full vertical-slice device persistence and usability acceptance remain pending.
+- [x] Coastal UI implemented: original human crew and harbor artwork, mission cards, adaptive square-cell board and dedicated completion screen; UI integration tests and rendered desktop evidence are documented in `docs/coastal-ui.md`.
+- [ ] Coastal UI physical-device acceptance, audio and remaining mobile polish.
 - [ ] Commercial metrics validated.

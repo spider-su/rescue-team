@@ -1,8 +1,10 @@
 # Rescue Team — game concept (working design)
 
-**Status:** five original data-driven levels implemented on the campaign branch; remaining five levels, art, sound and tuning are provisional.
+**Status:** ten original data-driven levels are implemented. The approved visual direction is a stylized human rescue squad in a warm coastal town; UI/art implementation and device acceptance are tracked separately. Sound and gameplay tuning remain provisional.
 
 ## Player promise
+
+**Visual direction:** original illustrated human firefighter and engineer, recognizable equipment, cream-stone coastal workshops, terracotta roofs and teal harbor water. Keep the square puzzle grid readable and decoration outside interactive cells. Mission selection, play and completion are distinct screens; see [Coastal UI](coastal-ui.md).
 
 Solve readable, bite-sized rescue emergencies by **combining two specialists** instead of reflex tapping or time management. Every level is a small tactical puzzle with a safe path to extraction and no mandatory monetization interruption.
 
@@ -26,11 +28,11 @@ Target session: approximately 1–3 minutes per level; slow, thoughtful play is 
 
 **Level elements:** walls, open tiles, fire hazard, movable crate, floor switch/gate, civilian, exit. Introduce one new rule at a time and clearly signal when a move is blocked.
 
-**Current prototype controls:** portrait grid with level picker, local saved unlocks, animated path preview, movement tweening; , select by role button or tapping a rescuer, tap a **distant reachable destination** to automatically walk the shortest safe route, or tap FIRE/BOX to approach and interact. Movement is animated tile-by-tile; each tap is one UNDO step. Unreachable/locked locations remain blocked, and RESTART resets the level. Firefighter clears adjacent fire, engineer pushes an adjacent crate one tile, stepping onto the civilian tile picks them up, and a carrier reaching EXIT wins once the crate powers the gate.
+**Current controls:** portrait grid with level picker, local saved unlocks and animated path preview. Select by portrait button or tapping a rescuer; tap a **distant reachable destination** to walk the shortest safe route, or tap fire/a crate to approach and interact. Movement is animated tile-by-tile; each tap is one UNDO step. Unreachable/locked locations remain blocked, and RESTART resets the level. The firefighter clears adjacent fire, the engineer pushes an adjacent crate one tile, stepping onto the civilian picks them up, and carrying them to EXIT wins. On missions with a gate, the crate powers its switch.
 
 ## Implemented Phase 1 level
 
-**Mission 01 — The Locked Corridor:** engineer pushes a crate onto a switch; firefighter extinguishes the fire blocking the upper passage; firefighter carries the civilian through the now-open gate to extraction. The full solution is covered by a deterministic headless test. Simple colored tiles are temporary art.
+**Mission 04 — The Locked Corridor** preserves the original cooperative prototype: engineer pushes a crate onto a switch; firefighter extinguishes the blocking fire and carries the civilian through the open gate to extraction. Its full solution is covered by deterministic headless and scene-integration tests.
 
 ## First five missions (implemented)
 
@@ -40,13 +42,9 @@ Target session: approximately 1–3 minutes per level; slow, thoughtful play is 
 4. The Locked Corridor — original cooperative prototype.
 5. Crossed Routes — two crate pushes and longer extraction.
 
-## Remaining vertical slice: 10 original levels
+## Ten-level vertical slice
 
-- 1–2: movement, character selection and exit.
-- 3–4: fire hazard and firefighter ability.
-- 5–6: movable obstacle and engineer ability.
-- 7–8: switch/gate ordering.
-- 9–10: combine both characters, civilian routing and a small multi-step solution.
+The manifest now contains ten authored missions. The first five introduce rescue, fire, switches/gates and cooperation; the later missions vary route length, crate placement and action ordering. Tests verify a complete solution for every mission. Content breadth does not establish device usability or external-player engagement.
 
 Ship only after every level has at least one verified solution and tests for unwinnable/invalid state handling. Favor manual, interesting designs over generated filler.
 
