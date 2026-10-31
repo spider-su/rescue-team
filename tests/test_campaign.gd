@@ -6,9 +6,9 @@ const Progress = preload("res://scripts/campaign_progress.gd")
 
 func _initialize() -> void:
 	var catalog = Catalog.new()
-	if not _assert(catalog.count() == 10, "ten curated missions"):
+	if not _assert(catalog.count() == 20, "twenty curated missions"):
 		return
-	var expected_ids := ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10"]
+	var expected_ids := ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20"]
 	for index in range(catalog.count()):
 		var definition: Dictionary = catalog.load_level(index)
 		if not _assert(not definition.is_empty() and definition["id"] == expected_ids[index], "mission identity / JSON %d" % index):
@@ -38,7 +38,7 @@ func _initialize() -> void:
 		[["engineer", 3, 3], ["engineer", 4, 3], ["engineer", 5, 3], ["firefighter", 2, 1], ["firefighter", 8, 1], ["firefighter", 10, 1]],
 		[["engineer", 2, 3], ["engineer", 3, 3], ["engineer", 4, 3], ["engineer", 5, 3], ["firefighter", 5, 1], ["firefighter", 7, 1], ["firefighter", 10, 1]],
 	]
-	for index in range(catalog.count()):
+	for index in range(actions_by_level.size()):
 		var mission = RescueLevel.new(catalog.load_level(index))
 		if not _assert(mission.width > 0 and mission.height > 0, "loaded board dimensions %d" % index):
 			return
@@ -58,16 +58,20 @@ func _initialize() -> void:
 		return
 	if not _assert(progress.stars_for("01", 2) == 3 and progress.stars_for("01", 4) == 2 and progress.stars_for("01", 5) == 1, "star tier boundaries"):
 		return
+	if not _assert(progress.stars_for("11", 9) == 3 and progress.stars_for("20", 26) == 2 and progress.stars_for("bogus", 1) == 0, "old town thresholds and unknown ids"):
+		return
 	if not _assert(progress.record_victory("01", 12), "write first completion"):
 		return
 	if not _assert(progress.unlocked(1, catalog) and not progress.unlocked(2, catalog), "only next mission unlocks"):
 		return
-	if not _assert(progress.record_victory("01", 16) and progress.best["01"] == 12, "preserve best move count"):
+	if not _assert(progress.record_victory("01", 16) and progress.best["01"] == 12 and progress.earned_stars("01") == 1, "worse replay preserves best and stars"):
+		return
+	if not _assert(progress.record_victory("01", 2) and progress.earned_stars("01") == 3 and progress.total_stars() == 3 and progress.total_xp() == 110, "better replay upgrades stars and XP"):
 		return
 	if not _assert(not progress.record_victory("bogus", 1) and not progress.record_victory("02", -1), "reject unknown / negative progress"):
 		return
 	var reloaded = Progress.new(save_path)
-	if not _assert(reloaded.is_complete("01") and reloaded.best["01"] == 12 and reloaded.unlocked(1, catalog), "progress survives app restart"):
+	if not _assert(reloaded.is_complete("01") and reloaded.best["01"] == 2 and reloaded.earned_stars("01") == 3 and reloaded.unlocked(1, catalog), "stars derive from existing save after restart"):
 		return
 	if not _test_safe_saves(progress, catalog):
 		return

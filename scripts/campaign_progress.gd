@@ -2,8 +2,11 @@ extends RefCounted
 ## Monotonic local-only unlocks; progress does not depend on ephemeral CI debug keys.
 const SAVE_PATH = "user://rescue_progress_v1.json"
 var path: String
-const THREE_STAR_MOVES = {"01": 2, "02": 3, "03": 3, "04": 4, "05": 5, "06": 5, "07": 6, "08": 4, "09": 6, "10": 6}
 var best: Dictionary = {}
+
+## Three-star targets are achieved reference tap counts, never invented perfect scores.
+## Old Town targets come from the tested solution fixtures (not proven optimal).
+const THREE_STAR_MOVES = {"10":6,"11":9,"12":11,"13":11,"14":13,"15":14,"16":18,"17":17,"18":17,"19":14,"20":24,"01":2,"02":3,"03":3,"04":4,"05":5,"06":5,"07":6,"08":4,"09":6}
 
 func stars_for(level_id: String, actions: int) -> int:
 	if not THREE_STAR_MOVES.has(level_id) or actions < 0:
@@ -30,32 +33,37 @@ func total_xp() -> int:
 	return best.size() * 50 + total_stars() * 20
 
 func rescuer_level() -> int:
-	return total_xp() / 100 + 1
+	return int(total_xp() / 100) + 1
 
 func rescuer_rank() -> String:
 	var level: int = rescuer_level()
 	if level >= 10:
-		return "Coastal Legend"
-	if level >= 6:
 		return "Rescue Captain"
-	if level >= 3:
+	if level >= 6:
 		return "Rescue Specialist"
+	if level >= 3:
+		return "Rescue Volunteer"
 	return "Rescue Recruit"
 
 func earned_badges() -> Array[String]:
 	var result: Array[String] = []
 	if best.size() > 0:
 		result.append("First Rescue")
-	if best.size() >= 10:
-		result.append("Harbor Guardian")
+	var coastal := 0
 	var perfect := 0
 	for id in best:
+		if String(id).to_int() <= 10:
+			coastal += 1
 		if earned_stars(id) == 3:
 			perfect += 1
+	if coastal >= 10:
+		result.append("Harbor Guardian")
 	if perfect > 0:
 		result.append("Perfect Planner")
-	if perfect == 10:
+	if perfect >= 10:
 		result.append("Master Rescuer")
+	if best.size() >= 20:
+		result.append("Old Town Protector")
 	return result
 
 

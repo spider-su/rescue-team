@@ -11,8 +11,25 @@ const PATHS = [
 	"res://levels/8.json",
 	"res://levels/9.json",
 	"res://levels/10.json",
+	"res://levels/old-town/11.json",
+	"res://levels/old-town/12.json",
+	"res://levels/old-town/13.json",
+	"res://levels/old-town/14.json",
+	"res://levels/old-town/15.json",
+	"res://levels/old-town/16.json",
+	"res://levels/old-town/17.json",
+	"res://levels/old-town/18.json",
+	"res://levels/old-town/19.json",
+	"res://levels/old-town/20.json",
 ]
-const ALLOWED = ".#FECXfBsG"
+const LOCATIONS = [
+	{"id": "coast", "title": "Coastal District", "first": 0, "count": 10},
+	{"id": "old-town", "title": "Old Town Quarantine", "first": 10, "count": 10},
+]
+const ALLOWED = ".#FERCXfBsGZ"
+
+func location_for(index: int) -> int:
+	return 0 if index < 10 else 1
 
 func count() -> int:
 	return PATHS.size()
@@ -41,6 +58,8 @@ func validate(data: Dictionary) -> String:
 			return "missing " + key
 	if not data["id"] is String or String(data["id"]).is_empty():
 		return "invalid id"
+	if data.get("location", "coast") not in ["coast", "old-town"]:
+		return "unknown location"
 	if not data["title"] is String or String(data["title"]).is_empty():
 		return "invalid title"
 	if not data["hint"] is String or not data["rows"] is Array:
@@ -71,6 +90,10 @@ func validate(data: Dictionary) -> String:
 	for marker in ["f", "B", "s", "G"]:
 		if counts.get(marker, 0) > 1:
 			return "multiple " + marker + " tiles unsupported"
+	if counts.get("R", 0) > 1 or counts.get("Z", 0) > 6:
+		return "at most one ranger and six infected supported"
+	if counts.get("Z", 0) > 0 and counts.get("R", 0) != 1:
+		return "infected require a ranger"
 	var any_gate: bool = counts.get("B", 0) > 0 or counts.get("s", 0) > 0 or counts.get("G", 0) > 0
 	if any_gate and not (counts.get("B", 0) == 1 and counts.get("s", 0) == 1 and counts.get("G", 0) == 1):
 		return "crate, switch and gate must be specified together"

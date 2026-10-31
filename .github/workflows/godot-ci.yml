@@ -64,6 +64,9 @@ jobs:
       - name: Validate mission data, solutions and saved progress
         run: godot --headless --path . --script res://tests/test_campaign.gd
 
+      - name: Verify Old Town solutions, ranger rules and save compatibility
+        run: godot --headless --path . --script res://tests/test_old_town.gd
+
       - name: Boot the game scene headlessly
         run: godot --headless --path . --quit-after 5
 

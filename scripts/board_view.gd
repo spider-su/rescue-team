@@ -7,11 +7,23 @@ var route_preview: Array[Vector2i] = []
 var animated_role: String = ""
 var animated_position: Vector2 = Vector2.ZERO
 var art: Dictionary = {}
+var action_cell := Vector2i(-1, -1)
+var action_progress: float = 0
+var action_role := ""
+var walk_progress: float = 0.0
+var facing: Dictionary = {}
+var effect_kind: String = ""
+var effect_progress: float = 0.0
+var effect_role: String = ""
+var effect_from: Vector2i = Vector2i(-1, -1)
+var effect_to: Vector2i = Vector2i(-1, -1)
+## Diagnostic counters used in the existing animated UI regression suite.
+var animation_counts: Dictionary = {"walk": 0, "spray": 0, "push": 0, "pickup": 0, "celebrate": 0, "stun": 0}
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	resized.connect(queue_redraw)
-	for role in ["firefighter", "engineer", "civilian"]:
+	for role in ["firefighter", "engineer", "ranger", "civilian", "infected"]:
 		art[role] = UI.sprite(role)
 	for prop in ["fire", "crate", "switch", "gate", "open_gate", "exit"]:
 		art[prop] = UI.prop(prop)
@@ -55,10 +67,11 @@ func _draw() -> void:
 	var origin: Vector2 = metrics["origin"]
 	# Calm water frames the workshop, keeping decorative detail off walkable tiles.
 	draw_style_box(UI.box(Color("#438d98"), Color("#357684"), 18, 0), Rect2(Vector2.ZERO, size))
-	var picture_size := UI.BACKDROP.get_size()
+	var backdrop: Texture2D = UI.OLD_TOWN if level.location_id == "old-town" else UI.BACKDROP
+	var picture_size := backdrop.get_size()
 	var cover_scale := maxf(size.x / picture_size.x, size.y / picture_size.y)
 	var source_size := size / cover_scale
-	draw_texture_rect_region(UI.BACKDROP, Rect2(Vector2(2, 2), size - Vector2(4, 4)), Rect2((picture_size - source_size) / 2, source_size))
+	draw_texture_rect_region(backdrop, Rect2(Vector2(2, 2), size - Vector2(4, 4)), Rect2((picture_size - source_size) / 2, source_size))
 	draw_rect(Rect2(Vector2(2, 2), size - Vector2(4, 4)), Color(0.13, 0.36, 0.4, 0.18))
 	var board_size := Vector2(metrics["columns"], metrics["rows"]) * step
 	draw_style_box(UI.box(Color("#b29b78"), Color("#847456"), 8, 0), Rect2(origin - Vector2(6, 4), board_size + Vector2(12, 14)))
@@ -82,19 +95,28 @@ func _draw() -> void:
 	if level.has_fire and not level.fire_cleared:
 		_draw_art("fire", cell_center(Vector2(level.fire_pos), metrics), step * 1.08)
 	if level.has_crate:
-		_draw_art("crate", cell_center(Vector2(level.crate_pos), metrics), step * 0.98)
+		var crate_center: Vector2 = cell_center(Vector2(level.crate_pos), metrics)
+		if effect_kind == "push":
+			crate_center = cell_center(Vector2(effect_from).lerp(Vector2(effect_to), effect_progress), metrics)
+			crate_center.y -= sin(effect_progress * PI) * step * 0.11
+		_draw_art("crate", crate_center, step * 0.98)
+	for cell in level.infected:
+		_draw_person("infected", cell_center(Vector2(cell), metrics), step)
 	if level.carrying_role.is_empty() and not level.rescued:
 		_draw_person("civilian", cell_center(Vector2(level.civilian_pos), metrics), step)
-	for role in [level.FIREFIGHTER, level.ENGINEER]:
+	for role in level.positions:
 		var position_on_grid: Vector2 = animated_position if animated_role == role else Vector2(level.positions[role])
 		var center := cell_center(position_on_grid, metrics)
+		if animated_role == role and effect_kind == "":
+			center.y -= sin(walk_progress * PI * 2.0) * step * 0.065
 		if level.selected == role:
 			var ring := Color("#ffcd5c")
 			draw_circle(center + Vector2(0, step * 0.23), step * 0.38, Color(ring, 0.3), true, -1, true)
 			draw_arc(center + Vector2(0, step * 0.23), step * 0.38, 0, TAU, 32, ring, 3, true)
-		_draw_person(role, center, step)
-		if level.carrying_role == role:
+		_draw_facing_person(role, center, step)
+		if level.carrying_role == role and effect_kind != "pickup":
 			_draw_person("civilian", center + Vector2(step * 0.27, step * 0.1), step * 0.55)
+	_draw_effects(metrics, step)
 
 func _draw_floor(rect: Rect2, variation: int) -> void:
 	var floor_color := Color("#ecdec4") if variation % 2 == 0 else Color("#e4d3b5")
@@ -128,20 +150,122 @@ func _draw_word(center: Vector2, text: String, font_size: int, color: Color) -> 
 	var width := UI.HEADING.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
 	draw_string(UI.HEADING, center - Vector2(width / 2, 0), text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, color)
 
+
+func _draw_facing_person(role: String, center: Vector2, step: float) -> void:
+	var lean := 0.0
+	if effect_kind == "push" and role == effect_role:
+		lean = float(facing.get(role, 1)) * 0.09 * sin(effect_progress * PI)
+	draw_set_transform(center, lean, Vector2(float(facing.get(role, 1)), 1.0))
+	_draw_person(role, Vector2.ZERO, step)
+	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+
+func _draw_effects(metrics: Dictionary, step: float) -> void:
+	if effect_kind.is_empty():
+		return
+	var center: Vector2 = cell_center(Vector2(effect_to), metrics)
+	var fade: float = 1.0 - effect_progress
+	match effect_kind:
+		"spray":
+			var source: Vector2 = cell_center(Vector2(level.positions[effect_role]), metrics)
+			for i in range(5):
+				var t: float = clampf(effect_progress * 1.45 - float(i) * 0.085, 0.0, 1.0)
+				var p: Vector2 = source.lerp(center, t)
+				var offset := Vector2(0, sin(t * PI * 2.0 + float(i) * 1.2) * step * 0.13)
+				draw_circle(p + offset, step * (0.075 - float(i) * 0.007), Color("#6fdef7", fade * 0.9))
+			for i in range(3):
+				var steam: Vector2 = center + Vector2((i - 1) * step * 0.17, -effect_progress * step * 0.5)
+				draw_arc(steam, step * 0.15, PI, TAU, 10, Color(0.93, 0.97, 1, fade), 2.4, true)
+		"push":
+			for i in range(3):
+				var dust: Vector2 = center + Vector2((i - 1) * step * 0.17, step * 0.30)
+				draw_circle(dust, step * 0.07 * (1.0 + effect_progress), Color("#e9d4aa", fade * 0.8))
+		"pickup":
+			var lift: Vector2 = center + Vector2(0, -sin(effect_progress * PI / 2.0) * step * 0.4)
+			draw_set_transform(lift, 0.0, Vector2.ONE * (1.0 - effect_progress * 0.32))
+			_draw_person("civilian", Vector2.ZERO, step)
+			draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+		"stun":
+			draw_arc(center, step * (0.2 + effect_progress * 0.38), 0, TAU, 28, Color(UI.VIOLET, fade), 4, true)
+			for i in range(4):
+				var angle: float = TAU * float(i) / 4.0 + effect_progress * 2.0
+				draw_line(center + Vector2.RIGHT.rotated(angle) * step * 0.20, center + Vector2.RIGHT.rotated(angle) * step * 0.44, Color(UI.VIOLET, fade), 3, true)
+		"celebrate":
+			var source: Vector2 = cell_center(Vector2(level.positions[effect_role]), metrics)
+			for i in range(12):
+				var angle: float = TAU * float(i) / 12.0
+				var distance: float = step * (0.12 + effect_progress * 1.0)
+				var particle: Vector2 = source + Vector2.RIGHT.rotated(angle) * distance
+				var hue: Color = Color("#f7ce5b") if i % 2 == 0 else Color("#56ca9c")
+				draw_circle(particle, step * 0.08 * fade, Color(hue, fade))
+			draw_arc(source, step * (0.35 + effect_progress * 0.2), 0, TAU, 32, Color("#f8dc87", fade), 3, true)
+
 func animate_step(role: String, start: Vector2i, target: Vector2i) -> void:
+	animation_counts["walk"] += 1
+	facing[role] = -1 if target.x < start.x else (1 if target.x > start.x else int(facing.get(role, 1)))
 	animated_role = role
 	animated_position = Vector2(start)
+	walk_progress = 0.0
 	var tween := create_tween()
-	tween.tween_method(_set_animated_position, Vector2(start), Vector2(target), 0.16)
+	tween.tween_method(_set_walk_progress.bind(start, target), 0.0, 1.0, 0.17).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 	await tween.finished
 	clear_animation()
 
-func _set_animated_position(value: Vector2) -> void:
-	animated_position = value
+func _set_walk_progress(value: float, start: Vector2i, target: Vector2i) -> void:
+	walk_progress = value
+	animated_position = Vector2(start).lerp(Vector2(target), value)
 	queue_redraw()
 
 func clear_animation() -> void:
 	animated_role = ""
+	action_cell = Vector2i(-1, -1)
+	effect_kind = ""
+	effect_progress = 0.0
+	walk_progress = 0.0
+	queue_redraw()
+
+func animate_action(cell: Vector2i, role: String) -> void:
+	await animate_stun(role, cell)
+
+func animate_spray(role: String, target: Vector2i) -> void:
+	await _animate_effect("spray", role, target, target, 0.30)
+
+func animate_push(role: String, actor_from: Vector2i, crate_from: Vector2i, crate_to: Vector2i) -> void:
+	facing[role] = -1 if crate_from.x < actor_from.x else (1 if crate_from.x > actor_from.x else int(facing.get(role, 1)))
+	animated_role = role
+	animated_position = Vector2(actor_from)
+	await _animate_effect("push", role, crate_from, crate_to, 0.24)
+
+func animate_pickup(role: String, actor_from: Vector2i, civilian_at: Vector2i) -> void:
+	animated_role = role
+	animated_position = Vector2(actor_from)
+	await _animate_effect("pickup", role, civilian_at, civilian_at, 0.28)
+
+func animate_stun(role: String, target: Vector2i) -> void:
+	await _animate_effect("stun", role, target, target, 0.24)
+
+func animate_victory(role: String) -> void:
+	if not level.rescued:
+		return
+	await _animate_effect("celebrate", role, level.exit_pos, level.exit_pos, 0.65)
+
+func _animate_effect(kind: String, role: String, from: Vector2i, to: Vector2i, duration: float) -> void:
+	animation_counts[kind] += 1
+	effect_kind = kind
+	effect_role = role
+	effect_from = from
+	effect_to = to
+	effect_progress = 0.0
+	var tween := create_tween()
+	tween.tween_method(_set_effect_progress, 0.0, 1.0, duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	await tween.finished
+	clear_animation()
+
+func _set_effect_progress(value: float) -> void:
+	effect_progress = value
+	if effect_kind == "push":
+		animated_position = Vector2(effect_from).lerp(Vector2(level.positions[effect_role]), value)
+	elif effect_kind == "pickup":
+		animated_position = Vector2(level.positions[effect_role]).lerp(Vector2(effect_to), value)
 	queue_redraw()
 
 func _gui_input(event: InputEvent) -> void:

@@ -1,0 +1,19 @@
+{
+  "id": "12",
+  "location": "old-town",
+  "title": "Blocked Supply",
+  "hint": "Ranger clears infected; firefighter clears flames. Move the engineer aside to free the ranger’s approach.",
+  "rows": [
+    "###########",
+    "#F.f.Z...C#",
+    "#...#####.#",
+    "#R......#.#",
+    "#.#.#.#.#.#",
+    "#EZB.s..#G#",
+    "#.#.#.#.#.#",
+    "#.......#.#",
+    "#.......#.#",
+    "#.......#X#",
+    "###########"
+  ]
+}

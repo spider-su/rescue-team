@@ -4,6 +4,8 @@ const RescueLevel = preload("res://scripts/rescue_level.gd")
 const BoardView = preload("res://scripts/board_view.gd")
 const LevelCatalog = preload("res://scripts/level_catalog.gd")
 const CampaignProgress = preload("res://scripts/campaign_progress.gd")
+const MissionScroll = preload("res://scripts/mission_scroll.gd")
+const HeroLines = preload("res://scripts/hero_lines.gd")
 const UI = preload("res://scripts/coastal_style.gd")
 const ICONS = {
 	"back": preload("res://assets/ui/back.svg"), "undo": preload("res://assets/ui/undo.svg"),
@@ -23,6 +25,11 @@ var objective_label: Label
 var status_label: Label
 var firefighter_button: Button
 var engineer_button: Button
+var ranger_button: Button
+var location_buttons: Array[Button] = []
+var location_index: int = 0
+var district_label: Label
+var victory_illustration: TextureRect
 var undo_button: Button
 var restart_button: Button
 var levels_button: Button
@@ -33,16 +40,11 @@ var play_panel: VBoxContainer
 var victory_panel: VBoxContainer
 var victory_scroll: ScrollContainer
 var level_buttons: Array[Button] = []
-var profile_rank: Label
-var profile_xp: Label
-var profile_bar: ProgressBar
-var profile_badges: Label
 var completion_label: Label
 var moves_label: Label
 var moves_card: PanelContainer
 var back_button: Button
 var victory_moves: Label
-var victory_stars: Label
 var victory_best: Label
 var victory_next: Label
 var victory_message: Label
@@ -51,12 +53,25 @@ var status_portrait: TextureRect
 var _safe_margin: MarginContainer
 var _hero: TextureRect
 var _victory_saved: bool = false
+var _best_before_mission: int = -1
+var _victory_new_best: bool = false
+var victory_stars: Label
+var profile_rank: Label
+var profile_xp: Label
+var profile_bar: ProgressBar
+var profile_badges: Label
+var hero_lines = HeroLines.new()
+var hero_popup: PanelContainer
+var hero_popup_text: Label
+var hero_popup_portrait: TextureRect
+var hero_popup_timer: Timer
 
 func _ready() -> void:
 	texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
 	_build_ui()
 	resized.connect(_update_safe_area)
 	_update_safe_area()
+	location_index = 1 if progress.is_complete("10") else 0
 	_show_menu()
 
 func _notification(what: int) -> void:
@@ -117,74 +132,87 @@ func _build_menu(shell: VBoxContainer) -> void:
 	menu_panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	menu_panel.add_theme_constant_override("separation", 10)
 	shell.add_child(menu_panel)
-	var district := UI.label("COASTAL DISTRICT", 32, true)
-	district.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	menu_panel.add_child(district)
+	var locations := HBoxContainer.new()
+	locations.add_theme_constant_override("separation", 12)
+	menu_panel.add_child(locations)
+	for index in range(catalog.LOCATIONS.size()):
+		var button := _button("")
+		button.add_theme_font_size_override("font_size", 25)
+		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		button.pressed.connect(_select_location.bind(index))
+		locations.add_child(button)
+		location_buttons.append(button)
+	district_label = UI.label("", 30, true)
+	district_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	menu_panel.add_child(district_label)
 	completion_label = UI.label("", 23)
 	completion_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	completion_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	menu_panel.add_child(completion_label)
-	_build_profile(menu_panel)
-	_hero = UI.picture(UI.HARBOR, 290)
-	menu_panel.add_child(_hero)
-	menu_scroll = ScrollContainer.new()
+	menu_scroll = MissionScroll.new()
 	menu_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	menu_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	menu_scroll.follow_focus = true
-	menu_scroll.scroll_deadzone = 12
 	menu_panel.add_child(menu_scroll)
 	var list_margin := MarginContainer.new()
+	list_margin.mouse_filter = Control.MOUSE_FILTER_PASS
 	list_margin.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	for edge in ["left", "right"]:
-		list_margin.add_theme_constant_override("margin_" + edge, 16)
+		list_margin.add_theme_constant_override("margin_" + edge, 12)
 	menu_scroll.add_child(list_margin)
 	var list := VBoxContainer.new()
+	list.mouse_filter = Control.MOUSE_FILTER_PASS
 	list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	list.add_theme_constant_override("separation", 12)
 	list_margin.add_child(list)
+	_build_profile(list)
+	_hero = UI.picture(UI.HARBOR, 210)
+	list.add_child(_hero)
 	for index in range(catalog.count()):
 		var button := _mission_card(index)
-		button.pressed.connect(_start_level.bind(index))
+		button.mouse_filter = Control.MOUSE_FILTER_PASS
+		button.pressed.connect(_open_mission.bind(index))
 		list.add_child(button)
 		level_buttons.append(button)
-	var footer := UI.label("Choose your next rescue.  •  Scroll for all 10 missions", 22, false, UI.MUTED)
+	var footer := UI.label("Swipe anywhere to browse • Tap a mission to play", 22, false, UI.MUTED)
 	footer.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	footer.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	footer.custom_minimum_size.y = 44
 	menu_panel.add_child(footer)
 
 func _build_profile(parent: VBoxContainer) -> void:
 	var panel := PanelContainer.new()
-	panel.add_theme_stylebox_override("panel", UI.box(Color("#e6eff0"), UI.LINE, 18, 12))
+	panel.add_theme_stylebox_override("panel", UI.box(Color("#e6eff0"), UI.LINE, 18, 10))
 	parent.add_child(panel)
 	var content := VBoxContainer.new()
-	content.add_theme_constant_override("separation", 5)
+	content.add_theme_constant_override("separation", 4)
 	panel.add_child(content)
-	var identity := HBoxContainer.new()
-	identity.add_theme_constant_override("separation", 12)
-	content.add_child(identity)
-	var portrait := UI.picture(UI.portrait("firefighter"))
-	portrait.custom_minimum_size = Vector2(92, 92)
-	identity.add_child(portrait)
-	var details := VBoxContainer.new()
-	details.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	identity.add_child(details)
-	profile_rank = UI.label("RESCUE RECRUIT", 29, true)
-	details.add_child(profile_rank)
-	profile_xp = UI.label("Level 1 · 0 XP", 22)
-	details.add_child(profile_xp)
+	profile_rank = UI.label("RESCUE RECRUIT", 26, true)
+	content.add_child(profile_rank)
+	profile_xp = UI.label("Level 1 · 0 XP", 21)
+	content.add_child(profile_xp)
 	profile_bar = ProgressBar.new()
-	profile_bar.custom_minimum_size.y = 14
+	profile_bar.custom_minimum_size.y = 12
 	profile_bar.max_value = 100
 	profile_bar.show_percentage = false
 	content.add_child(profile_bar)
-	profile_badges = UI.label("", 20, false, UI.MUTED)
+	profile_badges = UI.label("", 19, false, UI.MUTED)
 	profile_badges.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	content.add_child(profile_badges)
+
+func _open_mission(index: int) -> void:
+	if not menu_scroll.is_dragging():
+		_start_level(index)
+
+func _select_location(index: int) -> void:
+	location_index = index
+	menu_scroll.reset_scroll()
+	_show_menu()
 
 func _mission_card(index: int) -> Button:
 	var data: Dictionary = catalog.load_level(index)
 	var button := _button("")
 	button.custom_minimum_size.y = 104
-	button.tooltip_text = "Mission %s: %s" % [data["id"], data["title"]]
+	button.tooltip_text = "Mission %s: %s  ·  %d/3 stars" % [data["id"], data["title"], progress.earned_stars(data["id"])]
 	var row := HBoxContainer.new()
 	row.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	row.offset_left = 14
@@ -212,8 +240,9 @@ func _mission_card(index: int) -> Button:
 
 func _mission_thumbnail(index: int) -> AtlasTexture:
 	var texture := AtlasTexture.new()
-	texture.atlas = UI.HARBOR
-	texture.region = Rect2(600 + (index % 3) * 240, 140 + (index % 2) * 160, 360, 280)
+	texture.atlas = UI.HARBOR if catalog.location_for(index) == 0 else UI.OLD_TOWN
+	var dimensions := texture.atlas.get_size()
+	texture.region = Rect2(dimensions * Vector2(0.1 + (index % 3) * 0.25, 0.1 + (index % 2) * 0.2), dimensions * Vector2(0.28, 0.32))
 	return texture
 
 func _build_play(shell: VBoxContainer) -> void:
@@ -231,12 +260,14 @@ func _build_play(shell: VBoxContainer) -> void:
 	play_panel.add_child(roles)
 	firefighter_button = _role_button(level.FIREFIGHTER, roles)
 	engineer_button = _role_button(level.ENGINEER, roles)
+	ranger_button = _role_button(level.RANGER, roles)
 	board = BoardView.new()
 	board.level = level
 	board.custom_minimum_size.y = 300
 	board.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	board.cell_tapped.connect(_on_cell_tapped)
 	play_panel.add_child(board)
+	_build_hero_popup()
 	var feedback := PanelContainer.new()
 	feedback.add_theme_stylebox_override("panel", UI.box(Color("#e2edf0"), Color("#c9dce1"), 16, 12))
 	play_panel.add_child(feedback)
@@ -269,6 +300,49 @@ func _build_play(shell: VBoxContainer) -> void:
 	hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	play_panel.add_child(hint)
 
+func _build_hero_popup() -> void:
+	hero_popup = PanelContainer.new()
+	hero_popup.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
+	hero_popup.offset_left = 12
+	hero_popup.offset_right = -12
+	hero_popup.offset_top = -160
+	hero_popup.offset_bottom = -12
+	hero_popup.add_theme_stylebox_override("panel", UI.box(UI.PAPER, UI.ORANGE, 18, 14))
+	board.add_child(hero_popup)
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 12)
+	hero_popup.add_child(row)
+	hero_popup_portrait = UI.picture(UI.portrait(level.FIREFIGHTER))
+	hero_popup_portrait.custom_minimum_size = Vector2(72, 72)
+	hero_popup_portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	row.add_child(hero_popup_portrait)
+	hero_popup_text = UI.label("", 25)
+	hero_popup_text.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	hero_popup_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	hero_popup_text.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	row.add_child(hero_popup_text)
+	_ignore_mouse(hero_popup)
+	hero_popup.hide()
+	hero_popup_timer = Timer.new()
+	hero_popup_timer.one_shot = true
+	hero_popup_timer.wait_time = 4.5
+	hero_popup_timer.timeout.connect(hero_popup.hide)
+	add_child(hero_popup_timer)
+
+func _show_blocked_popup() -> void:
+	var line: String = hero_lines.next_line(level.blocked_reason)
+	if line.is_empty():
+		return
+	hero_popup_text.text = level.selected.capitalize() + ": " + line
+	hero_popup_portrait.texture = UI.portrait(level.selected)
+	status_label.text = line
+	hero_popup.show()
+	hero_popup_timer.start()
+
+func _hide_hero_popup() -> void:
+	hero_popup.hide()
+	hero_popup_timer.stop()
+
 func _role_button(role: String, row: HBoxContainer) -> Button:
 	var button := _button("")
 	button.custom_minimum_size.y = 108
@@ -276,24 +350,26 @@ func _role_button(role: String, row: HBoxContainer) -> Button:
 	button.tooltip_text = "Select " + role
 	button.pressed.connect(_on_role.bind(role))
 	row.add_child(button)
-	var content := HBoxContainer.new()
+	var content := VBoxContainer.new()
 	content.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	content.offset_left = 8
-	content.offset_right = -8
+	content.offset_left = 4
+	content.offset_right = -4
+	content.offset_top = 2
+	content.offset_bottom = -2
+	content.add_theme_constant_override("separation", 0)
 	button.add_child(content)
 	var portrait := UI.picture(UI.portrait(role))
-	portrait.custom_minimum_size = Vector2(100, 100)
+	portrait.custom_minimum_size.y = 68
 	portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	content.add_child(portrait)
-	var text := UI.label(role.to_upper(), 27, true)
-	text.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	text.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var text := UI.label(role.to_upper(), 24, true)
+	text.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	content.add_child(text)
 	_ignore_mouse(content)
 	return button
 
 func _build_victory(shell: VBoxContainer) -> void:
-	victory_scroll = ScrollContainer.new()
+	victory_scroll = MissionScroll.new()
 	victory_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	victory_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	victory_scroll.follow_focus = true
@@ -303,9 +379,9 @@ func _build_victory(shell: VBoxContainer) -> void:
 	victory_panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	victory_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	victory_scroll.add_child(victory_panel)
-	var illustration := UI.picture(UI.VICTORY, 280)
-	illustration.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	victory_panel.add_child(illustration)
+	victory_illustration = UI.picture(UI.VICTORY, 280)
+	victory_illustration.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	victory_panel.add_child(victory_illustration)
 	victory_message = UI.label("Everyone is safe.", 43, true)
 	victory_message.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	victory_message.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -386,16 +462,21 @@ func _update_safe_area() -> void:
 	for i in range(4):
 		_safe_margin.add_theme_constant_override("margin_" + ["left", "top", "right", "bottom"][i], int(insets[i]))
 	if is_instance_valid(_hero):
-		_hero.custom_minimum_size.y = clampf(size.y * 0.23, 200, 310)
+		_hero.custom_minimum_size.y = clampf(size.y * 0.17, 140, 220)
 
 func _show_screen(next_screen: String) -> void:
+	_hide_hero_popup()
 	screen = next_screen
+	if screen != "menu":
+		menu_scroll.stop_scrolling()
 	menu_panel.visible = screen == "menu"
 	play_panel.visible = screen == "play"
 	victory_panel.visible = screen == "victory"
 	victory_scroll.visible = screen == "victory"
 	if screen == "victory":
-		victory_scroll.scroll_vertical = 0
+		victory_scroll.reset_scroll()
+		victory_illustration.modulate.a = 0.0
+		create_tween().tween_property(victory_illustration, "modulate:a", 1.0, 0.28)
 	back_button.visible = screen != "menu"
 	moves_card.visible = screen == "play"
 	if screen == "menu":
@@ -410,30 +491,43 @@ func _show_menu() -> void:
 		return
 	_show_screen("menu")
 	var completed := 0
+	var location: Dictionary = catalog.LOCATIONS[location_index]
+	district_label.text = location["title"].to_upper()
+	_hero.texture = UI.HARBOR if location_index == 0 else UI.OLD_TOWN
+	for i in range(location_buttons.size()):
+		location_buttons[i].text = "COASTAL DISTRICT\nMissions 01–10" if i == 0 else "OLD TOWN\nMissions 11–20"
+		UI.button(location_buttons[i], UI.NAVY if i == location_index else UI.PAPER, i == location_index)
+		location_buttons[i].add_theme_font_size_override("font_size", 25)
 	var first_available := -1
 	for index in range(catalog.count()):
 		var data: Dictionary = catalog.load_level(index)
 		var button := level_buttons[index]
+		button.visible = catalog.location_for(index) == location_index
 		var complete: bool = progress.is_complete(data["id"])
 		button.disabled = not progress.unlocked(index, catalog)
-		if complete:
+		if complete and button.visible:
 			completed += 1
-		elif not button.disabled and first_available < 0:
+		elif button.visible and not button.disabled and first_available < 0:
 			first_available = index
 		UI.button(button, Color("#ffedc3") if index == first_available and not complete else UI.PAPER, index == first_available and not complete)
 		var badge: TextureRect = button.find_child("MissionState", true, false)
 		badge.texture = ICONS["check" if complete else ("lock" if button.disabled else "play")]
-		button.tooltip_text = "Mission %s: %s  •  %d/3 stars" % [data["id"], data["title"], progress.earned_stars(data["id"])]
 		badge.modulate = UI.GREEN if complete else (UI.MUTED if button.disabled else UI.ORANGE)
 		var name_label: Label = button.find_child("MissionTitle", true, false)
 		name_label.modulate = Color("#7d8888") if button.disabled else Color.WHITE
-	completion_label.text = "%d / %d rescued  •  ★ %d / %d" % [completed, catalog.count(), progress.total_stars(), catalog.count() * 3]
+	var location_stars := 0
+	for i in range(location["first"], location["first"] + location["count"]):
+		var item: Dictionary = catalog.load_level(i)
+		location_stars += progress.earned_stars(item["id"])
+	completion_label.text = "%d / %d complete  •  ★ %d / %d" % [completed, location["count"], location_stars, location["count"] * 3]
 	var xp: int = progress.total_xp()
 	profile_rank.text = progress.rescuer_rank().to_upper()
-	profile_xp.text = "Level %d  ·  %d XP  ·  %d to next" % [progress.rescuer_level(), xp, 100 - xp % 100]
+	profile_xp.text = "Level %d · %d XP · %d to next" % [progress.rescuer_level(), xp, 100 - xp % 100]
 	profile_bar.value = xp % 100
-	var badges := progress.earned_badges()
+	var badges: Array[String] = progress.earned_badges()
 	profile_badges.text = "Badges: " + (", ".join(badges) if not badges.is_empty() else "Complete a rescue to earn your first badge")
+	if location_index == 1 and not progress.unlocked(10, catalog):
+		completion_label.text += " • Complete Coastal mission 10 to enter"
 
 func _start_level(index: int) -> void:
 	if moving or not progress.unlocked(index, catalog):
@@ -442,7 +536,13 @@ func _start_level(index: int) -> void:
 	if data.is_empty():
 		return
 	current_index = index
+	var next_location: int = catalog.location_for(index)
+	if next_location != location_index:
+		menu_scroll.reset_scroll()
+	location_index = next_location
 	_victory_saved = false
+	_best_before_mission = int(progress.best.get(data["id"], -1))
+	_victory_new_best = false
 	level = RescueLevel.new(data)
 	board.level = level
 	board.route_preview.clear()
@@ -453,6 +553,7 @@ func _start_level(index: int) -> void:
 func _on_role(role: String) -> void:
 	if moving:
 		return
+	_hide_hero_popup()
 	level.select_role(role)
 	board.route_preview.clear()
 	_refresh()
@@ -460,14 +561,16 @@ func _on_role(role: String) -> void:
 func _on_cell_tapped(cell: Vector2i) -> void:
 	if moving or level.rescued:
 		return
-	for role in [level.FIREFIGHTER, level.ENGINEER]:
+	for role in level.positions:
 		if level.positions[role] == cell:
 			_on_role(role)
 			return
+	_hide_hero_popup()
 	var route: Array[Vector2i] = level.plan_route(cell)
 	if route.is_empty():
 		board.route_preview.clear()
 		_refresh()
+		_show_blocked_popup()
 		return
 	board.route_preview = route.duplicate()
 	moving = true
@@ -477,25 +580,42 @@ func _on_cell_tapped(cell: Vector2i) -> void:
 func _follow_route(route: Array[Vector2i]) -> void:
 	var undo_from: int = level.history.size()
 	for cell in route:
-		var from: Vector2i = level.positions[level.selected]
+		var role: String = level.selected
+		var from: Vector2i = level.positions[role]
+		var fire_action: bool = level.has_fire and cell == level.fire_pos and not level.fire_cleared
+		var crate_action: bool = level.has_crate and cell == level.crate_pos
+		var crate_before: Vector2i = level.crate_pos
+		var infected_action: bool = level.infected.has(cell)
+		var pickup_action: bool = cell == level.civilian_pos and level.carrying_role.is_empty()
 		if not level.act(cell):
 			break
 		_refresh()
-		if level.positions[level.selected] == from:
-			await get_tree().create_timer(0.12).timeout
+		if fire_action:
+			await board.animate_spray(role, cell)
+		elif crate_action:
+			await board.animate_push(role, from, crate_before, level.crate_pos)
+		elif infected_action:
+			await board.animate_stun(role, cell)
+		elif pickup_action:
+			await board.animate_pickup(role, from, cell)
 		else:
-			await board.animate_step(level.selected, from, level.positions[level.selected])
+			await board.animate_step(role, from, level.positions[role])
 		if not board.route_preview.is_empty():
 			board.route_preview.pop_front()
+	var was_blocked: bool = not level.blocked_reason.is_empty()
 	level.collapse_history(undo_from)
 	board.route_preview.clear()
 	moving = false
 	if level.rescued:
+		await board.animate_victory(level.carrying_role)
 		_victory_saved = progress.record_victory(level.level_id, level.actions)
+		_victory_new_best = _victory_saved and (_best_before_mission < 0 or level.actions < _best_before_mission)
 		if not _victory_saved:
 			level.message = "Rescue complete, but saving progress failed. Replay to try again."
 		_show_screen("victory")
 	_refresh()
+	if was_blocked:
+		_show_blocked_popup()
 
 func _on_undo() -> void:
 	if moving:
@@ -522,15 +642,18 @@ func _next_level() -> void:
 		_show_menu()
 
 func _refresh() -> void:
-	for role_button in [firefighter_button, engineer_button]:
-		var role: String = level.FIREFIGHTER if role_button == firefighter_button else level.ENGINEER
+	for role in [level.FIREFIGHTER, level.ENGINEER, level.RANGER]:
+		var role_button: Button = {level.FIREFIGHTER: firefighter_button, level.ENGINEER: engineer_button, level.RANGER: ranger_button}[role]
+		role_button.visible = level.positions.has(role)
+		if not role_button.visible:
+			continue
 		var selected: bool = level.selected == role
-		var color: Color = (UI.ORANGE if role == level.FIREFIGHTER else UI.BLUE) if selected else Color("#e0e8e7")
+		var color: Color = ({level.FIREFIGHTER: UI.ORANGE, level.ENGINEER: UI.BLUE, level.RANGER: UI.VIOLET}[role]) if selected else Color("#e0e8e7")
 		UI.button(role_button, color, selected)
 		# Disable repeated taps during motion without hiding the active specialist.
 		role_button.add_theme_stylebox_override("disabled", UI.box(color, UI.ORANGE if selected else UI.LINE, 15, 12))
 		var caption: Label = role_button.get_child(0).get_child(1)
-		caption.add_theme_color_override("font_color", Color.WHITE if selected and role == level.ENGINEER else UI.INK)
+		caption.add_theme_color_override("font_color", Color.WHITE if selected and role != level.FIREFIGHTER else UI.INK)
 		role_button.disabled = moving or level.rescued
 	undo_button.disabled = moving or level.history.is_empty()
 	restart_button.disabled = moving
@@ -541,20 +664,25 @@ func _refresh() -> void:
 	status_label.text = level.message
 	status_portrait.texture = UI.portrait(level.selected)
 	if screen == "victory":
+		victory_illustration.texture = UI.VICTORY if location_index == 0 else UI.OLD_TOWN
 		victory_moves.text = str(level.actions)
 		victory_best.text = str(progress.best.get(level.level_id, "—"))
-		victory_stars.text = ("★".repeat(progress.earned_stars(level.level_id)) + "☆".repeat(3 - progress.earned_stars(level.level_id))) if _victory_saved else "—"
+		var tier: int = progress.earned_stars(level.level_id) if _victory_saved else 0
+		victory_stars.text = ("★".repeat(tier) + "☆".repeat(3 - tier)) if _victory_saved else "—"
 		var saved: bool = _victory_saved
-		victory_message.text = ("Perfect Rescue!" if progress.earned_stars(level.level_id) == 3 else "Everyone is safe.") if saved else level.message
+		victory_message.text = ("New personal best!" if _victory_new_best else ("Perfect Rescue!" if progress.earned_stars(level.level_id) == 3 else "Everyone is safe.")) if saved else level.message
 		var has_next: bool = current_index + 1 < catalog.count()
 		if saved and has_next:
 			var next: Dictionary = catalog.load_level(current_index + 1)
-			victory_next.text = "%s  %s\nNext mission available" % [next["id"], next["title"].to_upper()]
+			if catalog.location_for(current_index + 1) != location_index:
+				victory_next.text = "OLD TOWN QUARANTINE\nNew location unlocked • Ranger joins the crew"
+			else:
+				victory_next.text = "%s  %s\nNext mission available" % [next["id"], next["title"].to_upper()]
 		elif saved:
-			victory_next.text = "COASTAL DISTRICT COMPLETE\nAll 10 missions rescued. Well done!"
+			victory_next.text = "ALL LOCATIONS COMPLETE\nAll 20 rescues completed. Well done!"
 		else:
 			victory_next.text = "Progress could not be saved. Please replay to try again."
-		next_button.text = "NEXT MISSION" if has_next else "ALL MISSIONS"
+		next_button.text = ("NEXT LOCATION" if catalog.location_for(current_index + 1) != location_index else "NEXT MISSION") if has_next else "ALL MISSIONS"
 		next_button.disabled = not saved
 		victory_undo.disabled = level.history.is_empty()
 	board.queue_redraw()

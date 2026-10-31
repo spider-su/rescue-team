@@ -1,0 +1,19 @@
+{
+  "id": "13",
+  "location": "old-town",
+  "title": "Lower Courtyard",
+  "hint": "Ranger clears infected; firefighter clears flames. Clear the upper courtyard to reach the crate from above.",
+  "rows": [
+    "###########",
+    "#F.f.Z.Z.C#",
+    "#...#####.#",
+    "#R.Z....#.#",
+    "#.#.#.#.#.#",
+    "#E.B....#G#",
+    "#.#.#.#.#.#",
+    "#..s....#.#",
+    "#...#...#.#",
+    "#.......#X#",
+    "###########"
+  ]
+}

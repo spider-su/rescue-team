@@ -1,0 +1,19 @@
+{
+  "id": "18",
+  "location": "old-town",
+  "title": "Clocktower Loop",
+  "hint": "Ranger clears infected; firefighter clears flames. Take the crate around the wall; clear the clocktower approach.",
+  "rows": [
+    "###########",
+    "#F..Z..Z.C#",
+    "#...#f###.#",
+    "#R......#.#",
+    "#..Z#...#.#",
+    "#E.B#s..#G#",
+    "#.#..##.#.#",
+    "#.......#.#",
+    "#...#...#.#",
+    "#.......#X#",
+    "###########"
+  ]
+}
