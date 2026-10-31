@@ -7,6 +7,7 @@
 - `export_presets.cfg`: `com.spidersu.rescueteam`, Android **debug APK** preset, arm64.
 - `scenes/main.tscn`, `scripts/rescue_game.gd`, `scripts/board_view.gd`: coastal mission picker, adaptive illustrated board, touch handlers and completion screen.
 - `scripts/coastal_style.gd`, `assets/coastal/`, `assets/ui/`, `assets/fonts/`: shared presentation styles, original artwork, command icons and OFL typography. See `docs/coastal-ui.md` for layout, asset provenance, tests and device scenarios.
+- `scripts/rescue_audio.gd`, `assets/audio/`: original imported music/effects, bounded playback voices, independent local preferences and foreground suspension. See `docs/audio.md` and `tests/test_audio.gd`.
 - `scripts/rescue_level.gd`, `tests/test_rescue_level.gd`: data-driven deterministic rules and headless tests of the original mission.
 - `.github/workflows/godot-ci.yml`: pinned Godot/editor templates, Java 17, Android SDK, headless tests, debug APK artifact.
 - `docs/game-design.md` and `docs/roadmap.md`: product scope, stage gates and test expectations.

@@ -5,6 +5,7 @@ const BoardView = preload("res://scripts/board_view.gd")
 const LevelCatalog = preload("res://scripts/level_catalog.gd")
 const CampaignProgress = preload("res://scripts/campaign_progress.gd")
 const MissionScroll = preload("res://scripts/mission_scroll.gd")
+const RescueAudio = preload("res://scripts/rescue_audio.gd")
 const HeroLines = preload("res://scripts/hero_lines.gd")
 const UI = preload("res://scripts/coastal_style.gd")
 const ICONS = {
@@ -53,6 +54,11 @@ var status_portrait: TextureRect
 var _safe_margin: MarginContainer
 var _hero: TextureRect
 var _victory_saved: bool = false
+var audio: Node
+var audio_settings_path := "user://rescue_audio_v1.cfg"
+var music_button: Button
+var sound_button: Button
+var audio_notice: Label
 var _best_before_mission: int = -1
 var _victory_new_best: bool = false
 var victory_stars: Label
@@ -68,6 +74,9 @@ var hero_popup_timer: Timer
 
 func _ready() -> void:
 	texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+	audio = RescueAudio.new()
+	audio.settings_path = audio_settings_path
+	add_child(audio)
 	_build_ui()
 	resized.connect(_update_safe_area)
 	_update_safe_area()
@@ -132,6 +141,21 @@ func _build_menu(shell: VBoxContainer) -> void:
 	menu_panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	menu_panel.add_theme_constant_override("separation", 10)
 	shell.add_child(menu_panel)
+	var audio_row := HBoxContainer.new()
+	audio_row.add_theme_constant_override("separation", 12)
+	menu_panel.add_child(audio_row)
+	music_button = _button("")
+	sound_button = _button("")
+	for button in [music_button, sound_button]:
+		button.custom_minimum_size.y = 64
+		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		audio_row.add_child(button)
+	music_button.pressed.connect(_toggle_music)
+	sound_button.pressed.connect(_toggle_sound)
+	audio_notice = UI.label("Audio preference could not be saved", 20, false, UI.MUTED)
+	audio_notice.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	menu_panel.add_child(audio_notice)
+	_refresh_audio_controls()
 	var locations := HBoxContainer.new()
 	locations.add_theme_constant_override("separation", 12)
 	menu_panel.add_child(locations)
@@ -178,6 +202,23 @@ func _build_menu(shell: VBoxContainer) -> void:
 	footer.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	footer.custom_minimum_size.y = 44
 	menu_panel.add_child(footer)
+
+func _refresh_audio_controls() -> void:
+	music_button.text = "MUSIC: " + ("ON" if audio.music_enabled else "OFF")
+	sound_button.text = "SOUND: " + ("ON" if audio.effects_enabled else "OFF")
+	music_button.tooltip_text = "Toggle background music"
+	sound_button.tooltip_text = "Toggle action sounds"
+	audio_notice.visible = not audio.settings_saved
+
+func _toggle_music() -> void:
+	audio.set_music_enabled(not audio.music_enabled)
+	audio.play_cue("ui")
+	_refresh_audio_controls()
+
+func _toggle_sound() -> void:
+	audio.set_effects_enabled(not audio.effects_enabled)
+	audio.play_cue("ui")
+	_refresh_audio_controls()
 
 func _build_profile(parent: VBoxContainer) -> void:
 	var panel := PanelContainer.new()
@@ -336,6 +377,7 @@ func _show_blocked_popup() -> void:
 	hero_popup_text.text = level.selected.capitalize() + ": " + line
 	hero_popup_portrait.texture = UI.portrait(level.selected)
 	status_label.text = line
+	audio.play_cue("blocked")
 	hero_popup.show()
 	hero_popup_timer.start()
 
@@ -541,6 +583,7 @@ func _start_level(index: int) -> void:
 		menu_scroll.reset_scroll()
 	location_index = next_location
 	_victory_saved = false
+	audio.play_cue("ui")
 	_best_before_mission = int(progress.best.get(data["id"], -1))
 	_victory_new_best = false
 	level = RescueLevel.new(data)
@@ -554,6 +597,8 @@ func _on_role(role: String) -> void:
 	if moving:
 		return
 	_hide_hero_popup()
+	if role != level.selected:
+		audio.play_cue("select")
 	level.select_role(role)
 	board.route_preview.clear()
 	_refresh()
@@ -587,8 +632,10 @@ func _follow_route(route: Array[Vector2i]) -> void:
 		var crate_before: Vector2i = level.crate_pos
 		var infected_action: bool = level.infected.has(cell)
 		var pickup_action: bool = cell == level.civilian_pos and level.carrying_role.is_empty()
+		var before: Dictionary = RescueAudio.snapshot(level)
 		if not level.act(cell):
 			break
+		audio.play_action(before, level)
 		_refresh()
 		if fire_action:
 			await board.animate_spray(role, cell)
@@ -620,7 +667,8 @@ func _follow_route(route: Array[Vector2i]) -> void:
 func _on_undo() -> void:
 	if moving:
 		return
-	level.undo()
+	if level.undo():
+		audio.play_cue("undo")
 	board.route_preview.clear()
 	_show_screen("play")
 	_refresh()
@@ -628,6 +676,7 @@ func _on_undo() -> void:
 func _on_restart() -> void:
 	if moving:
 		return
+	audio.play_cue("restart")
 	level.reset()
 	board.route_preview.clear()
 	_show_screen("play")

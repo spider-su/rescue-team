@@ -10,6 +10,8 @@ var game
 var viewport: SubViewport
 var capture_dir := ""
 var failed := false
+var heard_cues: Dictionary = {}
+const TEST_AUDIO = "user://rescue_ui_audio_test.cfg"
 const TEST_SAVE = "user://rescue_ui_test.json"
 
 func _initialize() -> void:
@@ -19,6 +21,7 @@ func _initialize() -> void:
 	_run.call_deferred()
 
 func _run() -> void:
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(TEST_AUDIO))
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(TEST_SAVE))
 	viewport = SubViewport.new()
 	viewport.size = Vector2i(720, 1280)
@@ -26,7 +29,9 @@ func _run() -> void:
 	root.add_child(viewport)
 	game = MainScene.instantiate()
 	game.progress = Progress.new(TEST_SAVE)
+	game.audio_settings_path = TEST_AUDIO
 	viewport.add_child(game)
+	game.audio.cue_played.connect(func(cue: String): heard_cues[cue] = true)
 	await _settle()
 	_check(game.screen == "menu" and game.level_buttons.size() == 20 and game.location_buttons.size() == 2, "Mission picker groups twenty cards into two locations")
 	_check(game.level_buttons[1].disabled, "Uncompleted next mission is visibly locked")
@@ -35,6 +40,12 @@ func _run() -> void:
 	_check(game.location_index == 1 and game.level_buttons[10].visible and not game.level_buttons[0].visible and game.level_buttons[10].disabled, "New location can be previewed while its missions remain locked")
 	game.location_buttons[0].pressed.emit()
 	await _settle()
+	game.music_button.pressed.emit()
+	_check(not game.audio.music_enabled and game.music_button.text == "MUSIC: OFF", "Menu music control mutes theme")
+	game.sound_button.pressed.emit()
+	_check(not game.audio.effects_enabled and game.sound_button.text == "SOUND: OFF", "Menu sound control independently mutes effects")
+	game.music_button.pressed.emit()
+	game.sound_button.pressed.emit()
 	await _test_swipe()
 	game.menu_scroll.reset_scroll()
 	await _settle()
@@ -155,10 +166,13 @@ func _run() -> void:
 	await _tap(Vector2i(5, 1))
 	_check(game.screen == "victory" and game.next_button.disabled and game.victory_message.text.contains("saving progress failed"), "Failed save is visible and cannot masquerade as a new unlock")
 	DirAccess.remove_absolute(temporary_directory)
+	for cue in game.audio.EFFECTS:
+		_check(heard_cues.has(cue), "Production UI emits action audio: " + cue)
 	game.queue_free()
-	await process_frame
+	await create_timer(0.1).timeout
 	viewport.queue_free()
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(TEST_SAVE))
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(TEST_AUDIO))
 	if not failed:
 		print("PASS: two-location UI, card swipes, ranger rescue, progression, adaptive input and portrait layouts")
 	quit(1 if failed else 0)

@@ -43,7 +43,7 @@ Prefer a small focused PR for each increment; do not combine all milestones in o
 - [x] Ten data-driven JSON missions with validated complete solutions, mission picker, monotonic offline unlocks and route animations (feature branch; CI/device verification pending).
 - [x] Ten curated missions are implemented with deterministic solution tests. Full vertical-slice device persistence and usability acceptance remain pending.
 - [x] Coastal UI implemented: original human crew and harbor artwork, mission cards, adaptive square-cell board and dedicated completion screen; UI integration tests and rendered desktop evidence are documented in `docs/coastal-ui.md`.
-- [ ] Coastal UI physical-device acceptance, audio and remaining mobile polish.
+- [ ] Coastal UI physical-device acceptance, audio listening tests and remaining mobile polish.
 - [ ] Commercial metrics validated.
 
 ## Owner-requested expansion (2026-10-31)
@@ -53,3 +53,6 @@ Prefer a small focused PR for each increment; do not combine all milestones in o
 - [x] Add the ranger's adjacent infected-containment ability with deterministic restrictions and undo/restart coverage.
 - [x] Add ten static authored Old Town maps with complete, replayed cooperative walkthroughs (42–106 moves in those walkthroughs; not claimed optimal).
 - [ ] Record new scrolling, specialist selection and chapter playtests on Android hardware; owner-reported success of the prior build does not verify these changes.
+
+- [x] Original theme music and twelve action effects, independent persistent mutes and lifecycle suspension; automated audio/UI coverage.
+- [ ] Android listening, interruption and route-change acceptance; see `docs/audio.md`.

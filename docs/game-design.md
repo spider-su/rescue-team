@@ -1,6 +1,6 @@
 # Rescue Team — game concept (working design)
 
-**Status:** twenty original data-driven missions across Coastal District and Old Town Quarantine are implemented. The owner requested the second location and third specialist after trying the coastal UI. The new ranger contains zombie-like infected with a stun shield; there are no combat timers or damage systems. Sound, difficulty tuning and detailed device acceptance remain separate.
+**Status:** twenty original data-driven missions across Coastal District and Old Town Quarantine are implemented. The owner requested the second location and third specialist after trying the coastal UI. The new ranger contains zombie-like infected with a stun shield; there are no combat timers or damage systems. Original synthesized theme music and action effects are implemented with separate persistent toggles. Audio listening tests, difficulty tuning and detailed device acceptance remain separate.
 
 ## Player promise
 
