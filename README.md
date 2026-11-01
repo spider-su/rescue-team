@@ -56,6 +56,14 @@ The UI suite verifies animated input, victory/undo/replay, next/final mission na
 
 See [Android release and device scenarios](docs/android-release.md). APK export and desktop rendering do not establish physical-device usability. Release AAB, billing, ads, analytics, backend and cloud accounts are outside the current prototype scope.
 
+## Release handoff
+
+- [Release gates and candidate procedure](docs/release.md)
+- [Android playtest report](docs/playtest-report.md)
+- [Play Store listing draft](docs/store-listing.md)
+- [Privacy policy for publication](docs/privacy-policy.md)
+- [Player-facing changelog](CHANGELOG.md)
+
 ## Design and assets
 
 - [Fair stars, hints, resume and Floodworks rules/device scenario](docs/puzzle-polish.md).
