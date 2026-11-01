@@ -18,6 +18,10 @@ Solve readable, bite-sized rescue emergencies by **combining specialist abilitie
 
 Target session: approximately 1–3 minutes per level; slow, thoughtful play is valid (no arbitrary timer in prototype).
 
+## Emotional progression
+
+Maya, Theo and Nia give the crew a stable human identity through brief original selection and completion lines. Each saved rescue visibly restores its address in the active district, so campaign progress changes the place the player returns to. Cosmetic-only crew insignia mark one, five and ten saved rescues, with a Floodworks crest for all optional trials. These rewards never change deterministic movement, puzzle strength, score targets or campaign access.
+
 ## Characters and first mechanics
 
 | Role | Distinctive ability | Prototype examples |
@@ -32,6 +36,8 @@ Target session: approximately 1–3 minutes per level; slow, thoughtful play is 
 Old Town adds stationary infected (`Z`) and one ranger (`R`) to its ten maps. Only the ranger clears infected; others and crates are blocked. All three abilities combine in authored crate-routing and rescue puzzles. Location tabs group the chapters; original saves unlock mission 11 after mission 10. See [Old Town walkthrough counts, gestures and device scenario](old-town.md).
 
 **Current controls:** portrait grid with level picker, local saved unlocks and animated path preview. Select by portrait button or tapping a rescuer; tap a **distant reachable destination** to walk the shortest safe route, or tap fire/a crate to approach and interact. Movement is animated tile-by-tile; each tap is one UNDO step. Unreachable/locked locations remain blocked, and RESTART resets the level. The firefighter clears adjacent fire, the engineer pushes an adjacent crate one tile, stepping onto the civilian picks them up, and carrying them to EXIT wins. On missions with a gate, the crate powers its switch.
+
+Action feedback uses short, interrupt-safe animation beats rather than long cinematic locks: a stride compresses on landing, specialist actions have a readable setup and impact, and a completed extraction gets a brief confetti celebration. These are presentation-only; accepted commands, undo grouping, scores and saved replay traces remain identical.
 
 ## Implemented Phase 1 level
 

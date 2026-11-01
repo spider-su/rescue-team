@@ -1,6 +1,8 @@
 extends Control
 ## Illustrated, adaptive view of the same grid. Rotation changes presentation only.
 signal cell_tapped(cell: Vector2i)
+const Insignia = preload("res://scripts/crew_insignia.gd")
+var equipped_style := "standard"
 const UI = preload("res://scripts/coastal_style.gd")
 var level: RefCounted
 var hint_target := Vector2i(-1, -1)
@@ -28,6 +30,11 @@ func _ready() -> void:
 		art[role] = UI.sprite(role)
 	for prop in ["fire", "crate", "switch", "gate", "open_gate", "exit"]:
 		art[prop] = UI.prop(prop)
+
+func _process(_delta: float) -> void:
+	# Only redraw while an action is alive; puzzle state remains completely separate.
+	if not animated_role.is_empty() or not effect_kind.is_empty():
+		queue_redraw()
 
 func _metrics() -> Dictionary:
 	if level == null or size.x <= 0 or size.y <= 0:
@@ -113,13 +120,21 @@ func _draw() -> void:
 	for role in level.positions:
 		var position_on_grid: Vector2 = animated_position if animated_role == role else Vector2(level.positions[role])
 		var center := cell_center(position_on_grid, metrics)
+		var body_scale := Vector2.ONE
 		if animated_role == role and effect_kind == "":
-			center.y -= sin(walk_progress * PI * 2.0) * step * 0.065
+			# A short stride with a small compression on landing reads better than sliding.
+			center.y -= sin(walk_progress * PI) * step * 0.12
+			body_scale = Vector2(1.0 + sin(walk_progress * PI) * 0.06, 1.0 - sin(walk_progress * PI) * 0.05)
+		elif effect_kind == "celebrate" and role == effect_role:
+			var hop := sin(effect_progress * PI * 2.0) * step * 0.12
+			center.y -= maxf(0.0, hop)
+			body_scale = Vector2(1.0 + sin(effect_progress * PI * 2.0) * 0.04, 1.0 - sin(effect_progress * PI * 2.0) * 0.04)
 		if level.selected == role:
 			var ring := Color("#ffcd5c")
 			draw_circle(center + Vector2(0, step * 0.23), step * 0.38, Color(ring, 0.3), true, -1, true)
 			draw_arc(center + Vector2(0, step * 0.23), step * 0.38, 0, TAU, 32, ring, 3, true)
-		_draw_facing_person(role, center, step)
+		_draw_facing_person(role, center, step, body_scale)
+		Insignia.paint(self, equipped_style, center + Vector2(step * 0.2, step * 0.04), step * 0.13)
 		if level.carrying_role == role and effect_kind != "pickup":
 			_draw_person("civilian", center + Vector2(step * 0.27, step * 0.1), step * 0.55)
 	_draw_effects(metrics, step)
@@ -157,11 +172,17 @@ func _draw_word(center: Vector2, text: String, font_size: int, color: Color) -> 
 	draw_string(UI.HEADING, center - Vector2(width / 2, 0), text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, color)
 
 
-func _draw_facing_person(role: String, center: Vector2, step: float) -> void:
+func _draw_facing_person(role: String, center: Vector2, step: float, body_scale: Vector2 = Vector2.ONE) -> void:
 	var lean := 0.0
 	if effect_kind == "push" and role == effect_role:
-		lean = float(facing.get(role, 1)) * 0.09 * sin(effect_progress * PI)
-	draw_set_transform(center, lean, Vector2(float(facing.get(role, 1)), 1.0))
+		# Engineer leans back before the crate moves, then follows through.
+		lean = float(facing.get(role, 1)) * 0.14 * sin(effect_progress * PI)
+	if effect_kind == "spray" and role == effect_role:
+		lean = float(facing.get(role, 1)) * -0.06 * sin(effect_progress * PI)
+	if effect_kind == "stun" and role == effect_role:
+		lean = float(facing.get(role, 1)) * 0.05 * sin(effect_progress * PI * 2.0)
+	var facing_scale := Vector2(float(facing.get(role, 1)) * body_scale.x, body_scale.y)
+	draw_set_transform(center, lean, facing_scale)
 	_draw_person(role, Vector2.ZERO, step)
 	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 
@@ -170,42 +191,53 @@ func _draw_effects(metrics: Dictionary, step: float) -> void:
 		return
 	var center: Vector2 = cell_center(Vector2(effect_to), metrics)
 	var fade: float = 1.0 - effect_progress
+	var impact: float = sin(effect_progress * PI)
+	var source := cell_center(animated_position if animated_role == effect_role else Vector2(level.positions[effect_role]), metrics)
 	match effect_kind:
 		"spray":
-			var source: Vector2 = cell_center(Vector2(level.positions[effect_role]), metrics)
-			for i in range(5):
-				var t: float = clampf(effect_progress * 1.45 - float(i) * 0.085, 0.0, 1.0)
+			var direction := (center - source).normalized()
+			var normal := Vector2(-direction.y, direction.x)
+			for i in range(7):
+				var t: float = clampf(effect_progress * 1.65 - float(i) * 0.07, 0.0, 1.0)
 				var p: Vector2 = source.lerp(center, t)
-				var offset := Vector2(0, sin(t * PI * 2.0 + float(i) * 1.2) * step * 0.13)
-				draw_circle(p + offset, step * (0.075 - float(i) * 0.007), Color("#6fdef7", fade * 0.9))
+				var spread := normal * sin(t * PI) * (float(i) - 3.0) * step * 0.045
+				draw_line(p - direction * step * 0.10, p + direction * step * 0.08 + spread, Color("#78dcf1", fade * 0.86), step * 0.045, true)
+				draw_circle(p + spread, step * 0.045, Color("#d9fbff", fade))
 			for i in range(3):
-				var steam: Vector2 = center + Vector2((i - 1) * step * 0.17, -effect_progress * step * 0.5)
+				var steam: Vector2 = center + Vector2((i - 1) * step * 0.17, -effect_progress * step * 0.55)
 				draw_arc(steam, step * 0.15, PI, TAU, 10, Color(0.93, 0.97, 1, fade), 2.4, true)
+			_draw_word(center + Vector2(0, -step * 0.46), "SAFE!", int(step * 0.22), Color("#e8fdff", fade))
 		"push":
-			for i in range(3):
+			for i in range(5):
 				var dust: Vector2 = center + Vector2((i - 1) * step * 0.17, step * 0.30)
-				draw_circle(dust, step * 0.07 * (1.0 + effect_progress), Color("#e9d4aa", fade * 0.8))
+				draw_circle(dust, step * 0.055 * (1.0 + effect_progress), Color("#e9d4aa", fade * impact * 0.9))
+			_draw_word(center + Vector2(0, -step * 0.52), "HEAVE!", int(step * 0.20), Color("#fff0c1", fade))
 		"pickup":
 			var lift: Vector2 = center + Vector2(0, -sin(effect_progress * PI / 2.0) * step * 0.4)
 			draw_set_transform(lift, 0.0, Vector2.ONE * (1.0 - effect_progress * 0.32))
 			_draw_person("civilian", Vector2.ZERO, step)
 			draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+			draw_arc(center, step * (0.18 + effect_progress * 0.33), 0, TAU, 24, Color("#fff0a6", fade), 3, true)
+			_draw_word(center + Vector2(0, -step * 0.52), "FOUND YOU!", int(step * 0.18), Color("#fff8d8", fade))
 		"valve":
-			draw_arc(center, step * (0.15 + effect_progress * 0.4), 0, TAU, 24, Color("#71dbe9", fade), 4, true)
+			for i in range(3):
+				draw_arc(center, step * (0.15 + float(i) * 0.11), effect_progress * TAU + i, effect_progress * TAU + i + PI * 1.2, 18, Color("#71dbe9", fade), 3, true)
+			_draw_word(center + Vector2(0, -step * 0.45), "FLOW OPEN", int(step * 0.18), Color("#d9fbff", fade))
 		"stun":
-			draw_arc(center, step * (0.2 + effect_progress * 0.38), 0, TAU, 28, Color(UI.VIOLET, fade), 4, true)
+			draw_arc(center, step * (0.2 + effect_progress * 0.42), 0, TAU, 28, Color(UI.VIOLET, fade), 4, true)
 			for i in range(4):
 				var angle: float = TAU * float(i) / 4.0 + effect_progress * 2.0
 				draw_line(center + Vector2.RIGHT.rotated(angle) * step * 0.20, center + Vector2.RIGHT.rotated(angle) * step * 0.44, Color(UI.VIOLET, fade), 3, true)
+			_draw_word(center + Vector2(0, -step * 0.50), "CLEAR!", int(step * 0.21), Color("#f2dcff", fade))
 		"celebrate":
-			var source: Vector2 = cell_center(Vector2(level.positions[effect_role]), metrics)
-			for i in range(12):
-				var angle: float = TAU * float(i) / 12.0
-				var distance: float = step * (0.12 + effect_progress * 1.0)
+			for i in range(20):
+				var angle: float = TAU * float(i) / 20.0 + effect_progress * 0.5
+				var distance: float = step * (0.12 + effect_progress * 1.18)
 				var particle: Vector2 = source + Vector2.RIGHT.rotated(angle) * distance
-				var hue: Color = Color("#f7ce5b") if i % 2 == 0 else Color("#56ca9c")
-				draw_circle(particle, step * 0.08 * fade, Color(hue, fade))
+				var hue: Color = [Color("#f7ce5b"), Color("#56ca9c"), Color("#ee7f70")][i % 3]
+				draw_rect(Rect2(particle - Vector2.ONE * step * 0.045, Vector2.ONE * step * 0.09), Color(hue, fade * 0.95))
 			draw_arc(source, step * (0.35 + effect_progress * 0.2), 0, TAU, 32, Color("#f8dc87", fade), 3, true)
+			_draw_word(source + Vector2(0, -step * 0.58), "RESCUED!", int(step * 0.25), Color("#fff3bd", fade))
 
 func animate_step(role: String, start: Vector2i, target: Vector2i) -> void:
 	animation_counts["walk"] += 1
@@ -214,7 +246,7 @@ func animate_step(role: String, start: Vector2i, target: Vector2i) -> void:
 	animated_position = Vector2(start)
 	walk_progress = 0.0
 	var tween := create_tween()
-	tween.tween_method(_set_walk_progress.bind(start, target), 0.0, 1.0, 0.17).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	tween.tween_method(_set_walk_progress.bind(start, target), 0.0, 1.0, 0.20).set_trans(Tween.TRANS_QUINT).set_ease(Tween.EASE_IN_OUT)
 	await tween.finished
 	clear_animation()
 
@@ -235,26 +267,26 @@ func animate_action(cell: Vector2i, role: String) -> void:
 	await animate_stun(role, cell)
 
 func animate_spray(role: String, target: Vector2i) -> void:
-	await _animate_effect("spray", role, target, target, 0.30)
+	await _animate_effect("spray", role, target, target, 0.42)
 
 func animate_push(role: String, actor_from: Vector2i, crate_from: Vector2i, crate_to: Vector2i) -> void:
 	facing[role] = -1 if crate_from.x < actor_from.x else (1 if crate_from.x > actor_from.x else int(facing.get(role, 1)))
 	animated_role = role
 	animated_position = Vector2(actor_from)
-	await _animate_effect("push", role, crate_from, crate_to, 0.24)
+	await _animate_effect("push", role, crate_from, crate_to, 0.38)
 
 func animate_pickup(role: String, actor_from: Vector2i, civilian_at: Vector2i) -> void:
 	animated_role = role
 	animated_position = Vector2(actor_from)
-	await _animate_effect("pickup", role, actor_from, civilian_at, 0.28)
+	await _animate_effect("pickup", role, actor_from, civilian_at, 0.38)
 
 func animate_stun(role: String, target: Vector2i) -> void:
-	await _animate_effect("stun", role, target, target, 0.24)
+	await _animate_effect("stun", role, target, target, 0.34)
 
 func animate_victory(role: String) -> void:
 	if not level.rescued:
 		return
-	await _animate_effect("celebrate", role, level.exit_pos, level.exit_pos, 0.65)
+	await _animate_effect("celebrate", role, level.exit_pos, level.exit_pos, 0.82)
 
 func _animate_effect(kind: String, role: String, from: Vector2i, to: Vector2i, duration: float) -> void:
 	animation_counts[kind] += 1
@@ -264,7 +296,7 @@ func _animate_effect(kind: String, role: String, from: Vector2i, to: Vector2i, d
 	effect_to = to
 	effect_progress = 0.0
 	var tween := create_tween()
-	tween.tween_method(_set_effect_progress, 0.0, 1.0, duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	tween.tween_method(_set_effect_progress, 0.0, 1.0, duration).set_trans(Tween.TRANS_QUINT).set_ease(Tween.EASE_IN_OUT)
 	await tween.finished
 	clear_animation()
 

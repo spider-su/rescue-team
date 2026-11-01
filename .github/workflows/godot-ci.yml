@@ -73,6 +73,12 @@ jobs:
       - name: Verify fair stars, Floodworks and resumable puzzle journals
         run: godot --headless --path . --script res://tests/test_puzzle_polish.gd
 
+      - name: Verify crew cosmetics, local saves and district recovery
+        run: godot --headless --path . --script res://tests/test_crew_progression.gd
+
+      - name: Verify action-presentation lifecycle
+        run: godot --headless --path . --script res://tests/test_action_presentation.gd
+
       - name: Boot the game scene headlessly
         run: godot --headless --path . --quit-after 5
 

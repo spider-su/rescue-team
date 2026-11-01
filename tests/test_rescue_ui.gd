@@ -11,6 +11,7 @@ var viewport: SubViewport
 var capture_dir := ""
 var failed := false
 var heard_cues: Dictionary = {}
+const TEST_CREW = "user://rescue_ui_crew_test.cfg"
 const TEST_SESSION = "user://rescue_ui_session_test.json"
 const TEST_AUDIO = "user://rescue_ui_audio_test.cfg"
 const TEST_SAVE = "user://rescue_ui_test.json"
@@ -22,6 +23,7 @@ func _initialize() -> void:
 	_run.call_deferred()
 
 func _run() -> void:
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(TEST_CREW))
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(TEST_SESSION))
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(TEST_AUDIO))
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(TEST_SAVE))
@@ -33,6 +35,7 @@ func _run() -> void:
 	game.progress = Progress.new(TEST_SAVE)
 	game.audio_settings_path = TEST_AUDIO
 	game.session_path = TEST_SESSION
+	game.crew_path = TEST_CREW
 	viewport.add_child(game)
 	game.audio.cue_played.connect(func(cue: String): heard_cues[cue] = true)
 	await _settle()
@@ -87,6 +90,12 @@ func _run() -> void:
 	await _tap(Vector2i(5, 1))
 	_check(game.screen == "victory" and game.victory_panel.is_visible_in_tree(), "Winning route opens completion screen")
 	_check(not game.next_button.disabled and game.progress.unlocked(1, game.catalog), "Victory persists progress and enables next mission")
+	_check(game.victory_quote.text.contains("Maya:") and game.victory_quote.text.contains("Rescue ribbon"), "First saved rescue gives a named crew reaction and cosmetic reward")
+	game._show_menu()
+	_check(game.district_view.repaired[0] and game.district_view.repaired.count(true) == 1, "Only the rescued address is restored")
+	game._equip_crew(1)
+	_check(game.crew.equipped == "ribbon" and game.board.equipped_style == "ribbon", "Earned insignia appears on board and portraits")
+	game._show_screen("victory")
 	_check(game.victory_best.text == str(game.level.actions), "Results show the actual saved best")
 	_check(game.board.animation_counts["pickup"] >= 1 and game.board.animation_counts["celebrate"] >= 1, "Pickup and celebration effects played on first mission")
 	_check(game.victory_stars.text.length() == 3 and game.progress.total_stars() > 0, "Saved victory awards star graphics and campaign stars")
@@ -205,6 +214,7 @@ func _run() -> void:
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(TEST_SAVE))
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(TEST_AUDIO))
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(TEST_SESSION))
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(TEST_CREW))
 	if not failed:
 		print("PASS: three-location UI, layered hints, resume/undo, fair stars, Floodworks, adaptive input and portrait layouts")
 	quit(1 if failed else 0)
@@ -349,7 +359,7 @@ func _test_hero_popup() -> void:
 	game._refresh()
 	await _settle()
 	await _tap(Vector2i(7, 1))
-	_check(game.hero_popup.visible and game.level.blocked_reason == "fire" and game.hero_popup_text.text.begins_with("Firefighter:"), "Unreachable tap displays active hero's obstacle popup")
+	_check(game.hero_popup.visible and game.level.blocked_reason == "fire" and game.hero_popup_text.text.begins_with("Maya:"), "Unreachable tap displays active hero's obstacle popup")
 	var previous: String = game.hero_popup_text.text
 	await _tap(Vector2i(7, 1))
 	_check(game.hero_popup_text.text != previous and game.level.actions == 0, "Repeated rejection varies dialogue without moving hero")
@@ -365,7 +375,7 @@ func _test_hero_popup() -> void:
 	game.engineer_button.pressed.emit()
 	_check(not game.hero_popup.visible, "Switching hero dismisses stale popup")
 	await _tap(Vector2i(7, 1))
-	_check(game.hero_popup_text.text.begins_with("Engineer:"), "Popup speaker follows selected hero")
+	_check(game.hero_popup_text.text.begins_with("Theo:"), "Popup speaker follows selected hero")
 	game.level.positions[game.level.ENGINEER] = Vector2i(2, 1)
 	await _tap(Vector2i(3, 1))
 	_check(game.hero_popup.visible and game.level.blocked_reason == "fire" and game.level.actions == 0, "Adjacent rejected interaction also shows popup without moving")

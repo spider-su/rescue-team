@@ -9,6 +9,9 @@ const MissionSession = preload("res://scripts/mission_session.gd")
 const Guidance = preload("res://scripts/mission_guidance.gd")
 const RescueAudio = preload("res://scripts/rescue_audio.gd")
 const HeroLines = preload("res://scripts/hero_lines.gd")
+const Crew = preload("res://scripts/crew_progression.gd")
+const Insignia = preload("res://scripts/crew_insignia.gd")
+const District = preload("res://scripts/district_recovery.gd")
 const UI = preload("res://scripts/coastal_style.gd")
 const ICONS = {
 	"back": preload("res://assets/ui/back.svg"), "undo": preload("res://assets/ui/undo.svg"),
@@ -16,6 +19,14 @@ const ICONS = {
 	"play": preload("res://assets/ui/play.svg"), "check": preload("res://assets/ui/check.svg"),
 	"lock": preload("res://assets/ui/lock.svg"),
 }
+var crew_path := "user://rescue_crew_v1.cfg"
+var crew: RefCounted
+var crew_picker: OptionButton
+var crew_notice: Label
+var district_view: Control
+var victory_quote: Label
+var _insignias: Array[Control] = []
+var _unlocks_before: Array[String] = []
 var catalog = LevelCatalog.new()
 var progress = CampaignProgress.new()
 var level = RescueLevel.new()
@@ -85,6 +96,8 @@ var hero_popup_timer: Timer
 
 func _ready() -> void:
 	texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+	crew = Crew.new(crew_path)
+	crew.validate_equipped(progress)
 	session = MissionSession.new(session_path)
 	audio = RescueAudio.new()
 	audio.settings_path = audio_settings_path
@@ -164,6 +177,12 @@ func _build_menu(shell: VBoxContainer) -> void:
 		button.custom_minimum_size.y = 64
 		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		audio_row.add_child(button)
+	var crew_button := _button("CREW")
+	crew_button.custom_minimum_size.y = 64
+	crew_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	audio_row.add_child(crew_button)
+	crew_button.pressed.connect(func(): menu_scroll.stop_scrolling(); menu_scroll.ensure_control_visible(crew_picker))
+	for button in [music_button, sound_button, crew_button]: button.add_theme_font_size_override("font_size", 22)
 	music_button.pressed.connect(_toggle_music)
 	sound_button.pressed.connect(_toggle_sound)
 	audio_notice = UI.label("Audio preference could not be saved", 20, false, UI.MUTED)
@@ -209,12 +228,16 @@ func _build_menu(shell: VBoxContainer) -> void:
 	_build_profile(list)
 	_hero = UI.picture(UI.HARBOR, 210)
 	list.add_child(_hero)
+	district_view = District.new()
+	_hero.add_child(district_view)
+	district_view.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	for index in range(catalog.count()):
 		var button := _mission_card(index)
 		button.mouse_filter = Control.MOUSE_FILTER_PASS
 		button.pressed.connect(_open_mission.bind(index))
 		list.add_child(button)
 		level_buttons.append(button)
+	_build_crew(list)
 	var footer := UI.label("Swipe anywhere to browse • Tap a mission to play", 22, false, UI.MUTED)
 	footer.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	footer.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -399,7 +422,8 @@ func _show_blocked_popup() -> void:
 	var line: String = hero_lines.next_line(level.blocked_reason)
 	if line.is_empty():
 		return
-	hero_popup_text.text = level.selected.capitalize() + ": " + line
+	hero_popup.offset_top = -190
+	hero_popup_text.text = Crew.HEROES[level.selected]["name"] + ": " + line
 	hero_popup_portrait.texture = UI.portrait(level.selected)
 	status_label.text = line
 	audio.play_cue("blocked")
@@ -414,7 +438,7 @@ func _role_button(role: String, row: HBoxContainer) -> Button:
 	var button := _button("")
 	button.custom_minimum_size.y = 108
 	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	button.tooltip_text = "Select " + role
+	button.tooltip_text = Crew.HEROES[role]["name"] + " — " + role.capitalize() + ": " + Crew.HEROES[role]["bio"]
 	button.pressed.connect(_on_role.bind(role))
 	row.add_child(button)
 	var content := VBoxContainer.new()
@@ -426,10 +450,11 @@ func _role_button(role: String, row: HBoxContainer) -> Button:
 	content.add_theme_constant_override("separation", 0)
 	button.add_child(content)
 	var portrait := UI.picture(UI.portrait(role))
-	portrait.custom_minimum_size.y = 68
+	portrait.custom_minimum_size.y = 48
 	portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	content.add_child(portrait)
-	var text := UI.label(role.to_upper(), 24, true)
+	_add_insignia(portrait)
+	var text := UI.label(Crew.HEROES[role]["name"].to_upper() + "\n" + role.to_upper(), 18, true)
 	text.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	content.add_child(text)
 	_ignore_mouse(content)
@@ -453,6 +478,10 @@ func _build_victory(shell: VBoxContainer) -> void:
 	victory_message.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	victory_message.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	victory_panel.add_child(victory_message)
+	victory_quote = UI.label("", 23)
+	victory_quote.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	victory_quote.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	victory_panel.add_child(victory_quote)
 	var results := PanelContainer.new()
 	results.add_theme_stylebox_override("panel", UI.box(UI.PAPER, UI.LINE, 16, 16))
 	victory_panel.add_child(results)
@@ -529,7 +558,7 @@ func _update_safe_area() -> void:
 	for i in range(4):
 		_safe_margin.add_theme_constant_override("margin_" + ["left", "top", "right", "bottom"][i], int(insets[i]))
 	if is_instance_valid(_hero):
-		_hero.custom_minimum_size.y = clampf(size.y * 0.17, 140, 220)
+		_hero.custom_minimum_size.y = 220
 
 func _show_screen(next_screen: String) -> void:
 	_hide_hero_popup()
@@ -560,6 +589,8 @@ func _show_menu() -> void:
 	var completed := 0
 	var location: Dictionary = catalog.LOCATIONS[location_index]
 	district_label.text = location["title"].to_upper()
+	district_view.configure(progress, location)
+	_refresh_crew()
 	_hero.texture = UI.OLD_TOWN if location_index == 1 else UI.HARBOR
 	for i in range(location_buttons.size()):
 		location_buttons[i].text = ["COAST\n01–10", "OLD TOWN\n11–20", "FLOODWORKS\n21–23"][i]
@@ -618,6 +649,7 @@ func _start_level(index: int) -> void:
 		menu_scroll.reset_scroll()
 	location_index = next_location
 	_victory_saved = false
+	_unlocks_before = Crew.unlocked(progress)
 	audio.play_cue("ui")
 	_best_before_mission = int(progress.best.get(data["id"], -1))
 	_victory_new_best = false
@@ -638,6 +670,7 @@ func _on_role(role: String) -> void:
 	level.select_role(role)
 	board.route_preview.clear()
 	_refresh()
+	status_label.text = Crew.HEROES[role]["name"] + ": " + crew.line(role, "select")
 	_checkpoint()
 
 func _on_cell_tapped(cell: Vector2i) -> void:
@@ -703,6 +736,12 @@ func _follow_route(route: Array[Vector2i]) -> void:
 		_victory_new_best = _victory_saved and (_best_before_mission < 0 or level.actions < _best_before_mission)
 		if not _victory_saved:
 			level.message = "Rescue complete, but saving progress failed. Replay to try again."
+		var unlocked_now := Crew.unlocked(progress)
+		var new_rewards: Array[String] = []
+		for style in unlocked_now:
+			if style not in _unlocks_before: new_rewards.append(Crew.LABELS[style])
+		victory_quote.text = Crew.HEROES[level.carrying_role]["name"] + ": " + crew.line(level.carrying_role, "victory")
+		if not new_rewards.is_empty(): victory_quote.text += "\nNew crew gear: " + ", ".join(new_rewards)
 		resume_saved = session.clear()
 		_show_screen("victory")
 	moving = false
@@ -830,6 +869,7 @@ func _resume_mission() -> void:
 	_best_before_mission = int(progress.best.get(level.level_id, -1))
 	_victory_saved = false
 	_victory_new_best = false
+	_unlocks_before = Crew.unlocked(progress)
 	board.level = level
 	board.clear_animation()
 	board.route_preview.clear()
@@ -851,3 +891,64 @@ func _on_hint() -> void:
 	hero_popup_timer.start(7.5)
 	audio.play_cue("ui")
 	_checkpoint()
+
+func _add_insignia(portrait: TextureRect) -> void:
+	var badge := Insignia.new()
+	badge.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
+	badge.offset_left = -26
+	badge.offset_top = -26
+	portrait.add_child(badge)
+	_insignias.append(badge)
+
+func _build_crew(parent: VBoxContainer) -> void:
+	var panel := PanelContainer.new()
+	panel.add_theme_stylebox_override("panel", UI.box(Color("#e6eff0"), UI.LINE, 16, 12))
+	parent.add_child(panel)
+	var column := VBoxContainer.new()
+	panel.add_child(column)
+	column.add_child(UI.label("MEET YOUR CREW", 27, true))
+	for role in Crew.HEROES:
+		var row := HBoxContainer.new()
+		column.add_child(row)
+		var portrait := UI.picture(UI.portrait(role))
+		portrait.custom_minimum_size = Vector2(66, 66)
+		portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		row.add_child(portrait)
+		_add_insignia(portrait)
+		var bio := UI.label(Crew.HEROES[role]["name"] + " · " + role.capitalize() + "\n" + Crew.HEROES[role]["bio"], 21)
+		bio.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		bio.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		row.add_child(bio)
+	crew_picker = OptionButton.new()
+	crew_picker.custom_minimum_size.y = 64
+	UI.button(crew_picker, UI.PAPER)
+	crew_picker.add_theme_font_size_override("font_size", 22)
+	for style in Crew.STYLES: crew_picker.add_item(Crew.LABELS[style])
+	crew_picker.item_selected.connect(_equip_crew)
+	column.add_child(crew_picker)
+	crew_notice = UI.label("", 20)
+	crew_notice.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	column.add_child(crew_notice)
+	# Bios/art let the surrounding mission list own drag gestures.
+	for child in column.get_children():
+		if child is HBoxContainer: _ignore_mouse(child)
+
+func _refresh_crew() -> void:
+	crew.validate_equipped(progress)
+	var available := Crew.unlocked(progress)
+	for i in range(Crew.STYLES.size()):
+		var style: String = Crew.STYLES[i]
+		crew_picker.set_item_disabled(i, style not in available)
+		crew_picker.set_item_text(i, Crew.LABELS[style] + (" · " + Crew.REQUIREMENTS[style] if style not in available else ""))
+	crew_picker.select(Crew.STYLES.find(crew.equipped))
+	crew_notice.text = ("Crew insignia: " + Crew.LABELS[crew.equipped] + ". Cosmetic only.") if crew.settings_saved else "Crew appearance could not be saved. It is active for this session."
+	for badge in _insignias: badge.style_id = crew.equipped
+	if is_instance_valid(board):
+		board.equipped_style = crew.equipped
+		board.queue_redraw()
+
+func _equip_crew(index: int) -> void:
+	if index < 0 or index >= Crew.STYLES.size(): return
+	crew.equip(Crew.STYLES[index], progress)
+	_refresh_crew()
+	audio.play_cue("ui")
