@@ -8,7 +8,7 @@ Twenty campaign missions and three optional Floodworks trials combine a firefigh
 
 Choose an unlocked mission. Tap a rescuer or their portrait to select them, then tap a destination to walk the safe shortest route. The firefighter extinguishes fire; the engineer pushes crates onto blue switches to open gates and operates valves/bridges; the ranger stuns adjacent infected blockers. Pick up the civilian and reach the green exit.
 
-- The first five missions offer contextual teaching. **HINT**, then **SHOW**, gives progressively clearer help and highlights an object without affecting stars.
+- The first five missions proactively show a short hero instruction and outline the next relevant target. **HINT**, then **SHOW**, gives progressively clearer help without affecting stars.
 - Coastal Missions 06–09 add one new obstacle at a time: flooded lane/valve, bridge, infected/ranger, then a short relay that combines the earlier lessons.
 - **RESUME** restores an unfinished mission, including hazards, carrying state and grouped undo.
 - Stars use authored targets in the same step units as existing scores; old best scores remain valid.

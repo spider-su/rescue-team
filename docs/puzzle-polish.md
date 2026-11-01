@@ -12,9 +12,9 @@ Version-1 best values remain unchanged. Stars and XP are re-derived from those e
 
 ## Guidance and hints
 
-Uncompleted missions 01–05 show a short contextual objective that advances through gate/fire/civilian/exit goals. Existing maps and controls teach walking/collection in 01, fire in 02, switching to the engineer in 03, cooperation in 04 and repeated crate pushes in 05.
+Uncompleted missions 01–05 proactively show a short, non-blocking hero instruction and outline the current target. The guidance advances through gate/fire/civilian/exit goals, so the next action stays visible without waiting for a player to ask for help. Existing maps and controls teach walking/collection in 01, fire in 02, switching to the engineer in 03, cooperation in 04 and repeated crate pushes in 05.
 
-Every mission offers HINT in the portrait feedback row. First tap gives a strategic nudge; SHOW gives a more specific action/role and outlines the relevant object on the actual grid (including rotated boards). REPEAT reopens that explanation. Goals track the current puzzle state and clear the highlight when the goal changes. Hints do not move pieces, charge currency, require ads or reduce rewards. They explain the current objective rather than solving an arbitrary deadlock: a crate pushed into a corner may still require UNDO/RESTART.
+Every mission offers HINT in the portrait feedback row. First tap gives a strategic nudge; SHOW gives a more specific action/role and outlines the relevant object on the actual grid (including rotated boards). REPEAT reopens that explanation. Outside the first-five teaching sequence, goals track the current puzzle state and the outline appears after SHOW. Hints do not move pieces, charge currency, require ads or reduce rewards. They explain the current objective rather than solving an arbitrary deadlock: a crate pushed into a corner may still require UNDO/RESTART.
 
 ## Resume
 
