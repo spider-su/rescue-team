@@ -51,7 +51,7 @@ This exports the **twenty-mission campaign with three optional Floodworks trials
 - In a test map with an engineer, crate and waiting civilian in adjacent corridor cells, tap the crate from both an adjacent and a distant starting tile. Neither input may push the crate onto the civilian; a rejected push must preserve move count and undo history. After collecting the civilian and moving the carrier away, the former civilian tile must accept a crate normally, and undo must restore the push.
 - Record APK commit, device model, Android version and exact results. Headless regression tests cover interrupted temporary writes and failed replacement; those results do not establish real-device usability.
 
-## Release readiness (not yet implemented)
+## Release readiness
 
 1. Keep product package ID `com.spidersu.rescueteam` stable, increase Android version code for each published build.
 2. Add legally cleared product assets and icons; ensure no inherited template-only graphics or text remain.
@@ -61,7 +61,7 @@ This exports the **twenty-mission campaign with three optional Floodworks trials
 6. Prepare store metadata, contact/support page, privacy policy and data-safety declarations before release.
 7. Only add ad/IAP integration when validated by player tests and commercial roadmap decision.
 
-A green CI result means **export verified**, not a physically tested game or store-ready release.
+The complete candidate gate, ownership boundaries and tester report are in [release.md](release.md) and [playtest-report.md](playtest-report.md). Store copy and the publication-ready privacy-policy text are in [store-listing.md](store-listing.md) and [privacy-policy.md](privacy-policy.md). A green CI result means **export verified**, not a physically tested game or store-ready release.
 
 Godot reference: https://docs.godotengine.org/en/4.7/tutorials/export/exporting_for_android.html
 
