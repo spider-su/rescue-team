@@ -35,7 +35,8 @@ func _ready() -> void:
 	loop.loop_begin = 0
 	loop.loop_end = roundi(loop.get_length() * loop.mix_rate)
 	music.stream = loop
-	music.volume_db = -17
+	# Keep the more rhythmic theme audible beneath input feedback and effects.
+	music.volume_db = -14
 	add_child(music)
 	for i in range(4):
 		var player := AudioStreamPlayer.new()

@@ -16,7 +16,7 @@ func _run() -> void:
 	_check(audio.music_enabled and audio.effects_enabled and audio.music.playing, "First launch starts music and enables effects")
 	var stream: AudioStreamWAV = audio.music.stream
 	_check(stream.loop_mode == AudioStreamWAV.LOOP_FORWARD and stream.loop_begin == 0 and stream.loop_end == stream.get_length() * stream.mix_rate, "Theme loops through complete imported PCM data")
-	_check(is_equal_approx(stream.get_length(), 40.0), "Theme is a complete 16-bar 40-second phrase")
+	_check(is_equal_approx(stream.get_length(), 32.0), "Theme is a complete 16-bar 120 BPM phrase")
 	for cue in audio.EFFECTS:
 		var effect: AudioStreamWAV = audio.EFFECTS[cue]
 		_check(effect.get_length() > .05 and effect.get_length() < 2 and not effect.data.is_empty(), "Effect loads as nonempty bounded audio: " + cue)
