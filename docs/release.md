@@ -54,3 +54,11 @@ The debug signing key supports repeatable **test APK** upgrades. It is not a Pla
 - Existing automated and desktop-rendered evidence does not prove real-device ergonomics, interruption handling or subjective animation/audio quality.
 - The project intentionally has no telemetry. Decisions from external validation therefore need consented qualitative reports rather than inferred analytics.
 - Contact details, public privacy-policy hosting and Play Console declarations are owner-controlled inputs and remain incomplete until supplied and published.
+
+## Historical real-device owner smoke (reported 2026-11-01)
+
+**PASS (owner-reported):** an earlier Android build installed on a physical Android device and the primary rescue mission end-to-end happy path completed. The README independently records a Mission 01 owner test. Original device/OS/build hash/date were not recorded. This establishes an earlier install-and-play milestone, **not** physical-device validation of newer chapters, audio, hero dialogue, scroll behavior, release AAB or update-over-install. The release gates above remain open.
+
+## Documentation and licensing alignment
+
+Reuse the existing [privacy policy](privacy-policy.md), [store listing](store-listing.md), [playtest report](playtest-report.md) and asset provenance docs rather than making duplicate policies. Fill publication date, publisher legal name, public privacy URL and support email; inspect the final APK/AAB permissions and SDK inventory before asserting no transfer. Keep the existing MIT repository license and required asset/font notices. Check Google Play Data safety, target audience and content rating, even for an offline game without accounts or ads. A separate user-facing EULA is optional pending publisher/legal review; the MIT source license is not a substitute for user privacy disclosures.
