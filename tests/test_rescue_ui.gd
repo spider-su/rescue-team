@@ -209,7 +209,12 @@ func _run() -> void:
 	_check(game.screen == "victory" and game.next_button.disabled and game.victory_message.text.contains("saving progress failed"), "Failed save is visible and cannot masquerade as a new unlock")
 	DirAccess.remove_absolute(temporary_directory)
 	for cue in game.audio.EFFECTS:
-		_check(heard_cues.has(cue), "Production UI emits action audio: " + cue)
+		# Rejected moves now emit a hero-specific reaction instead of the
+		# shared blocked cue; the popup keeps the actionable explanation.
+		if cue == "blocked":
+			_check(heard_cues.has("reaction:firefighter"), "Production UI emits Maya's blocked-action reaction")
+		else:
+			_check(heard_cues.has(cue), "Production UI emits action audio: " + cue)
 	game.queue_free()
 	await create_timer(0.1).timeout
 	viewport.queue_free()
