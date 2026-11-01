@@ -97,27 +97,17 @@
   "06": [
     [
       "engineer",
-      4,
-      3
-    ],
-    [
-      "engineer",
-      5,
+      3,
       3
     ],
     [
       "firefighter",
-      2,
+      6,
       1
     ],
     [
       "firefighter",
-      7,
-      1
-    ],
-    [
-      "firefighter",
-      10,
+      8,
       1
     ]
   ],
@@ -129,39 +119,17 @@
     ],
     [
       "engineer",
-      4,
-      3
+      5,
+      1
     ],
     [
       "engineer",
-      5,
+      1,
       3
-    ],
-    [
-      "firefighter",
-      5,
-      1
     ],
     [
       "firefighter",
       7,
-      1
-    ],
-    [
-      "firefighter",
-      10,
-      1
-    ]
-  ],
-  "08": [
-    [
-      "engineer",
-      5,
-      3
-    ],
-    [
-      "firefighter",
-      3,
       1
     ],
     [
@@ -171,7 +139,29 @@
     ],
     [
       "firefighter",
-      10,
+      9,
+      1
+    ]
+  ],
+  "08": [
+    [
+      "ranger",
+      4,
+      1
+    ],
+    [
+      "ranger",
+      2,
+      3
+    ],
+    [
+      "firefighter",
+      6,
+      1
+    ],
+    [
+      "firefighter",
+      7,
       1
     ]
   ],
@@ -182,28 +172,23 @@
       3
     ],
     [
-      "engineer",
+      "ranger",
       4,
-      3
+      1
     ],
     [
-      "engineer",
+      "ranger",
       5,
-      3
+      2
     ],
     [
       "firefighter",
-      2,
+      7,
       1
     ],
     [
       "firefighter",
       8,
-      1
-    ],
-    [
-      "firefighter",
-      10,
       1
     ]
   ],

@@ -1,15 +1,14 @@
 {
   "id": "07",
-  "title": "Three Pushes",
-  "hint": "Use the engineer to push the box 3 time(s), then rescue the civilian.",
+  "title": "Broken Crossing",
+  "hint": "Open the valve, repair the bridge, then clear the fire and extract.",
   "rows": [
-    "#############",
-    "#F...f.C.GX##",
-    "#.#.#####.###",
-    "#E.B..s.....#",
-    "#...###.....#",
-    "#############"
+    "###########",
+    "#F.~~=.fCX#",
+    "#...#######",
+    "#E.V......#",
+    "###########"
   ],
-  "three_star_moves": 13,
-  "two_star_moves": 21
+  "three_star_moves": 20,
+  "two_star_moves": 27
 }

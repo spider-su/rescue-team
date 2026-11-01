@@ -16,7 +16,7 @@ The chapter illustration now sits inside the scroll content instead of permanent
 - **Infected (`Z`):** stationary blocked tiles. They do not attack, move, cause damage or introduce timing. Only the ranger can clear them; firefighter/engineer movement and crate pushes cannot enter an occupied infected tile.
 - **Firefighter/engineer:** their existing abilities remain unchanged. Rangers cannot extinguish fire or push crates. All rescuers can carry the civilian.
 - Undo restores every infected tile, positions, carrying state and counter. A complete auto-walk/stun tap remains one undo step. Restart restores the authored map.
-- New maps include one ranger (`R`) and one to five infected; validation supports at most one ranger and six infected, and rejects infected without a ranger. Old maps remain two-character missions.
+- New Old Town maps include one ranger (`R`) and one to five infected; validation supports at most one ranger and six infected, and rejects infected without a ranger. Coastal Mission 08 is the earlier one-blocker ranger preview; Old Town remains the full containment chapter.
 
 ## Ten authored puzzles
 

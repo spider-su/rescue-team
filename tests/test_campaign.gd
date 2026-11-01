@@ -25,7 +25,7 @@ func _initialize() -> void:
 	if not _assert(not catalog.validate(broken).is_empty(), "reject missing firefighter"):
 		return
 
-	# This covers the gradual learning curve (civilian, fire, crate/gate, both, two pushes).
+	# This covers the gradual Coastal learning curve, including the late-chapter mechanic ramp.
 	var solutions: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://tests/fixtures/coastal_solutions.json"))
 	for index in range(solutions.size()):
 		var mission = RescueLevel.new(catalog.load_level(index))
@@ -38,6 +38,22 @@ func _initialize() -> void:
 				return
 		if not _assert(mission.rescued, "mission %d wins" % index):
 			return
+	for index in range(5):
+		var early = RescueLevel.new(catalog.load_level(index))
+		if not _assert(early.valve_pos.x < 0 and early.bridge_pos.x < 0 and early.infected.is_empty(), "first five missions keep new obstacles out of the basic tutorial"):
+			return
+	var sluice = RescueLevel.new(catalog.load_level(5))
+	var crossing = RescueLevel.new(catalog.load_level(6))
+	var lookout = RescueLevel.new(catalog.load_level(7))
+	var relay = RescueLevel.new(catalog.load_level(8))
+	if not _assert(sluice.valve_pos.x >= 0 and not sluice.water.is_empty() and sluice.bridge_pos.x < 0 and sluice.infected.is_empty(), "Mission 06 introduces only the valve and flooded lane"):
+		return
+	if not _assert(crossing.valve_pos.x >= 0 and crossing.bridge_pos.x >= 0 and crossing.infected.is_empty(), "Mission 07 adds the bridge after the valve"):
+		return
+	if not _assert(lookout.positions.has(lookout.RANGER) and not lookout.infected.is_empty() and lookout.valve_pos.x < 0, "Mission 08 introduces containment without water systems"):
+		return
+	if not _assert(relay.positions.has(relay.RANGER) and not relay.infected.is_empty() and relay.valve_pos.x >= 0 and not relay.water.is_empty() and relay.bridge_pos.x < 0, "Mission 09 combines only previously taught valve and containment rules"):
+		return
 
 	var save_path := "user://rescue_campaign_test.json"
 	if FileAccess.file_exists(save_path):

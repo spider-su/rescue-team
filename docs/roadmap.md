@@ -65,6 +65,12 @@ Prefer a small focused PR for each increment; do not combine all milestones in o
 - [x] Three optional Floodworks trials after 05: valve → drained route → repaired bridge, combined with existing specialists.
 - [ ] Android acceptance and external-player validation under `docs/puzzle-polish.md`.
 
+## Coastal mechanic ramp (2026-11-01)
+
+- [x] Replace repetitive 06–09 crate variants with a one-at-a-time Coastal introduction to valve/water, bridge and ranger containment, followed by a small relay.
+- [x] Preserve IDs, unlock order, deterministic rules and replayed reference solutions; Mission 10 remains the original cooperative recap before Old Town.
+- [ ] Verify the new lesson sequence, specialist discovery and board readability on Android hardware.
+
 ## Approved emotional-progression increment (2026-11-01)
 
 - [x] Named crew, original personality lines and visual-only cosmetic milestones derived from saved rescues.

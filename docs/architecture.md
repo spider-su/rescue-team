@@ -16,7 +16,7 @@
 ## Gameplay boundaries
 
 1. **Pure puzzle domain:** deterministic grid, unit positions, hazards, actions, win/lose rules and undo; no dependency on graphics.
-2. **Level content:** explicit JSON manifest in `scripts/level_catalog.gd`, twenty campaign maps and three optional Floodworks trials, validation and tested win paths. `levels/old-town/` introduces the optional ranger and stationary infected; original IDs and map geometry are unchanged. Floodworks adds one valve, flooded cells and at most one repairable bridge.
+2. **Level content:** explicit JSON manifest in `scripts/level_catalog.gd`, twenty campaign maps and three optional Floodworks trials, validation and tested win paths. Coastal 06–09 teach valve/water, bridge and ranger/infected in a bounded ramp; `levels/old-town/` expands those mechanics. Floodworks adds the deeper three-way valve/bridge combinations.
 3. **Presentation:** Godot scene rendering, touch input, feedback/audio, animations and Android lifecycle.
 4. **Local persistence:** `scripts/campaign_progress.gd`, versioned `user://rescue_progress_v1.json`, best move counts and corrupt-data fallback.
 5. **UI integration:** `tests/test_rescue_ui.gd` drives the production scene with an isolated save; checks screen transitions, animated routes, persistence feedback, adaptive tile input and portrait layouts. Gameplay rules do not import presentation resources.

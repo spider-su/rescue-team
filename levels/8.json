@@ -1,15 +1,14 @@
 {
   "id": "08",
-  "title": "Last-Minute Lock",
-  "hint": "Use the engineer to push the box 1 time(s), then rescue the civilian.",
+  "title": "Harbor Lookout",
+  "hint": "Nia can safely contain the infected blocker. Then bring the civilian to the exit.",
   "rows": [
-    "#############",
-    "#F.f....CGX##",
-    "#.#.#####.###",
-    "#E...Bs.....#",
-    "#...###.....#",
-    "#############"
+    "#########",
+    "#F..Z.CX#",
+    "#...#####",
+    "#R..E...#",
+    "#########"
   ],
-  "three_star_moves": 13,
-  "two_star_moves": 21
+  "three_star_moves": 14,
+  "two_star_moves": 19
 }
