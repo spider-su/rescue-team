@@ -132,7 +132,7 @@ jobs:
         run: |
           godot --headless --path . --export-debug "Android" build/game-debug.apk
           test -s build/game-debug.apk
-          aapt dump badging build/game-debug.apk | grep -E '^package: name='
+          "$ANDROID_HOME/build-tools/35.0.1/aapt" dump badging build/game-debug.apk | grep -E '^package: name='
 
       - name: Upload Android debug APK
         uses: actions/upload-artifact@v7
