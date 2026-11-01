@@ -28,9 +28,29 @@ func _run() -> void:
 		_check(effect.get_length() > .05 and effect.get_length() < 2 and not effect.data.is_empty(), "Effect loads as nonempty bounded audio: " + cue)
 		audio.play_cue(cue)
 	_check(heard.size() == 12 and audio.voices.size() == 4, "Every effect has playback and polyphony is bounded")
+	var hero_lines = preload("res://scripts/hero_lines.gd").new()
+	for role in ["firefighter", "engineer", "ranger"]:
+		var first: String = hero_lines.next_reaction(role)
+		var second: String = hero_lines.next_reaction(role)
+		_check(not first.is_empty() and first != second, "Hero interjections vary: " + role)
+		_check(hero_lines.REACTIONS.has(role), "Hero has own reaction bank: " + role)
+	audio._last_reaction = -10000
+	var reaction_count := heard.size()
+	audio.play_hero_reaction("firefighter")
+	_check(heard.size() == reaction_count + 1 and heard[-1] == "reaction:firefighter", "Maya has a vocal reaction")
+	_check(is_equal_approx(audio._reaction_player.pitch_scale, 1.42), "Maya has distinct voice pitch")
+	audio.play_hero_reaction("engineer")
+	_check(heard.size() == reaction_count + 1, "Blocked reactions rate limited")
+	audio._last_reaction = -10000
+	audio.play_hero_reaction("engineer")
+	_check(heard[-1] == "reaction:engineer" and is_equal_approx(audio._reaction_player.pitch_scale, 0.82), "Theo has distinct reaction timbre")
+	audio._last_reaction = -10000
+	audio.play_hero_reaction("ranger")
+	_check(heard[-1] == "reaction:ranger" and is_equal_approx(audio._reaction_player.pitch_scale, 1.12), "Nia has distinct reaction timbre")
 	audio.set_effects_enabled(false)
 	for player in audio.voices:
 		_check(not player.playing, "Muting effects stops active voices")
+	_check(not audio._reaction_player.playing, "Muting also stops hero reactions")
 	var count := heard.size()
 	audio.play_cue("victory")
 	_check(heard.size() == count and audio.music.playing, "Effect mute suppresses cues without muting music")

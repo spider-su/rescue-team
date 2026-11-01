@@ -14,6 +14,23 @@ const LINES = {
 	"route": ["I can't reach that spot yet. Let's clear a passage.", "No safe way through. Let's check the obstacles.", "We're cut off. Let's open a route first.", "That path is blocked. Let's try another approach."],
 }
 var _previous: Dictionary = {}
+const REACTIONS = {
+	"firefighter": ["Oh no!", "Not again!", "Uh-oh!"],
+	"engineer": ["Ohh!", "Again?", "Hmm..."],
+	"ranger": ["Again?", "Oh no!", "Hold on!"],
+}
+var _reaction_previous: Dictionary = {}
+
+func next_reaction(role: String) -> String:
+	if not REACTIONS.has(role):
+		return "Oh no!"
+	var choices: Array = REACTIONS[role]
+	var index: int = 0
+	if _reaction_previous.has(role):
+		index = (int(_reaction_previous[role]) + 1) % choices.size()
+	_reaction_previous[role] = index
+	return String(choices[index])
+
 
 func next_line(reason: String) -> String:
 	if not LINES.has(reason):

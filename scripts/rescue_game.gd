@@ -423,10 +423,10 @@ func _show_blocked_popup() -> void:
 	if line.is_empty():
 		return
 	hero_popup.offset_top = -190
-	hero_popup_text.text = Crew.HEROES[level.selected]["name"] + ": " + line
+	hero_popup_text.text = Crew.HEROES[level.selected]["name"] + ": " + hero_lines.next_reaction(level.selected) + "\n" + line
 	hero_popup_portrait.texture = UI.portrait(level.selected)
 	status_label.text = line
-	audio.play_cue("blocked")
+	audio.play_hero_reaction(level.selected)
 	hero_popup.show()
 	hero_popup_timer.start(4.5)
 
