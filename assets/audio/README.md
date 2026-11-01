@@ -4,7 +4,11 @@ All audio in this directory was composed and synthesized for Rescue Team on 2026
 
 Run `python3 tools/generate_audio.py` to reproduce the mono 22,050 Hz / 16-bit PCM WAV source files using only Python's standard library. Godot imports/compresses the WAVs for playback. The runtime duplicates the theme stream and loops its complete 32-second sample range; it does not synthesize audio on the phone.
 
-- **Harbor theme:** original 16-bar, 120 BPM C-major rescue groove; playful mallet-like lead, bouncing bass, off-beat plucks, handclaps and light hi-hat synth voices. One shared upbeat loop accompanies the menu and both locations without restarting on navigation.
+- **Coastal theme:** original 16-bar, 120 BPM C-major rescue groove; playful mallet-like lead, bouncing bass, off-beat plucks, handclaps and light hi-hat synth voices.
+- **Old Town theme:** original 16-bar, 120 BPM D-minor night-patrol groove with a more mysterious lead and the same friendly pulse.
+- **Floodworks theme:** original 16-bar, 120 BPM E-major workshop pulse with a brighter, mechanical melody for the optional trials.
+
+The menu and each mission use the selected location's loop. Switching location swaps the one existing music player; it never layers two themes.
 - **UI/select:** short plucked notes for mission entry, settings and role selection.
 - **Step:** quiet, short tap for each completed walking step.
 - **Fire/crate/stun:** synthesized spray, wooden thud and electronic shield pulse.

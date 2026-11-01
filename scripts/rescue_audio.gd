@@ -1,7 +1,11 @@
 extends Node
 ## Presentation-only audio. Separate local preferences never touch campaign saves.
 signal cue_played(cue: String)
-const THEME = preload("res://assets/audio/harbor_theme.wav")
+const THEMES = {
+	"coast": preload("res://assets/audio/harbor_theme.wav"),
+	"old-town": preload("res://assets/audio/old_town_theme.wav"),
+	"floodworks": preload("res://assets/audio/floodworks_theme.wav"),
+}
 const EFFECTS = {
 	"ui": preload("res://assets/audio/ui.wav"),
 	"select": preload("res://assets/audio/select.wav"),
@@ -26,15 +30,12 @@ var _voice := 0
 var _app_paused := false
 var _focused := true
 var _last_blocked := -1000
+var music_theme := "coast"
 
 func _ready() -> void:
 	_load_settings()
 	music = AudioStreamPlayer.new()
-	var loop: AudioStreamWAV = THEME.duplicate()
-	loop.loop_mode = AudioStreamWAV.LOOP_FORWARD
-	loop.loop_begin = 0
-	loop.loop_end = roundi(loop.get_length() * loop.mix_rate)
-	music.stream = loop
+	music.stream = _loop_for(music_theme)
 	# Keep the more rhythmic theme audible beneath input feedback and effects.
 	music.volume_db = -14
 	add_child(music)
@@ -43,6 +44,22 @@ func _ready() -> void:
 		player.volume_db = -7
 		add_child(player)
 		voices.append(player)
+	_update_playback()
+
+func _loop_for(theme: String) -> AudioStreamWAV:
+	var loop: AudioStreamWAV = THEMES.get(theme, THEMES["coast"]).duplicate()
+	loop.loop_mode = AudioStreamWAV.LOOP_FORWARD
+	loop.loop_begin = 0
+	loop.loop_end = roundi(loop.get_length() * loop.mix_rate)
+	return loop
+
+func set_location_music(location: String) -> void:
+	var next := location if THEMES.has(location) else "coast"
+	if next == music_theme:
+		return
+	music_theme = next
+	music.stop()
+	music.stream = _loop_for(music_theme)
 	_update_playback()
 
 func _exit_tree() -> void:
