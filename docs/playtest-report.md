@@ -49,3 +49,7 @@ Mark each item **PASS**, **FAIL** or **NOT TESTED** and give a short observation
 ## Defects
 
 For each defect, record steps to reproduce, expected/actual behavior, frequency, severity, and evidence filename. Never report a defect as fixed until it is retested on the same affected condition.
+
+## Previous owner's Android test (not candidate evidence)
+
+Recorded from owner confirmation on 2026-11-01: **PASS**, earlier Android APK installed on a physical device and an initial rescue mission's end-to-end flow completed. The exact APK SHA, Android device/OS and original execution date are unknown. This is historical evidence only; leave the blank candidate fields and full current-device checklist above untouched until the current build is actually tested. In particular, the expanded 20-mission campaign and later UI changes are not covered by this pass.
