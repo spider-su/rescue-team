@@ -14,6 +14,7 @@ var action_cell := Vector2i(-1, -1)
 var action_progress: float = 0
 var action_role := ""
 var walk_progress: float = 0.0
+var walk_direction := Vector2.RIGHT
 var facing: Dictionary = {}
 var effect_kind: String = ""
 var effect_progress: float = 0.0
@@ -122,19 +123,22 @@ func _draw() -> void:
 		var center := cell_center(position_on_grid, metrics)
 		var body_scale := Vector2.ONE
 		if animated_role == role and effect_kind == "":
-			# A short stride with a small compression on landing reads better than sliding.
-			center.y -= sin(walk_progress * PI) * step * 0.12
-			body_scale = Vector2(1.0 + sin(walk_progress * PI) * 0.06, 1.0 - sin(walk_progress * PI) * 0.05)
+			# Keep the feet planted: a subtle weight transfer reads as a stride, not a jump.
+			var cadence := sin(walk_progress * TAU * 1.5)
+			center.y += absf(cadence) * step * 0.016
+			body_scale = Vector2(1.0 + absf(cadence) * 0.028, 1.0 - absf(cadence) * 0.025)
 		elif effect_kind == "celebrate" and role == effect_role:
 			var hop := sin(effect_progress * PI * 2.0) * step * 0.12
 			center.y -= maxf(0.0, hop)
 			body_scale = Vector2(1.0 + sin(effect_progress * PI * 2.0) * 0.04, 1.0 - sin(effect_progress * PI * 2.0) * 0.04)
 		if level.selected == role:
 			var ring := Color("#ffcd5c")
-			draw_circle(center + Vector2(0, step * 0.23), step * 0.38, Color(ring, 0.3), true, -1, true)
-			draw_arc(center + Vector2(0, step * 0.23), step * 0.38, 0, TAU, 32, ring, 3, true)
+			draw_circle(center + Vector2(0, step * 0.25), step * 0.42, Color(ring, 0.3), true, -1, true)
+			draw_arc(center + Vector2(0, step * 0.25), step * 0.42, 0, TAU, 32, ring, 3, true)
+		if animated_role == role and effect_kind == "":
+			_draw_walk_contacts(center, step, walk_progress)
 		_draw_facing_person(role, center, step, body_scale)
-		Insignia.paint(self, equipped_style, center + Vector2(step * 0.2, step * 0.04), step * 0.13)
+		Insignia.paint(self, equipped_style, center + Vector2(step * 0.24, step * 0.03), step * 0.15)
 		if level.carrying_role == role and effect_kind != "pickup":
 			_draw_person("civilian", center + Vector2(step * 0.27, step * 0.1), step * 0.55)
 	_draw_effects(metrics, step)
@@ -163,9 +167,21 @@ func _draw_art(kind: String, center: Vector2, side: float) -> void:
 func _draw_person(role: String, center: Vector2, step: float) -> void:
 	if not art.has(role):
 		return
-	draw_circle(center + Vector2(0, step * 0.28), step * 0.22, Color(0.15, 0.2, 0.18, 0.18), true, -1, true)
-	var dimensions := Vector2(step * 0.73, step * 1.02)
+	draw_circle(center + Vector2(0, step * 0.31), step * 0.25, Color(0.15, 0.2, 0.18, 0.18), true, -1, true)
+	# Larger silhouettes make each role legible against a dense puzzle board.
+	var dimensions := Vector2(step * 0.84, step * 1.16)
 	draw_texture_rect(art[role], Rect2(center - dimensions / 2, dimensions), false)
+
+func _draw_walk_contacts(center: Vector2, step: float, progress: float) -> void:
+	# Short alternating contact marks under the sprite feet make static art read as a stride.
+	var cadence := sin(progress * TAU * 1.5)
+	var lead := 1.0 if cadence >= 0.0 else -1.0
+	var lateral := Vector2(-walk_direction.y, walk_direction.x)
+	var baseline := center + Vector2(0, step * 0.39)
+	for side in [-1.0, 1.0]:
+		var extension: float = step * (0.13 if side == lead else 0.055)
+		var foot: Vector2 = baseline + lateral * side * step * 0.12 + walk_direction * extension
+		draw_line(foot - walk_direction * step * 0.09, foot, Color("#294a53", 0.72), maxf(2.0, step * 0.055), true)
 
 func _draw_word(center: Vector2, text: String, font_size: int, color: Color) -> void:
 	var width := UI.HEADING.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
@@ -245,8 +261,9 @@ func animate_step(role: String, start: Vector2i, target: Vector2i) -> void:
 	animated_role = role
 	animated_position = Vector2(start)
 	walk_progress = 0.0
+	walk_direction = Vector2(target - start).normalized()
 	var tween := create_tween()
-	tween.tween_method(_set_walk_progress.bind(start, target), 0.0, 1.0, 0.20).set_trans(Tween.TRANS_QUINT).set_ease(Tween.EASE_IN_OUT)
+	tween.tween_method(_set_walk_progress.bind(start, target), 0.0, 1.0, 0.18).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
 	await tween.finished
 	clear_animation()
 
@@ -261,6 +278,7 @@ func clear_animation() -> void:
 	effect_kind = ""
 	effect_progress = 0.0
 	walk_progress = 0.0
+	walk_direction = Vector2.RIGHT
 	queue_redraw()
 
 func animate_action(cell: Vector2i, role: String) -> void:
