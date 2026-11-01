@@ -30,6 +30,8 @@ var _voice := 0
 var _app_paused := false
 var _focused := true
 var _last_blocked := -1000
+var _last_reaction := -10000
+var _reaction_player: AudioStreamPlayer
 var music_theme := "coast"
 
 func _ready() -> void:
@@ -44,7 +46,32 @@ func _ready() -> void:
 		player.volume_db = -7
 		add_child(player)
 		voices.append(player)
+	_reaction_player = AudioStreamPlayer.new()
+	_reaction_player.volume_db = -4.0
+	add_child(_reaction_player)
 	_update_playback()
+
+func play_hero_reaction(role: String) -> void:
+	if not effects_enabled or _app_paused or not _focused:
+		return
+	var now: int = Time.get_ticks_msec()
+	if now - _last_reaction < 1200:
+		return
+	_last_reaction = now
+	# Use the existing compact original cue as a distinct, speech-like
+	# vocal reaction per hero. No network or platform TTS dependency.
+	_reaction_player.stream = EFFECTS["blocked"]
+	match role:
+		"firefighter":
+			_reaction_player.pitch_scale = 1.42
+		"engineer":
+			_reaction_player.pitch_scale = 0.82
+		"ranger":
+			_reaction_player.pitch_scale = 1.12
+		_:
+			_reaction_player.pitch_scale = 1.0
+	_reaction_player.play()
+	cue_played.emit("reaction:" + role)
 
 func _loop_for(theme: String) -> AudioStreamWAV:
 	var loop: AudioStreamWAV = THEMES.get(theme, THEMES["coast"]).duplicate()
@@ -66,6 +93,8 @@ func _exit_tree() -> void:
 	music.stop()
 	for player in voices:
 		player.stop()
+	if is_instance_valid(_reaction_player):
+		_reaction_player.stop()
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_APPLICATION_PAUSED:
@@ -91,6 +120,8 @@ func _update_playback() -> void:
 	if suspended or not effects_enabled:
 		for player in voices:
 			player.stop()
+		if is_instance_valid(_reaction_player):
+			_reaction_player.stop()
 
 func play_cue(cue: String) -> void:
 	if not effects_enabled or _app_paused or not _focused or not EFFECTS.has(cue):

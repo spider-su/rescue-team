@@ -22,3 +22,7 @@ Application pause or focus loss suspends music and stops transient effects. Play
 6. Complete/undo a rescue and reload progress to confirm audio preferences do not alter campaign scores or unlocks.
 
 No Android device was connected during implementation. Native desktop rendering and source/CI playback checks remain distinct from these pending hardware tests.
+
+## Hero blocked-route reactions
+
+Blocked taps now display a short per-character interjection above the existing actionable hint (Maya: “Oh no!”, Theo: “Ohh!”, Nia: “Again?” plus rotating alternates). Each character has a distinct, pitch-shifted **voice-like vocal cue**, reusing the small original blocked WAV. It is deliberately a nonverbal synthetic cue—not a spoken-word recording or TTS. Reactions obey SOUND mute, foreground/focus restrictions and a 1.2-second debounce. The existing explanation remains visible so a reaction never replaces gameplay guidance.
