@@ -8,6 +8,7 @@ func _initialize() -> void:
 	var catalog = Catalog.new()
 	var solutions: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://tests/fixtures/old_town_solutions.json"))
 	var layouts: Dictionary = {}
+	var entry_corners: Dictionary = {}
 	_check(catalog.count() == 23 and solutions.size() == 10, "Two locations with ten missions each")
 	for index in range(10, 20):
 		var data: Dictionary = catalog.load_level(index)
@@ -18,6 +19,16 @@ func _initialize() -> void:
 		var layout := "\n".join(data["rows"])
 		_check(not layouts.has(layout), "Every Old Town map has distinct authored content")
 		layouts[layout] = true
+		var firefighter_row := 0
+		var firefighter_column := 0
+		for row_index in range(data["rows"].size()):
+			var column_index: int = data["rows"][row_index].find("F")
+			if column_index >= 0:
+				firefighter_row = row_index
+				firefighter_column = column_index
+				break
+		var entry_corner := ("north" if firefighter_row < data["rows"].size() / 2 else "south") + ("-west" if firefighter_column < data["rows"][0].length() / 2 else "-east")
+		entry_corners[entry_corner] = true
 		var initial_infected: Dictionary = mission.infected.duplicate()
 		_check(mission.positions.has(mission.RANGER) and not initial_infected.is_empty(), "Every new mission includes ranger and infected")
 		var steps: Array = solutions[data["id"]]
@@ -43,6 +54,7 @@ func _initialize() -> void:
 		_check(mission.infected == initial_infected and mission.actions == 0 and not mission.rescued and mission.carrying_role.is_empty() and not mission.gate_is_open(), "Whole solution undo restores hazards and initial state")
 		mission.reset()
 		_check(mission.infected == initial_infected and mission.positions.has(mission.RANGER), "Restart restores ranger and every infected")
+	_check(entry_corners.size() == 4, "Old Town rotates firefighter entry across every district corner")
 	_test_rules(catalog)
 	_test_progress(catalog)
 	if not failed:

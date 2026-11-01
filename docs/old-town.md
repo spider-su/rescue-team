@@ -25,14 +25,14 @@ These are static, original JSON maps with explicit walkthroughs in `tests/fixtur
 | ID | Mission | Planning focus | Taps / moves / infected |
 | --- | --- | --- | --- |
 | 11 | First Containment | Introduce ranger; clear fire, contain infected, power gate, escort | 9 / 42 / 1 |
-| 12 | Blocked Supply | Park the engineer to free the ranger's approach | 11 / 51 / 2 |
-| 13 | Lower Courtyard | Clear access above the crate, then push vertically | 11 / 52 / 3 |
-| 14 | Corner Delivery | Push right, change approach, push down | 13 / 57 / 2 |
-| 15 | Market Detour | A blocked upper approach forces the lower delivery route | 14 / 68 / 3 |
-| 16 | Long Relay | Cross the market and deliver down a long lane | 18 / 62 / 3 |
-| 17 | Reverse the Switch | Detour right/up/left around a separating wall | 17 / 72 / 3 |
-| 18 | Clocktower Loop | Clear a fire-guarded stance for the final crate approach | 17 / 74 / 3 |
-| 19 | Split Approach | Approach the crate from the right, then redirect down | 14 / 68 / 3 |
+| 12 | East Gate Supply | Work from the opposite side before opening the east gate | 11 / 51 / 2 |
+| 13 | Courtyard Turn | A north-south courtyard changes the crate and ranger approaches | 11 / 52 / 3 |
+| 14 | Southbound Delivery | Start at the far end and stage the crate before the long rescue | 13 / 57 / 2 |
+| 15 | Market Return | Reverse the market flow, then bring the crate home | 14 / 68 / 3 |
+| 16 | Lantern Relay | A diagonal street separates the three specialists before the gate | 18 / 62 / 3 |
+| 17 | Recessed Switch | Reach the recessed switch from the opposite side of the block | 17 / 72 / 3 |
+| 18 | Clocktower Crossroads | Right-angle lanes change the order of the crate route | 17 / 72 / 3 |
+| 19 | Northern Approach | A flipped district makes the rescue lane the final commitment | 14 / 68 / 3 |
 | 20 | Last Light Evacuation | Interleave ranger, engineer and firefighter; turn the crate and reverse its direction | 24 / 106 / 5 |
 
 The larger boards and ability ordering make the verified routes longer than the original chapter. Player-perceived difficulty still needs playtesting; walkthrough length is not a difficulty measurement by itself.

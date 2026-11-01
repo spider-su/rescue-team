@@ -28,9 +28,9 @@ Loading replays every action through `RescueLevel`, rebuilding positions, hazard
 
 Trials 21–23 unlock after Coastal mission 05; each trial unlocks the next. They do not block Old Town or change the original 10→11 transition. Old Town 20 and trial 23 return to their chapter menus.
 
-- **21 — Open the Sluice:** the engineer approaches and turns a valve (`V`), draining all flooded tiles (`~`) into ordinary walkable floor. Reference: 8 moves.
-- **22 — Bridge the Gap:** after drainage, the engineer approaches a broken bridge (`=`) and repairs it, opening a shared crossing to the firefighter's rescue route. Reference: 20 moves.
-- **23 — The Floodworks Relay:** combine valve/bridge ordering, fire clearing, ranger containment and crate-powered extraction. Reference: 59 moves.
+- **21 — West Sluice:** the engineer approaches and turns a valve (`V`), draining all flooded tiles (`~`) into ordinary walkable floor from the opposite side of the channel. Reference: 8 moves.
+- **22 — Highwater Bridge:** approach the valve from below, then repair a broken bridge (`=`) to open a shared crossing to the firefighter's rescue route. Reference: 20 moves.
+- **23 — Floodworks Turntable:** approach the relay from the western side and combine valve/bridge ordering, fire clearing, ranger containment and crate-powered extraction. Reference: 59 moves.
 
 Only the engineer operates valves/builds bridges, from orthogonally adjacent tiles, without moving onto the target. These actions cost one move and undo independently or with their auto-walk tap. Water blocks heroes and crates before drainage; broken bridges remain blocked until repair, which requires drainage. Valves stay occupied machinery after opening. There is no flood simulation, timer, damage or reflooding mechanic. New water/wheel/bridge visuals are original code-drawn shapes; existing action audio is reused.
 

@@ -149,12 +149,10 @@ func _run() -> void:
 	for id in ["05", "06", "07", "08", "09"]:
 		game.progress.record_victory(id, 20)
 	game._start_level(9)
-	game.engineer_button.pressed.emit()
-	for x in range(2, 6):
-		await _tap(Vector2i(x, 3))
-	game.firefighter_button.pressed.emit()
-	for x in [5, 7, 10]:
-		await _tap(Vector2i(x, 1))
+	var coastal_solutions: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://tests/fixtures/coastal_solutions.json"))
+	for step in coastal_solutions["10"]:
+		game._on_role(step[0])
+		await _tap(Vector2i(step[1], step[2]))
 	_check(game.screen == "victory" and game.next_button.text == "NEXT LOCATION", "Coastal completion offers the new location")
 	game.next_button.pressed.emit()
 	_check(game.screen == "play" and game.current_index == 10 and game.location_index == 1 and game.ranger_button.visible, "Next location begins mission 11 with ranger available")

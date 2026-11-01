@@ -47,18 +47,21 @@ func _initialize() -> void:
 
 func _test_flood_rules(catalog: RefCounted) -> void:
 	var level = Level.new(catalog.load_level(21))
-	_check(level.plan_route(Vector2i(3, 1)).is_empty(), "Cannot route onto undrained water")
-	level.positions[level.FIREFIGHTER] = Vector2i(2, 3)
+	var water_tile: Vector2i = level.water.keys()[0]
+	var valve_approach: Vector2i = level.valve_pos + Vector2i.RIGHT
+	var bridge_approach: Vector2i = level.bridge_pos + Vector2i.RIGHT
+	_check(level.plan_route(water_tile).is_empty(), "Cannot route onto undrained water")
+	level.positions[level.FIREFIGHTER] = valve_approach
 	_check(not level.act(level.valve_pos) and not level.water_drained and level.history.is_empty(), "Wrong role cannot turn valve")
 	level.reset()
 	level.selected = level.ENGINEER
-	level.positions[level.ENGINEER] = Vector2i(4, 1)
+	level.positions[level.ENGINEER] = bridge_approach
 	_check(not level.act(level.bridge_pos) and not level.bridge_built and level.actions == 0, "Bridge repair requires drainage first")
-	level.positions[level.ENGINEER] = Vector2i(2, 3)
+	level.positions[level.ENGINEER] = valve_approach
 	_check(level.act(level.valve_pos) and level.water_drained and level.actions == 1, "Engineer drains water from adjacent approach")
 	_check(not level.act(level.valve_pos) and level.actions == 1, "Already open valve does not award moves or history")
-	level.positions[level.ENGINEER] = Vector2i(4, 1)
-	_check(level.act(level.bridge_pos) and level.bridge_built and level.positions[level.ENGINEER] == Vector2i(4, 1), "Bridge repair stays on approach tile")
+	level.positions[level.ENGINEER] = bridge_approach
+	_check(level.act(level.bridge_pos) and level.bridge_built and level.positions[level.ENGINEER] == bridge_approach, "Bridge repair stays on approach tile")
 	_check(level.undo() and not level.bridge_built and level.water_drained, "Bridge undo preserves prior valve state")
 	_check(level.undo() and not level.water_drained, "Valve undo restores all flooded cells")
 	level.reset()
@@ -93,8 +96,8 @@ func _test_resume(catalog: RefCounted) -> void:
 	# Topology changes and their undo boundaries are reconstructed, not trusted fields.
 	var flood = Level.new(catalog.load_level(21))
 	var flood_commands: Array = []
-	_tap(flood, ["engineer", 3, 3], flood_commands)
-	_tap(flood, ["engineer", 5, 1], flood_commands)
+	_tap(flood, ["engineer", flood.valve_pos.x, flood.valve_pos.y], flood_commands)
+	_tap(flood, ["engineer", flood.bridge_pos.x, flood.bridge_pos.y], flood_commands)
 	_check(session.save_session(flood, flood_commands, 1), "Checkpoint repaired crossing")
 	var crossing: Dictionary = session.restore(catalog)
 	_check(crossing["level"].water_drained and crossing["level"].bridge_built and crossing["level"].undo() and not crossing["level"].bridge_built and crossing["level"].water_drained, "Resume preserves water topology and bridge undo")
