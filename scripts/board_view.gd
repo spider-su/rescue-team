@@ -21,6 +21,8 @@ var effect_progress: float = 0.0
 var effect_role: String = ""
 var effect_from: Vector2i = Vector2i(-1, -1)
 var effect_to: Vector2i = Vector2i(-1, -1)
+## Decorative motion is visual-only and never reads or changes puzzle state.
+var ambience_time := 0.0
 ## Diagnostic counters used in the existing animated UI regression suite.
 var animation_counts: Dictionary = {"walk": 0, "spray": 0, "push": 0, "pickup": 0, "celebrate": 0, "stun": 0, "valve": 0}
 
@@ -32,9 +34,10 @@ func _ready() -> void:
 	for prop in ["fire", "crate", "switch", "gate", "open_gate", "exit"]:
 		art[prop] = UI.prop(prop)
 
-func _process(_delta: float) -> void:
-	# Only redraw while an action is alive; puzzle state remains completely separate.
-	if not animated_role.is_empty() or not effect_kind.is_empty():
+func _process(delta: float) -> void:
+	# Ambient leaves and bugs keep the board alive without creating an input target.
+	ambience_time = fposmod(ambience_time + delta, 60.0)
+	if is_visible_in_tree():
 		queue_redraw()
 
 func _metrics() -> Dictionary:
@@ -94,6 +97,7 @@ func _draw() -> void:
 				_draw_wall(rect, x + y)
 			else:
 				_draw_floor(rect, x + y)
+				_draw_ambient_detail(cell, center, step, tile)
 				_draw_flood_tile(tile, rect, center, step)
 				if tile in ["switch", "gate", "open_gate", "exit"]:
 					_draw_art(tile, center, step * 1.02)
@@ -150,6 +154,40 @@ func _draw_floor(rect: Rect2, variation: int) -> void:
 	draw_line(rect.position + Vector2(2, 2), rect.position + Vector2(rect.size.x - 2, 2), Color("#fff1d9"), 2)
 	if variation % 4 == 0:
 		draw_line(rect.position + rect.size * Vector2(0.1, 0.75), rect.position + rect.size * Vector2(0.22, 0.7), Color("#cdbc9f"), 1)
+
+func _draw_ambient_detail(cell: Vector2i, center: Vector2, step: float, tile: String) -> void:
+	# Sparse, translucent details are painted below props and characters. They never
+	# occupy a special tile or imply a puzzle rule.
+	if tile != ".":
+		return
+	var seed: int = cell.x * 17 + cell.y * 31
+	if seed % 6 != 0:
+		return
+	var phase := ambience_time * (0.55 + float(seed % 3) * 0.08) + float(seed) * 0.31
+	if seed % 2 == 0:
+		_draw_drifting_leaf(center, step, phase, seed)
+	else:
+		_draw_ground_bug(center, step, phase, seed)
+
+func _draw_drifting_leaf(center: Vector2, step: float, phase: float, seed: int) -> void:
+	var drift := Vector2(sin(phase) * step * 0.10, cos(phase * 1.7) * step * 0.035)
+	var color := Color("#c8783d", 0.48) if seed % 4 == 0 else Color("#a95c36", 0.42)
+	draw_set_transform(center + drift + Vector2(step * 0.12, step * 0.17), sin(phase * 0.8) * 0.35, Vector2.ONE)
+	draw_colored_polygon(PackedVector2Array([
+		Vector2(-step * 0.10, 0), Vector2(0, -step * 0.045),
+		Vector2(step * 0.11, 0), Vector2(0, step * 0.045),
+	]), color)
+	draw_line(Vector2(-step * 0.07, 0), Vector2(step * 0.08, 0), Color("#7f4a31", 0.42), maxf(1.0, step * 0.018), true)
+	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+
+func _draw_ground_bug(center: Vector2, step: float, phase: float, seed: int) -> void:
+	var wander := Vector2(sin(phase) * step * 0.11, cos(phase * 1.9) * step * 0.045)
+	var body := center + wander + Vector2(-step * 0.13, step * 0.20)
+	var color := Color("#415b48", 0.58) if level.location_id == "coast" else Color("#584c68", 0.58)
+	draw_circle(body, step * 0.036, color)
+	for side in [-1.0, 1.0]:
+		draw_line(body + Vector2(0, -step * 0.015), body + Vector2(step * 0.065, side * step * 0.045), color, maxf(1.0, step * 0.014), true)
+		draw_line(body + Vector2(-step * 0.01, step * 0.015), body + Vector2(-step * 0.06, side * step * 0.04), color, maxf(1.0, step * 0.014), true)
 
 func _draw_wall(rect: Rect2, variation: int) -> void:
 	draw_rect(rect, Color("#897b64"))

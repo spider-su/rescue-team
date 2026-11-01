@@ -4,7 +4,7 @@
 
 ## Player promise
 
-**Visual direction:** original illustrated human firefighter and engineer, recognizable equipment, cream-stone coastal workshops, terracotta roofs and teal harbor water. Keep the square puzzle grid readable and decoration outside interactive cells. Mission selection, play and completion are distinct screens; see [Coastal UI](coastal-ui.md).
+**Visual direction:** original illustrated human firefighter and engineer, recognizable equipment, cream-stone coastal workshops, terracotta roofs and teal harbor water. Keep the square puzzle grid readable. Sparse translucent leaves and ground bugs can animate on ordinary floor tiles, but they are painted under all interactive art and never affect input, pathing or rules. Mission selection, play and completion are distinct screens; see [Coastal UI](coastal-ui.md).
 
 Solve readable, bite-sized rescue emergencies by **combining specialist abilities** instead of reflex tapping or time management. Every level is a small tactical puzzle with a safe path to extraction and no mandatory monetization interruption.
 
