@@ -16,7 +16,13 @@ func _run() -> void:
 	_check(audio.music_enabled and audio.effects_enabled and audio.music.playing, "First launch starts music and enables effects")
 	var stream: AudioStreamWAV = audio.music.stream
 	_check(stream.loop_mode == AudioStreamWAV.LOOP_FORWARD and stream.loop_begin == 0 and stream.loop_end == stream.get_length() * stream.mix_rate, "Theme loops through complete imported PCM data")
-	_check(is_equal_approx(stream.get_length(), 40.0), "Theme is a complete 16-bar 40-second phrase")
+	_check(is_equal_approx(stream.get_length(), 32.0), "Theme is a complete 16-bar 120 BPM phrase")
+	audio.set_location_music("old-town")
+	_check(audio.music_theme == "old-town" and audio.music.playing and audio.music.stream.get_length() > 30.0, "Old Town selects its own looping location theme")
+	audio.set_location_music("floodworks")
+	_check(audio.music_theme == "floodworks" and audio.music.playing and audio.music.stream.get_length() > 30.0, "Floodworks selects its own looping location theme")
+	audio.set_location_music("unknown")
+	_check(audio.music_theme == "coast" and audio.music.playing, "Unknown locations safely return to the coastal theme")
 	for cue in audio.EFFECTS:
 		var effect: AudioStreamWAV = audio.EFFECTS[cue]
 		_check(effect.get_length() > .05 and effect.get_length() < 2 and not effect.data.is_empty(), "Effect loads as nonempty bounded audio: " + cue)
@@ -30,6 +36,8 @@ func _run() -> void:
 	_check(heard.size() == count and audio.music.playing, "Effect mute suppresses cues without muting music")
 	audio.set_music_enabled(false)
 	_check(not audio.music.playing and audio.settings_saved, "Music toggle stops playback and persists")
+	audio.set_location_music("old-town")
+	_check(audio.music_theme == "old-town" and not audio.music.playing, "Changing location while muted keeps music stopped")
 	audio.queue_free()
 	await create_timer(0.1).timeout
 	var restored = Audio.new()
