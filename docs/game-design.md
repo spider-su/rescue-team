@@ -18,6 +18,10 @@ Solve readable, bite-sized rescue emergencies by **combining specialist abilitie
 
 Target session: approximately 1–3 minutes per level; slow, thoughtful play is valid (no arbitrary timer in prototype).
 
+## Emotional progression
+
+Maya, Theo and Nia give the crew a stable human identity through brief original selection and completion lines. Each saved rescue visibly restores its address in the active district, so campaign progress changes the place the player returns to. Cosmetic-only crew insignia mark one, five and ten saved rescues, with a Floodworks crest for all optional trials. These rewards never change deterministic movement, puzzle strength, score targets or campaign access.
+
 ## Characters and first mechanics
 
 | Role | Distinctive ability | Prototype examples |

@@ -36,6 +36,7 @@ godot --headless --path . --script res://tests/test_campaign.gd
 godot --headless --path . --script res://tests/test_old_town.gd
 godot --headless --path . --script res://tests/test_audio.gd
 godot --headless --path . --script res://tests/test_puzzle_polish.gd
+godot --headless --path . --script res://tests/test_crew_progression.gd
 godot --headless --path . --script res://tests/test_rescue_ui.gd
 mkdir -p build
 godot --headless --path . --export-debug "Android" build/game-debug.apk
@@ -76,3 +77,7 @@ Use the [audio device scenario](audio.md#android-listening-scenario-pending) to 
 ## Fair scoring, hints, resume and Floodworks
 
 Run the [puzzle-polish device scenario](puzzle-polish.md#validation-and-on-device-scenario), including an existing v1 score save, partial-walk interruption, restored undo and valve/bridge prerequisite behavior. These additions have automated coverage; Android usability remains pending.
+
+## Crew recovery and cosmetic rewards
+
+Run the [crew and district recovery device scenario](emotional-progression.md#verification-and-android-scenario). Verify the visual rewards stay cosmetic, save offline and remain readable while scrolling a small display.

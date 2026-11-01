@@ -1,6 +1,8 @@
 extends Control
 ## Illustrated, adaptive view of the same grid. Rotation changes presentation only.
 signal cell_tapped(cell: Vector2i)
+const Insignia = preload("res://scripts/crew_insignia.gd")
+var equipped_style := "standard"
 const UI = preload("res://scripts/coastal_style.gd")
 var level: RefCounted
 var hint_target := Vector2i(-1, -1)
@@ -120,6 +122,7 @@ func _draw() -> void:
 			draw_circle(center + Vector2(0, step * 0.23), step * 0.38, Color(ring, 0.3), true, -1, true)
 			draw_arc(center + Vector2(0, step * 0.23), step * 0.38, 0, TAU, 32, ring, 3, true)
 		_draw_facing_person(role, center, step)
+		Insignia.paint(self, equipped_style, center + Vector2(step * 0.2, step * 0.04), step * 0.13)
 		if level.carrying_role == role and effect_kind != "pickup":
 			_draw_person("civilian", center + Vector2(step * 0.27, step * 0.1), step * 0.55)
 	_draw_effects(metrics, step)

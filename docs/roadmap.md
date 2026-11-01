@@ -64,3 +64,9 @@ Prefer a small focused PR for each increment; do not combine all milestones in o
 - [x] Validated, atomic unfinished-mission checkpoints with partial-walk resume and grouped undo.
 - [x] Three optional Floodworks trials after 05: valve → drained route → repaired bridge, combined with existing specialists.
 - [ ] Android acceptance and external-player validation under `docs/puzzle-polish.md`.
+
+## Approved emotional-progression increment (2026-11-01)
+
+- [x] Named crew, original personality lines and visual-only cosmetic milestones derived from saved rescues.
+- [x] District illustrations reflect completed addresses without changing puzzle progression or score rules.
+- [ ] Record the district recovery and cosmetic selection scenario on Android hardware; see `docs/emotional-progression.md`.
