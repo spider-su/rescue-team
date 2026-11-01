@@ -37,6 +37,8 @@ Old Town adds stationary infected (`Z`) and one ranger (`R`) to its ten maps. On
 
 **Current controls:** portrait grid with level picker, local saved unlocks and animated path preview. Select by portrait button or tapping a rescuer; tap a **distant reachable destination** to walk the shortest safe route, or tap fire/a crate to approach and interact. Movement is animated tile-by-tile; each tap is one UNDO step. Unreachable/locked locations remain blocked, and RESTART resets the level. The firefighter clears adjacent fire, the engineer pushes an adjacent crate one tile, stepping onto the civilian picks them up, and carrying them to EXIT wins. On missions with a gate, the crate powers its switch.
 
+Action feedback uses short, interrupt-safe animation beats rather than long cinematic locks: a stride compresses on landing, specialist actions have a readable setup and impact, and a completed extraction gets a brief confetti celebration. These are presentation-only; accepted commands, undo grouping, scores and saved replay traces remain identical.
+
 ## Implemented Phase 1 level
 
 **Mission 04 — The Locked Corridor** preserves the original cooperative prototype: engineer pushes a crate onto a switch; firefighter extinguishes the blocking fire and carries the civilian through the open gate to extraction. Its full solution is covered by deterministic headless and scene-integration tests.

@@ -37,6 +37,7 @@ godot --headless --path . --script res://tests/test_old_town.gd
 godot --headless --path . --script res://tests/test_audio.gd
 godot --headless --path . --script res://tests/test_puzzle_polish.gd
 godot --headless --path . --script res://tests/test_crew_progression.gd
+godot --headless --path . --script res://tests/test_action_presentation.gd
 godot --headless --path . --script res://tests/test_rescue_ui.gd
 mkdir -p build
 godot --headless --path . --export-debug "Android" build/game-debug.apk
@@ -81,3 +82,7 @@ Run the [puzzle-polish device scenario](puzzle-polish.md#validation-and-on-devic
 ## Crew recovery and cosmetic rewards
 
 Run the [crew and district recovery device scenario](emotional-progression.md#verification-and-android-scenario). Verify the visual rewards stay cosmetic, save offline and remain readable while scrolling a small display.
+
+## Action-animation acceptance
+
+On a physical Android device, complete missions that exercise walking, fire spray, crate push, civilian pickup, ranger containment, valve turn and the exit celebration. Each effect should start promptly, remain readable at the smallest supported screen, finish before the next input becomes active, and never change move count, undo grouping or the solved path. Check a longer routed move for steady pacing and use **UNDO** immediately after an effect. Record the APK commit, device, Android version, frame pacing observations and exact result.

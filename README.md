@@ -17,6 +17,7 @@ Choose an unlocked mission. Tap a rescuer or their portrait to select them, then
 - Completion shows actual move count, saved best, replay, undo rescue and the next unlocked mission. The final mission returns to the campaign.
 - Original background music and action sounds have independent **MUSIC** / **SOUND** toggles in the mission menu; choices persist offline.
 - Maya, Theo and Nia have distinct names and short personality lines. Saved rescues restore matching addresses in the selected district and unlock visual-only crew insignia.
+- Hero movement has a readable stride and each specialist action has distinct anticipation, impact and completion feedback: water spray, crate push, rescue pickup, valve turn, containment pulse and rescue celebration.
 - Progress is saved offline through atomic replacement. A failed save is reported instead of announcing an unlock.
 - Tall play areas may rotate a mission's visual grid clockwise; routes and taps use the original mission coordinates. No mission rules change.
 - Location tabs group missions 01–10 (Coastal District) and 11–20 (Old Town Quarantine). Mission 10 unlocks the second location.
@@ -35,6 +36,7 @@ godot --headless --path . --script res://tests/test_old_town.gd
 godot --headless --path . --script res://tests/test_audio.gd
 godot --headless --path . --script res://tests/test_puzzle_polish.gd
 godot --headless --path . --script res://tests/test_crew_progression.gd
+godot --headless --path . --script res://tests/test_action_presentation.gd
 godot --headless --path . --script res://tests/test_rescue_ui.gd
 godot --headless --path . --quit-after 5
 ```
