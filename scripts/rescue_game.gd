@@ -588,6 +588,7 @@ func _show_menu() -> void:
 	_show_screen("menu")
 	var completed := 0
 	var location: Dictionary = catalog.LOCATIONS[location_index]
+	audio.set_location_music(location["id"])
 	district_label.text = location["title"].to_upper()
 	district_view.configure(progress, location)
 	_refresh_crew()
@@ -648,6 +649,7 @@ func _start_level(index: int) -> void:
 	if next_location != location_index:
 		menu_scroll.reset_scroll()
 	location_index = next_location
+	audio.set_location_music(String(data.get("location", "coast")))
 	_victory_saved = false
 	_unlocks_before = Crew.unlocked(progress)
 	audio.play_cue("ui")
@@ -861,6 +863,7 @@ func _resume_mission() -> void:
 		return
 	current_index = restored["index"]
 	location_index = catalog.location_for(current_index)
+	audio.set_location_music(String(catalog.LOCATIONS[location_index]["id"]))
 	level = restored["level"]
 	commands = restored["commands"]
 	hint_stage = restored["hint_stage"]
