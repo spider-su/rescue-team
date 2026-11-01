@@ -1,6 +1,6 @@
 # Fair mastery, guidance and resumable puzzles
 
-Owner-approved next increment from the 2026-10-31 market/requirements review: correct scoring, contextual teaching and layered hints for the first five missions, unfinished-mission resume, and three puzzles prototyping one interacting environmental system. The original twenty maps keep their geometry, IDs and saved scores.
+Owner-approved next increment from the 2026-10-31 market/requirements review: correct scoring, contextual teaching and layered hints for the first five missions, unfinished-mission resume, and three puzzles prototyping one interacting environmental system. Coastal 06–09 now provide a smaller valve/bridge/ranger teaching ramp before the deeper trials; IDs and saved-score format remain stable.
 
 ## Fair stars
 

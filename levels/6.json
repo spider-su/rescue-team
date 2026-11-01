@@ -1,15 +1,14 @@
 {
   "id": "06",
-  "title": "First Shift",
-  "hint": "Use the engineer to push the box 2 time(s), then rescue the civilian.",
+  "title": "Harbor Sluice",
+  "hint": "Engineer: open the valve, drain the flooded lane, then make the rescue.",
   "rows": [
-    "#############",
-    "#Ff....C.GX##",
-    "#.#.#####.###",
-    "#E..B.s.....#",
-    "#...###.....#",
-    "#############"
+    "###########",
+    "#F.~~.C.X.#",
+    "#...#######",
+    "#E.V......#",
+    "###########"
   ],
-  "three_star_moves": 13,
-  "two_star_moves": 21
+  "three_star_moves": 9,
+  "two_star_moves": 13
 }

@@ -2,13 +2,14 @@
 
 An original Android-first rescue puzzle game in **Godot 4.7.2 stable / GDScript**.
 
-Twenty campaign missions and three optional Floodworks trials combine a firefighter, engineer and (in Old Town and trial 23) a containment ranger to clear hazards, open routes and carry civilians to safety. The coastal UI uses original illustrated human characters, a harbor mission picker, an adaptive puzzle board and a dedicated completion screen. The original Mission 01 had an owner-reported Android happy-path playtest; **the new chapter and scrolling changes still need physical-device acceptance**.
+Twenty campaign missions and three optional Floodworks trials combine a firefighter, engineer and (from Coastal Mission 08 onward) a containment ranger to clear hazards, open routes and carry civilians to safety. The coastal UI uses original illustrated human characters, a harbor mission picker, an adaptive puzzle board and a dedicated completion screen. The original Mission 01 had an owner-reported Android happy-path playtest; **the new chapter and scrolling changes still need physical-device acceptance**.
 
 ## Play
 
-Choose an unlocked mission. Tap a rescuer or their portrait to select them, then tap a destination to walk the safe shortest route. The firefighter extinguishes fire; the engineer pushes crates onto blue switches to open gates; the ranger stuns adjacent infected blockers in Old Town. Pick up the civilian and reach the green exit.
+Choose an unlocked mission. Tap a rescuer or their portrait to select them, then tap a destination to walk the safe shortest route. The firefighter extinguishes fire; the engineer pushes crates onto blue switches to open gates and operates valves/bridges; the ranger stuns adjacent infected blockers. Pick up the civilian and reach the green exit.
 
 - The first five missions offer contextual teaching. **HINT**, then **SHOW**, gives progressively clearer help and highlights an object without affecting stars.
+- Coastal Missions 06–09 add one new obstacle at a time: flooded lane/valve, bridge, infected/ranger, then a short relay that combines the earlier lessons.
 - **RESUME** restores an unfinished mission, including hazards, carrying state and grouped undo.
 - Stars use authored targets in the same step units as existing scores; old best scores remain valid.
 - Each destination tap is one undo step, even when it walks several tiles.

@@ -35,7 +35,7 @@ A `RescueLevel` instance keeps the parsed definition and resets to its own map. 
 
 Progress is stored locally as JSON in `user://rescue_progress_v1.json` containing version 1 and a map of completed level IDs to best move counts. Only the next level after a completed predecessor unlocks; corrupted or unknown records are safely ignored. There is no online account or cloud synchronization.
 
-The explicit manifest groups IDs 01–10 in Coastal District and 11–20 in Old Town Quarantine. IDs 01–10 and the progress-file format are unchanged. See [Old Town rules, walkthrough counts and device scenario](old-town.md).
+The explicit manifest groups IDs 01–10 in Coastal District and 11–20 in Old Town Quarantine. Coastal 06–09 introduce valve/water, bridge, ranger/infected and their first combination in order; IDs and the progress-file format are unchanged. See [Old Town rules, walkthrough counts and device scenario](old-town.md).
 
 ## Floodworks and authored score targets
 

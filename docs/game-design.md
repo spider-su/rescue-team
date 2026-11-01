@@ -28,12 +28,12 @@ Maya, Theo and Nia give the crew a stable human identity through brief original 
 | --- | --- | --- |
 | Firefighter | Extinguish reachable fire | Clear a corridor so the civilian can pass |
 | Engineer | Push/move objects and activate reachable switches | Shift a crate to a trigger, open a gate |
-| Containment ranger (Old Town) | Stun adjacent infected blockers | Clear safe passages for the other specialists; undo restores infected |
+| Containment ranger (Coastal 08 onward) | Stun adjacent infected blockers | Clear safe passages for the other specialists; undo restores infected |
 | Civilian (NPC) | Needs rescue; controlled by simple transparent rules | Escort or lead to extraction once route is safe |
 
 **Level elements:** walls, open tiles, fire hazard, movable crate, floor switch/gate, civilian, exit. Introduce one new rule at a time and clearly signal when a move is blocked.
 
-Old Town adds stationary infected (`Z`) and one ranger (`R`) to its ten maps. Only the ranger clears infected; others and crates are blocked. All three abilities combine in authored crate-routing and rescue puzzles. Location tabs group the chapters; original saves unlock mission 11 after mission 10. See [Old Town walkthrough counts, gestures and device scenario](old-town.md).
+Coastal Missions 06–09 vary the original crate loop with a deliberate ramp: valve/flooded lane, then bridge repair, then a single ranger/infected encounter, then a short valve-and-containment relay. Old Town expands those same rules into larger authored puzzles. Only the ranger clears infected; others and crates are blocked. Location tabs group the chapters; original saves unlock mission 11 after mission 10. See [Old Town walkthrough counts, gestures and device scenario](old-town.md).
 
 **Current controls:** portrait grid with level picker, local saved unlocks and animated path preview. Select by portrait button or tapping a rescuer; tap a **distant reachable destination** to walk the shortest safe route, or tap fire/a crate to approach and interact. Movement is animated tile-by-tile; each tap is one UNDO step. Unreachable/locked locations remain blocked, and RESTART resets the level. The firefighter clears adjacent fire, the engineer pushes an adjacent crate one tile, stepping onto the civilian picks them up, and carrying them to EXIT wins. On missions with a gate, the crate powers its switch.
 
@@ -53,7 +53,7 @@ Action feedback uses short, interrupt-safe animation beats rather than long cine
 
 ## Ten-level vertical slice
 
-The manifest now contains ten authored missions. The first five introduce rescue, fire, switches/gates and cooperation; the later missions vary route length, crate placement and action ordering. Tests verify a complete solution for every mission. Content breadth does not establish device usability or external-player engagement.
+The manifest now contains ten authored missions. The first five introduce rescue, fire, switches/gates and cooperation. Missions 06–09 add valve/water, bridge, ranger/infected and a light combination in that order; Mission 10 recaps the original cooperative crate/fire finale before Old Town. Tests verify a complete solution for every mission. Content breadth does not establish device usability or external-player engagement.
 
 Ship only after every level has at least one verified solution and tests for unwinnable/invalid state handling. Favor manual, interesting designs over generated filler.
 
