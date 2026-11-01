@@ -295,7 +295,7 @@ func _draw_effects(metrics: Dictionary, step: float) -> void:
 
 func animate_step(role: String, start: Vector2i, target: Vector2i) -> void:
 	animation_counts["walk"] += 1
-	facing[role] = -1 if target.x < start.x else (1 if target.x > start.x else int(facing.get(role, 1)))
+	_update_facing_for_step(role, start, target)
 	animated_role = role
 	animated_position = Vector2(start)
 	walk_progress = 0.0
@@ -304,6 +304,17 @@ func animate_step(role: String, start: Vector2i, target: Vector2i) -> void:
 	tween.tween_method(_set_walk_progress.bind(start, target), 0.0, 1.0, 0.18).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
 	await tween.finished
 	clear_animation()
+
+func _update_facing_for_step(role: String, start: Vector2i, target: Vector2i) -> void:
+	# The tall layout rotates a wide model grid clockwise. Face by visual left/right,
+	# not model X, so heroes do not turn sideways while moving vertically on screen.
+	var metrics := _metrics()
+	var rotated: bool = not metrics.is_empty() and metrics["rotated"]
+	var screen_delta_x: int = start.y - target.y if rotated else target.x - start.x
+	if screen_delta_x < 0:
+		facing[role] = -1
+	elif screen_delta_x > 0:
+		facing[role] = 1
 
 func _set_walk_progress(value: float, start: Vector2i, target: Vector2i) -> void:
 	walk_progress = value

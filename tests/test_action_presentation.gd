@@ -9,6 +9,18 @@ func _initialize() -> void:
 	_run.call_deferred()
 
 func _run() -> void:
+	var facing_board = BoardView.new()
+	facing_board.level = Level.new(Catalog.new().load_level(0))
+	facing_board.size = Vector2(640, 760)
+	root.add_child(facing_board)
+	await process_frame
+	_check(facing_board._metrics()["rotated"], "Tall board uses the rotated display layout")
+	await facing_board.animate_step("firefighter", Vector2i(1, 1), Vector2i(1, 2))
+	_check(facing_board.facing.get("firefighter") == -1, "A displayed leftward walk faces left on the rotated board")
+	await facing_board.animate_step("firefighter", Vector2i(1, 2), Vector2i(2, 2))
+	_check(facing_board.facing.get("firefighter") == -1, "A displayed vertical walk preserves the previous left/right facing")
+	facing_board.queue_free()
+
 	var board = BoardView.new()
 	# Mission 11 includes all three specialists for the shared presentation pass.
 	board.level = Level.new(Catalog.new().load_level(10))
