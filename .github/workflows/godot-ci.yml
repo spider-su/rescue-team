@@ -117,10 +117,22 @@ jobs:
           export/android/debug_keystore = "$HOME/.android/debug.keystore"
           EOF
 
+      - name: Set monotonic Android version code for CI
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Each workflow run gets a higher Android version code, including PR builds.
+          # Preserve the human-facing version name; only change the exported debug APK.
+          version_code=$((1000 + GITHUB_RUN_NUMBER))
+          sed -i -E "s/^version\\/code=[0-9]+$/version\\/code=${version_code}/" export_presets.cfg
+          grep -qx "version/code=${version_code}" export_presets.cfg
+          echo "Android versionCode: ${version_code}"
+
       - name: Export installable debug APK
         run: |
           godot --headless --path . --export-debug "Android" build/game-debug.apk
           test -s build/game-debug.apk
+          "$ANDROID_HOME/build-tools/35.0.1/aapt" dump badging build/game-debug.apk | grep -E '^package: name='
 
       - name: Upload Android debug APK
         uses: actions/upload-artifact@v7
