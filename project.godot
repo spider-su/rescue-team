@@ -5,7 +5,11 @@ config_version=5
 [application]
 
 config/name="Rescue Team"
-config/icon="res://assets/icon.svg"
+config/icon="res://assets/branding/app-icon.png"
+boot_splash/image="res://assets/branding/boot-splash.png"
+boot_splash/bg_color=Color(0.0980392, 0.309804, 0.388235, 1)
+boot_splash/stretch_mode=1
+boot_splash/minimum_display_time=0
 run/main_scene="res://scenes/main.tscn"
 config/quit_on_go_back=false
 config/features=PackedStringArray("4.7", "GL Compatibility")

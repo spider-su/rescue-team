@@ -16,6 +16,7 @@ All notable product-facing changes are documented here. The project is pre-relea
 
 ### Changed
 
+- Replaced the original launcher icon with illustrated rescue helmets and added matching Android/native and Godot title splashes during loading.
 - Coastal Missions 06–09 now introduce valve/water, bridge and ranger mechanics one at a time before a short relay.
 - Mission lists support touch drag scrolling with inertial coast and drag-to-tap cancellation.
 - CI debug APKs now use a persistent repository signing key for repeatable test-device updates.
