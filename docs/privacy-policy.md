@@ -9,7 +9,7 @@ permalink: /privacy/
 
 **Effective date:** [To be set at publication]
 
-Rescue Team is an offline puzzle game published by **Alex Kotik**. This policy describes the current Android application identified as `com.spidersu.rescueteam`.
+Rescue Team is an offline puzzle game published by **Alex Kotik**, acting as an individual and not under a JDG business identity. The public Google Play developer name is **smart-box**. This policy describes the current Android application identified as `com.spidersu.rescueteam`.
 
 ## Data the app handles
 
@@ -40,7 +40,7 @@ If a future version changes data practices, this policy and the applicable store
 
 ## Contact
 
-Developer display name: **smart-box**. Publisher: **Alex Kotik**. A postal correspondence address has not been supplied; confirm any applicable address-disclosure obligation before publishing.
+Developer display name: **smart-box**. Publisher: **Alex Kotik** (individual publisher, not a JDG business). A postal correspondence address has not been supplied; confirm any applicable address-disclosure obligation before publishing.
 
 For privacy questions, contact **alex.kotik.net@gmail.com**.
 
