@@ -13,7 +13,7 @@ The paired yellow firefighter helmet and blue engineer hardhat use the coastal g
 
 ## Loading behavior
 
-`export_presets.cfg` configures Android's native splash with the new icon and teal background. `project.godot` keeps the Godot boot splash enabled and uses the portrait title image with aspect-preserving scaling. It is visible while the engine loads the main scene, then the normal mission picker takes over. There is no added timer, simulated progress bar or extra tap to enter the game. Existing campaign/audio/cosmetic/checkpoint files are unchanged.
+`export_presets.cfg` configures Android's native splash with the new icon and uses teal for the initial rendering surface. The prebuilt APK export template controls the native splash background (light on the tested Android 15 emulator); custom native theme colors require the separate Gradle export path. `project.godot` keeps the Godot boot splash enabled and uses the portrait title image with aspect-preserving scaling. It is visible while the engine loads the main scene, then the normal mission picker takes over. There is no added timer, simulated progress bar or extra tap to enter the game. Existing campaign/audio/cosmetic/checkpoint files are unchanged.
 
 ## Generation prompts
 
