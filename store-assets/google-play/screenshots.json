@@ -1,0 +1,319 @@
+{
+  "screenshots": [
+    {
+      "file": "phone/phone-01.png",
+      "screen": "Coastal mission selection with specialist crew controls",
+      "captured_at": "2026-11-02T17:40:26.285639+00:00",
+      "capture_method": "adb exec-out screencap -p",
+      "raw_sha256": "75abe0b79aad3083b10be42d1d238afd00c416398ce140bda21b89cfdca358fc",
+      "sha256": "92689a182f898d1f08e6d1255f4b146e794b9948e5e0c3de279d2524c9f18469",
+      "transformation": {
+        "crop": [
+          0,
+          276,
+          1080,
+          2196
+        ],
+        "reason": "Remove system bars and black letterboxing; retain entire native 1080x1920 game surface",
+        "resize": false,
+        "color_mode": "RGB"
+      },
+      "apk": {
+        "file": "game-debug.apk",
+        "sha256": "708635530789a9721ef76acb2868884ccab3d2545a98f2c5e34255988a73268b",
+        "source_commit": "c25a68750f14e26bd00e71f7220dfe46999f5a59",
+        "package": "com.spidersu.rescueteam",
+        "version_name": "0.1.0",
+        "version_code": "1113",
+        "build_url": "https://github.com/spider-su/rescue-team/actions/runs/41487254023",
+        "artifact": "rescue-team-debug-apk",
+        "engine": "Godot 4.7.2.stable.official.ed1daf0bf"
+      },
+      "emulator": {
+        "avd": "play-store-assets-api35",
+        "serial": "emulator-5560",
+        "profile": "Pixel 7 equivalent",
+        "api": 35,
+        "android": "15",
+        "abi": "arm64-v8a",
+        "display": "1080x2400",
+        "density": 420,
+        "locale": "en-US",
+        "renderer": "SwiftShader"
+      },
+      "test_data": "Isolated fresh install; progress earned through real touch input; no seeded completions",
+      "visual_review": "pass",
+      "review_notes": "Inspected full screenshot/contact sheet: current product UI, no debug overlays or personal data, implemented features only."
+    },
+    {
+      "file": "phone/phone-02.png",
+      "screen": "Mission 04: firefighter, engineer, fire, crate, switch and gate",
+      "captured_at": "2026-11-02T17:45:42.844741+00:00",
+      "capture_method": "adb exec-out screencap -p",
+      "raw_sha256": "3d633b9ae176e957dc9ba9a7061f5313edc967077fb66ba8a2302efba8b57917",
+      "sha256": "b0366e530f9664f32ad39b84a439cb4f0bbbe06147357b5d339e3ae0bb97cce8",
+      "transformation": {
+        "crop": [
+          0,
+          276,
+          1080,
+          2196
+        ],
+        "reason": "Remove system bars and black letterboxing; retain entire native 1080x1920 game surface",
+        "resize": false,
+        "color_mode": "RGB"
+      },
+      "apk": {
+        "file": "game-debug.apk",
+        "sha256": "708635530789a9721ef76acb2868884ccab3d2545a98f2c5e34255988a73268b",
+        "source_commit": "c25a68750f14e26bd00e71f7220dfe46999f5a59",
+        "package": "com.spidersu.rescueteam",
+        "version_name": "0.1.0",
+        "version_code": "1113",
+        "build_url": "https://github.com/spider-su/rescue-team/actions/runs/41487254023",
+        "artifact": "rescue-team-debug-apk",
+        "engine": "Godot 4.7.2.stable.official.ed1daf0bf"
+      },
+      "emulator": {
+        "avd": "play-store-assets-api35",
+        "serial": "emulator-5560",
+        "profile": "Pixel 7 equivalent",
+        "api": 35,
+        "android": "15",
+        "abi": "arm64-v8a",
+        "display": "1080x2400",
+        "density": 420,
+        "locale": "en-US",
+        "renderer": "SwiftShader"
+      },
+      "test_data": "Isolated fresh install; progress earned through real touch input; no seeded completions",
+      "visual_review": "pass",
+      "review_notes": "Inspected full screenshot/contact sheet: current product UI, no debug overlays or personal data, implemented features only."
+    },
+    {
+      "file": "phone/phone-03.png",
+      "screen": "Mission 02: firefighter clears the fire corridor",
+      "captured_at": "2026-11-02T17:49:35.400003+00:00",
+      "capture_method": "adb exec-out screencap -p",
+      "raw_sha256": "f26a403127f0c146743c15d70a7d672e4619469fd69685151abdf8adc909c638",
+      "sha256": "9b83aff4e772513e7ef0ea414ff08b92f0be69064764761bcbfe03521dde7c39",
+      "transformation": {
+        "crop": [
+          0,
+          276,
+          1080,
+          2196
+        ],
+        "reason": "Remove system bars and black letterboxing; retain entire native 1080x1920 game surface",
+        "resize": false,
+        "color_mode": "RGB"
+      },
+      "apk": {
+        "file": "game-debug.apk",
+        "sha256": "708635530789a9721ef76acb2868884ccab3d2545a98f2c5e34255988a73268b",
+        "source_commit": "c25a68750f14e26bd00e71f7220dfe46999f5a59",
+        "package": "com.spidersu.rescueteam",
+        "version_name": "0.1.0",
+        "version_code": "1113",
+        "build_url": "https://github.com/spider-su/rescue-team/actions/runs/41487254023",
+        "artifact": "rescue-team-debug-apk",
+        "engine": "Godot 4.7.2.stable.official.ed1daf0bf"
+      },
+      "emulator": {
+        "avd": "play-store-assets-api35",
+        "serial": "emulator-5560",
+        "profile": "Pixel 7 equivalent",
+        "api": 35,
+        "android": "15",
+        "abi": "arm64-v8a",
+        "display": "1080x2400",
+        "density": 420,
+        "locale": "en-US",
+        "renderer": "SwiftShader"
+      },
+      "test_data": "Isolated fresh install; progress earned through real touch input; no seeded completions",
+      "visual_review": "pass",
+      "review_notes": "Inspected full screenshot/contact sheet: current product UI, no debug overlays or personal data, implemented features only."
+    },
+    {
+      "file": "phone/phone-04.png",
+      "screen": "Mission 06: drained valve route and civilian carried toward the exit",
+      "captured_at": "2026-11-02T17:47:20.362396+00:00",
+      "capture_method": "adb exec-out screencap -p",
+      "raw_sha256": "5a403364669c24faa652dd2e6c4676b6df71dd06bc1a9932b29e4ad897218f21",
+      "sha256": "e80034dd3c733ae60596b1c3795552f9dfb230c7b7bd3f61f73a3b508d258754",
+      "transformation": {
+        "crop": [
+          0,
+          276,
+          1080,
+          2196
+        ],
+        "reason": "Remove system bars and black letterboxing; retain entire native 1080x1920 game surface",
+        "resize": false,
+        "color_mode": "RGB"
+      },
+      "apk": {
+        "file": "game-debug.apk",
+        "sha256": "708635530789a9721ef76acb2868884ccab3d2545a98f2c5e34255988a73268b",
+        "source_commit": "c25a68750f14e26bd00e71f7220dfe46999f5a59",
+        "package": "com.spidersu.rescueteam",
+        "version_name": "0.1.0",
+        "version_code": "1113",
+        "build_url": "https://github.com/spider-su/rescue-team/actions/runs/41487254023",
+        "artifact": "rescue-team-debug-apk",
+        "engine": "Godot 4.7.2.stable.official.ed1daf0bf"
+      },
+      "emulator": {
+        "avd": "play-store-assets-api35",
+        "serial": "emulator-5560",
+        "profile": "Pixel 7 equivalent",
+        "api": 35,
+        "android": "15",
+        "abi": "arm64-v8a",
+        "display": "1080x2400",
+        "density": 420,
+        "locale": "en-US",
+        "renderer": "SwiftShader"
+      },
+      "test_data": "Isolated fresh install; progress earned through real touch input; no seeded completions",
+      "visual_review": "pass",
+      "review_notes": "Inspected full screenshot/contact sheet: current product UI, no debug overlays or personal data, implemented features only."
+    },
+    {
+      "file": "phone/phone-05.png",
+      "screen": "Campaign progress after eight completed rescues",
+      "captured_at": "2026-11-02T17:49:09.324673+00:00",
+      "capture_method": "adb exec-out screencap -p",
+      "raw_sha256": "c68cd5c42c98f0fb57fe773389272787163b6970e4ea65d41c09b9c6fd881aa4",
+      "sha256": "6754ed4389ab50161914f9ec711acecb30e9c56df89ba6e1ba0f233df272dff7",
+      "transformation": {
+        "crop": [
+          0,
+          276,
+          1080,
+          2196
+        ],
+        "reason": "Remove system bars and black letterboxing; retain entire native 1080x1920 game surface",
+        "resize": false,
+        "color_mode": "RGB"
+      },
+      "apk": {
+        "file": "game-debug.apk",
+        "sha256": "708635530789a9721ef76acb2868884ccab3d2545a98f2c5e34255988a73268b",
+        "source_commit": "c25a68750f14e26bd00e71f7220dfe46999f5a59",
+        "package": "com.spidersu.rescueteam",
+        "version_name": "0.1.0",
+        "version_code": "1113",
+        "build_url": "https://github.com/spider-su/rescue-team/actions/runs/41487254023",
+        "artifact": "rescue-team-debug-apk",
+        "engine": "Godot 4.7.2.stable.official.ed1daf0bf"
+      },
+      "emulator": {
+        "avd": "play-store-assets-api35",
+        "serial": "emulator-5560",
+        "profile": "Pixel 7 equivalent",
+        "api": 35,
+        "android": "15",
+        "abi": "arm64-v8a",
+        "display": "1080x2400",
+        "density": 420,
+        "locale": "en-US",
+        "renderer": "SwiftShader"
+      },
+      "test_data": "Isolated fresh install; progress earned through real touch input; no seeded completions",
+      "visual_review": "pass",
+      "review_notes": "Inspected full screenshot/contact sheet: current product UI, no debug overlays or personal data, implemented features only."
+    },
+    {
+      "file": "phone/phone-06.png",
+      "screen": "Mission 08: ranger contains an infected blocker",
+      "captured_at": "2026-11-02T17:48:38.245533+00:00",
+      "capture_method": "adb exec-out screencap -p",
+      "raw_sha256": "d0aab3c463d886fd66656ef13eda0695c0aa132ac8a69eef629b23e912a496c1",
+      "sha256": "b9e93696d1682b052764e6bc0cab4a4d17a391341ded5ef98460baa0131c46b7",
+      "transformation": {
+        "crop": [
+          0,
+          276,
+          1080,
+          2196
+        ],
+        "reason": "Remove system bars and black letterboxing; retain entire native 1080x1920 game surface",
+        "resize": false,
+        "color_mode": "RGB"
+      },
+      "apk": {
+        "file": "game-debug.apk",
+        "sha256": "708635530789a9721ef76acb2868884ccab3d2545a98f2c5e34255988a73268b",
+        "source_commit": "c25a68750f14e26bd00e71f7220dfe46999f5a59",
+        "package": "com.spidersu.rescueteam",
+        "version_name": "0.1.0",
+        "version_code": "1113",
+        "build_url": "https://github.com/spider-su/rescue-team/actions/runs/41487254023",
+        "artifact": "rescue-team-debug-apk",
+        "engine": "Godot 4.7.2.stable.official.ed1daf0bf"
+      },
+      "emulator": {
+        "avd": "play-store-assets-api35",
+        "serial": "emulator-5560",
+        "profile": "Pixel 7 equivalent",
+        "api": 35,
+        "android": "15",
+        "abi": "arm64-v8a",
+        "display": "1080x2400",
+        "density": 420,
+        "locale": "en-US",
+        "renderer": "SwiftShader"
+      },
+      "test_data": "Isolated fresh install; progress earned through real touch input; no seeded completions",
+      "visual_review": "pass",
+      "review_notes": "Inspected full screenshot/contact sheet: current product UI, no debug overlays or personal data, implemented features only."
+    },
+    {
+      "file": "phone/phone-07.png",
+      "screen": "Mission 08 complete with three stars and next mission unlocked",
+      "captured_at": "2026-11-02T17:49:06.763257+00:00",
+      "capture_method": "adb exec-out screencap -p",
+      "raw_sha256": "ca42f67b8326d89ef101a17615fd887acb2a83b06582cc7899fbfdd6a815b3b9",
+      "sha256": "c0693bd15249b62a687e7b84997c5e585aac02196e785660bdaa6660069d91bc",
+      "transformation": {
+        "crop": [
+          0,
+          276,
+          1080,
+          2196
+        ],
+        "reason": "Remove system bars and black letterboxing; retain entire native 1080x1920 game surface",
+        "resize": false,
+        "color_mode": "RGB"
+      },
+      "apk": {
+        "file": "game-debug.apk",
+        "sha256": "708635530789a9721ef76acb2868884ccab3d2545a98f2c5e34255988a73268b",
+        "source_commit": "c25a68750f14e26bd00e71f7220dfe46999f5a59",
+        "package": "com.spidersu.rescueteam",
+        "version_name": "0.1.0",
+        "version_code": "1113",
+        "build_url": "https://github.com/spider-su/rescue-team/actions/runs/41487254023",
+        "artifact": "rescue-team-debug-apk",
+        "engine": "Godot 4.7.2.stable.official.ed1daf0bf"
+      },
+      "emulator": {
+        "avd": "play-store-assets-api35",
+        "serial": "emulator-5560",
+        "profile": "Pixel 7 equivalent",
+        "api": 35,
+        "android": "15",
+        "abi": "arm64-v8a",
+        "display": "1080x2400",
+        "density": 420,
+        "locale": "en-US",
+        "renderer": "SwiftShader"
+      },
+      "test_data": "Isolated fresh install; progress earned through real touch input; no seeded completions",
+      "visual_review": "pass",
+      "review_notes": "Inspected full screenshot/contact sheet: current product UI, no debug overlays or personal data, implemented features only."
+    }
+  ]
+}

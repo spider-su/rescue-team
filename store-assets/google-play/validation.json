@@ -1,0 +1,75 @@
+{
+  "result": "PASS",
+  "images": [
+    {
+      "file": "icon-512.png",
+      "dimensions": "512 × 512",
+      "bytes": 310069,
+      "format": "PNG",
+      "sha256": "20ac18a50327846d8e867de681fb56f7f4295807caf469e7d97baa41923e65b5"
+    },
+    {
+      "file": "feature-graphic-1024x500.png",
+      "dimensions": "1024 × 500",
+      "bytes": 481363,
+      "format": "PNG",
+      "sha256": "8fea431ea6d2441eb1a0fba572f1ad613a6a116311932a8a462ae38e39532311"
+    },
+    {
+      "file": "phone/phone-01.png",
+      "dimensions": "1080 × 1920",
+      "bytes": 297408,
+      "format": "PNG",
+      "sha256": "92689a182f898d1f08e6d1255f4b146e794b9948e5e0c3de279d2524c9f18469"
+    },
+    {
+      "file": "phone/phone-02.png",
+      "dimensions": "1080 × 1920",
+      "bytes": 1208711,
+      "format": "PNG",
+      "sha256": "b0366e530f9664f32ad39b84a439cb4f0bbbe06147357b5d339e3ae0bb97cce8"
+    },
+    {
+      "file": "phone/phone-03.png",
+      "dimensions": "1080 × 1920",
+      "bytes": 1115594,
+      "format": "PNG",
+      "sha256": "9b83aff4e772513e7ef0ea414ff08b92f0be69064764761bcbfe03521dde7c39"
+    },
+    {
+      "file": "phone/phone-04.png",
+      "dimensions": "1080 × 1920",
+      "bytes": 1161665,
+      "format": "PNG",
+      "sha256": "e80034dd3c733ae60596b1c3795552f9dfb230c7b7bd3f61f73a3b508d258754"
+    },
+    {
+      "file": "phone/phone-05.png",
+      "dimensions": "1080 × 1920",
+      "bytes": 300639,
+      "format": "PNG",
+      "sha256": "6754ed4389ab50161914f9ec711acecb30e9c56df89ba6e1ba0f233df272dff7"
+    },
+    {
+      "file": "phone/phone-06.png",
+      "dimensions": "1080 × 1920",
+      "bytes": 1077670,
+      "format": "PNG",
+      "sha256": "b9e93696d1682b052764e6bc0cab4a4d17a391341ded5ef98460baa0131c46b7"
+    },
+    {
+      "file": "phone/phone-07.png",
+      "dimensions": "1080 × 1920",
+      "bytes": 1124808,
+      "format": "PNG",
+      "sha256": "c0693bd15249b62a687e7b84997c5e585aac02196e785660bdaa6660069d91bc"
+    }
+  ],
+  "description_characters": {
+    "title": 11,
+    "short_description": 79,
+    "full_description": 1424
+  },
+  "errors": [],
+  "manual_checks": "Human visual review covers private data, debug overlays, branding and feature correspondence; image statistics do not prove these."
+}
