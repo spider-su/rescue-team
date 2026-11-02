@@ -55,3 +55,19 @@ Specifications checked against [Google Play preview asset guidance](https://supp
 - Gameplay setup: clean isolated install; campaign progress earned through ADB taps following authored routes. No progression was seeded and existing emulator/player data was not cleared. Screens include actual specialist actions and a real saved victory.
 - Local checks: Godot editor import PASS; all eight headless suites PASS (rescue_level, campaign, old_town, audio, puzzle_polish, crew_progression, action_presentation, rescue_ui). Non-fatal Godot resource cleanup warnings occurred in the polish suite.
 - Scope: roadmap phase 6 listing preparation. External playtesting, physical-device ergonomics/audio and commercial release approval remain separate gates. Existing onboarding copy can use the same name for the civilian and firefighter; no gameplay/copy fixes are included here.
+
+### Verified image inventory
+
+| File | Dimensions | Bytes |
+| --- | --- | ---: |
+| `icon-512.png` | 512 × 512 | 310069 |
+| `feature-graphic-1024x500.png` | 1024 × 500 | 481363 |
+| `phone/phone-01.png` | 1080 × 1920 | 297408 |
+| `phone/phone-02.png` | 1080 × 1920 | 1208711 |
+| `phone/phone-03.png` | 1080 × 1920 | 1115594 |
+| `phone/phone-04.png` | 1080 × 1920 | 1161665 |
+| `phone/phone-05.png` | 1080 × 1920 | 300639 |
+| `phone/phone-06.png` | 1080 × 1920 | 1077670 |
+| `phone/phone-07.png` | 1080 × 1920 | 1124808 |
+
+Copy character counts: title: 11, short_description: 79, full_description: 1424.
