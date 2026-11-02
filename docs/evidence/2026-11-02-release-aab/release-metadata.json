@@ -1,0 +1,13 @@
+{
+  "package": "com.spidersu.rescueteam",
+  "version_name": "0.1.0",
+  "version_code": 1,
+  "sha256": "6e11f31ad210512d5cb3782429aa09e1d1fdfb5afa9e865c0e16b522c3ec628a",
+  "certificate_sha256": "5857d1852465d292b6a7a947cf45b05a11e7366ff965743b32837e41889b25a6",
+  "abi": "arm64-v8a",
+  "debuggable": false,
+  "target_sdk": "36",
+  "permissions": [],
+  "source_commit": "ea291a045ae142ce6809f2e179fa5540d184dea7",
+  "ci_run": "https://github.com/spider-su/rescue-team/actions/runs/41460812065"
+}

@@ -53,5 +53,6 @@ Prefer a small focused PR for each increment; do not combine all milestones in o
 
 - [ ] Run the documented Android scenarios on at least one small and one tall physical phone: onboarding 01–05, mission scrolling, all three specialists, undo/restart, checkpoint resume, audio interruption, action pacing, Android Back and system bars.
 - [ ] Record device model, Android version, commit/APK artifact, clean-install and update-over-install result, and each PASS/FAIL observation in `docs/playtest-report.md`.
-- [ ] Build and validate a separately signed release AAB, then satisfy Play Console policy, listing, privacy, support and closed-track requirements.
+- [x] Build and validate an initial separately signed release AAB: [0.1.0 / code 1 evidence](evidence/2026-11-02-release-aab/README.md).
+- [ ] Back up the upload key independently and satisfy Play Console policy, listing, privacy, support and closed-track requirements.
 - [ ] Conduct the Phase 5 external-player study (20–40 players) and use observed comprehension, friction and voluntary continuation to make the release decision.
