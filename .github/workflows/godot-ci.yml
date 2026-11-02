@@ -214,3 +214,26 @@ jobs:
             build/release-signature.txt
           if-no-files-found: error
           retention-days: 90
+
+      - name: Package matching native symbols for Play crash reports
+        if: github.event_name == 'workflow_dispatch' && inputs.release_aab
+        run: |
+          set -euo pipefail
+          base="https://github.com/godotengine/godot/releases/download/$GODOT_RELEASE"
+          curl -fL --retry 3 "$base/Godot_native_debug_symbols.${GODOT_TEMPLATE_VERSION}.template_release.android.zip" -o "$RUNNER_TEMP/native-symbols.zip"
+          python3 scripts/release_symbols.py \
+            --aab build/rescue-team-release.aab \
+            --symbols "$RUNNER_TEMP/native-symbols.zip" \
+            --readelf "$ANDROID_HOME/ndk/28.1.13356709/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-readelf" \
+            --output build/native-debug-symbols.zip
+
+      - name: Upload verified native symbols and build IDs
+        if: github.event_name == 'workflow_dispatch' && inputs.release_aab
+        uses: actions/upload-artifact@v7
+        with:
+          name: rescue-team-native-debug-symbols
+          path: |
+            build/native-debug-symbols.zip
+            build/native-debug-symbols.json
+          if-no-files-found: error
+          retention-days: 90

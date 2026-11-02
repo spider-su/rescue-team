@@ -58,6 +58,16 @@ For subsequent Play uploads, choose a version code that has never been used for 
 
 The `rescue-team-release-aab` artifact includes the signed bundle, SHA-256/source/CI metadata, manifest and certificate-verification evidence. Before uploading, CI runs pinned bundletool validation, JAR signature verification and checks the exact upload certificate, package, requested version, non-debuggable status, arm64 libraries and absence of INTERNET permission. The bundle is an upload candidate; these checks do not prove device acceptance or Play policy approval. It is not directly installable like an APK.
 
+### Play Console crash-report warnings
+
+The version-code-1 AAB uses the standard Godot 4.7.2 Gradle release template, which does not enable R8 minification. Its DEX retains Godot class names and it has no obfuscation mapping metadata. The missing deobfuscation-file warning is therefore informational: there is no `mapping.txt` to upload. If minification is enabled later, retain and upload the mapping from that exact build; do not upload an empty or unrelated mapping.
+
+Native symbols are useful because the bundle contains stripped `libgodot_android.so` and `libc++_shared.so`. Release CI also downloads the [official Godot release symbols](https://github.com/godotengine/godot/releases/tag/4.7.2-stable), verifies the pinned archive SHA-256, and runs `scripts/release_symbols.py` to compare each library's GNU build ID against the actual AAB. Missing symbols or mismatched IDs fail packaging. Only matching ABIs are included, with ABI directories at the ZIP root. The separate `rescue-team-native-debug-symbols` CI artifact contains `native-debug-symbols.zip` and JSON checksum/build-ID evidence.
+
+For version code 1, the prepared local upload is `build/release-0.1.0-1/native-debug-symbols.zip`; its verification evidence is in [the release handoff](evidence/2026-11-02-release-aab/README.md). It supplements the existing bundle without rebuilding or consuming another version code.
+
+In Play Console, open **Test and release → Latest releases and bundles → version code 1 → Downloads → Assets → Native debug symbols**, then upload **`native-debug-symbols.zip`**. If creating the release, the bundle's three-dot menu also offers **Upload native debug symbols (.zip)**. Upload the inner ZIP, not GitHub's outer artifact ZIP. See [Godot's upload instructions](https://docs.godotengine.org/en/4.7/tutorials/platform/android/resolving_crashes_on_android.html) and [Android's native-symbol guidance](https://developer.android.com/build/include-native-symbols). Play's processing/acceptance must be checked after upload; local verification alone does not establish it.
+
 ## Regression playtest: progress and crate safety (pending on device)
 
 - Complete Mission 01, close the app with Android's force-stop action, then reopen it offline. Mission 02 must remain unlocked. Complete another mission and repeat; prior unlocks and best move counts must remain. This checks completed-save persistence, not power-loss durability during a write.

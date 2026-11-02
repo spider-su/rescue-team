@@ -1,0 +1,10 @@
+{
+  "godot_version": "4.7.2.stable",
+  "aab_sha256": "6e11f31ad210512d5cb3782429aa09e1d1fdfb5afa9e865c0e16b522c3ec628a",
+  "official_symbols_sha256": "4bc879f6ef3967dadd55d60382fe36cd79c700877280e5b410527a5ddcb72e49",
+  "upload_zip_sha256": "2b35d46bb4beef8fb859ec7de0d7ee7ba10c7115b68f524ed2dd9f5ea843a427",
+  "matched_build_ids": {
+    "arm64-v8a/libc++_shared.so": "ba615e4ff75bc2d8ba1eee93f983e02bc427c433",
+    "arm64-v8a/libgodot_android.so": "270121fef88100c19643517c328b5868e01d345c"
+  }
+}
