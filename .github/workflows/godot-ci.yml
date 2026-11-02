@@ -6,6 +6,19 @@ on:
   pull_request:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      release_aab:
+        description: Build a signed Play upload bundle after all checks
+        type: boolean
+        default: false
+      release_version_code:
+        description: Unused positive Google Play version code
+        type: string
+        default: '1'
+      release_version_name:
+        description: Player-facing release version
+        type: string
+        default: '0.1.0'
 
 permissions:
   contents: read
@@ -141,3 +154,86 @@ jobs:
           path: build/game-debug.apk
           if-no-files-found: error
           retention-days: 14
+
+      - name: Configure dedicated release upload signing
+        if: github.event_name == 'workflow_dispatch' && inputs.release_aab
+        env:
+          UPLOAD_KEY_BASE64: ${{ secrets.ANDROID_RELEASE_KEYSTORE_BASE64 }}
+          UPLOAD_KEY_USER: ${{ secrets.ANDROID_RELEASE_KEYSTORE_USER }}
+          UPLOAD_KEY_PASSWORD: ${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}
+        run: |
+          set -euo pipefail
+          test -n "$UPLOAD_KEY_BASE64" && test -n "$UPLOAD_KEY_USER" && test -n "$UPLOAD_KEY_PASSWORD"
+          umask 077
+          key_path="$RUNNER_TEMP/rescue-team-upload.jks"
+          printf '%s' "$UPLOAD_KEY_BASE64" | base64 --decode > "$key_path"
+          keytool -list -keystore "$key_path" -storepass:env UPLOAD_KEY_PASSWORD -alias "$UPLOAD_KEY_USER" > /dev/null
+          echo "GODOT_ANDROID_KEYSTORE_RELEASE_PATH=$key_path" >> "$GITHUB_ENV"
+          echo "GODOT_ANDROID_KEYSTORE_RELEASE_USER=$UPLOAD_KEY_USER" >> "$GITHUB_ENV"
+          echo "GODOT_ANDROID_KEYSTORE_RELEASE_PASSWORD=$UPLOAD_KEY_PASSWORD" >> "$GITHUB_ENV"
+
+      - name: Export signed release AAB with pinned Gradle template
+        if: github.event_name == 'workflow_dispatch' && inputs.release_aab
+        env:
+          RELEASE_VERSION_CODE: ${{ inputs.release_version_code }}
+          RELEASE_VERSION_NAME: ${{ inputs.release_version_name }}
+        run: |
+          set -euo pipefail
+          target="$HOME/.local/share/godot/export_templates/$GODOT_TEMPLATE_VERSION"
+          unzip -j -q "$RUNNER_TEMP/templates.tpz" "templates/android_source.zip" -d "$target"
+          python3 scripts/release_bundle.py prepare
+          godot --headless --path . --install-android-build-template --export-release "Android" build/rescue-team-release.aab
+          test -s build/rescue-team-release.aab
+
+      - name: Verify release bundle identity, certificate and manifest
+        if: github.event_name == 'workflow_dispatch' && inputs.release_aab
+        env:
+          RELEASE_VERSION_CODE: ${{ inputs.release_version_code }}
+          RELEASE_VERSION_NAME: ${{ inputs.release_version_name }}
+        run: |
+          set -euo pipefail
+          curl -fL --retry 3 https://github.com/google/bundletool/releases/download/1.18.3/bundletool-all-1.18.3.jar -o "$RUNNER_TEMP/bundletool.jar"
+          echo "a099cfa1543f55593bc2ed16a70a7c67fe54b1747bb7301f37fdfd6d91028e29  $RUNNER_TEMP/bundletool.jar" | sha256sum -c -
+          java -jar "$RUNNER_TEMP/bundletool.jar" validate --bundle=build/rescue-team-release.aab
+          jarsigner -verify build/rescue-team-release.aab > build/release-signature.txt
+          grep -q 'jar verified' build/release-signature.txt
+          keytool -printcert -jarfile build/rescue-team-release.aab -rfc | openssl x509 -noout -fingerprint -sha256 > build/release-certificate.txt
+          java -jar "$RUNNER_TEMP/bundletool.jar" dump manifest --bundle=build/rescue-team-release.aab --module=base > build/release-manifest.xml
+          python3 scripts/release_bundle.py verify
+
+      - name: Upload verified release bundle and provenance
+        if: github.event_name == 'workflow_dispatch' && inputs.release_aab
+        uses: actions/upload-artifact@v7
+        with:
+          name: rescue-team-release-aab
+          path: |
+            build/rescue-team-release.aab
+            build/release-metadata.json
+            build/release-manifest.xml
+            build/release-certificate.txt
+            build/release-signature.txt
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Package matching native symbols for Play crash reports
+        if: github.event_name == 'workflow_dispatch' && inputs.release_aab
+        run: |
+          set -euo pipefail
+          base="https://github.com/godotengine/godot/releases/download/$GODOT_RELEASE"
+          curl -fL --retry 3 "$base/Godot_native_debug_symbols.${GODOT_TEMPLATE_VERSION}.template_release.android.zip" -o "$RUNNER_TEMP/native-symbols.zip"
+          python3 scripts/release_symbols.py \
+            --aab build/rescue-team-release.aab \
+            --symbols "$RUNNER_TEMP/native-symbols.zip" \
+            --readelf "$ANDROID_HOME/ndk/28.1.13356709/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-readelf" \
+            --output build/native-debug-symbols.zip
+
+      - name: Upload verified native symbols and build IDs
+        if: github.event_name == 'workflow_dispatch' && inputs.release_aab
+        uses: actions/upload-artifact@v7
+        with:
+          name: rescue-team-native-debug-symbols
+          path: |
+            build/native-debug-symbols.zip
+            build/native-debug-symbols.json
+          if-no-files-found: error
+          retention-days: 90

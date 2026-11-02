@@ -55,7 +55,7 @@ The UI suite verifies animated input, victory/undo/replay, next/final mission na
 
 [Godot Game CI](https://github.com/spider-su/rescue-team/actions) runs the headless checks and exports an **arm64 debug APK**, uploaded as `rescue-team-debug-apk`. It uses a persistent debug keystore when configured, otherwise a temporary key that cannot update an earlier differently signed install. The package remains `com.spidersu.rescueteam`.
 
-See [Android release and device scenarios](docs/android-release.md). APK export and desktop rendering do not establish physical-device usability. Release AAB, billing, ads, analytics, backend and cloud accounts are outside the current prototype scope.
+The same workflow can optionally create a separately signed release AAB on manual dispatch; see [Android release and device scenarios](docs/android-release.md). APK/AAB export and desktop rendering do not establish physical-device usability. Billing, ads, analytics, backend and cloud accounts remain outside the current prototype scope.
 
 ## Release handoff
 

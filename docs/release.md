@@ -7,9 +7,10 @@ This is the release checklist for the Android **0.1.0** vertical slice. It separ
 | Item | Current value |
 | --- | --- |
 | Application ID | `com.spidersu.rescueteam` |
-| Version | `0.1.0` / version code `1` |
-| Delivery artifact today | arm64 debug APK from `Godot Game CI` |
+| First Play upload candidate | `0.1.0` / version code `1`; debug APK codes follow a separate CI run counter |
+| Delivery artifacts | arm64 debug APK; opt-in signed release AAB from manual `Godot Game CI` dispatch |
 | Stable debug updates | Configured with the private `ANDROID_DEBUG_KEYSTORE_BASE64` Actions secret |
+| Release upload signing | Separate upload key configured with three `ANDROID_RELEASE_KEYSTORE_*` Actions secrets |
 | Content | 20 campaign missions and 3 optional Floodworks trials |
 | Connectivity | No `INTERNET` permission; no account, ads, analytics, billing or backend |
 | Local data | Mission progress, best scores, unfinished mission checkpoint, audio preferences and selected cosmetic |
@@ -17,12 +18,15 @@ This is the release checklist for the Android **0.1.0** vertical slice. It separ
 
 The debug signing key supports repeatable **test APK** upgrades. It is not a Play release key and must never be used for an AAB or production signing.
 
+The first signed release bundle was built and verified in [run 41460812065](https://github.com/spider-su/rescue-team/actions/runs/41460812065), source `ea291a045ae142ce6809f2e179fa5540d184dea7`. It passed the eight existing suites, bundletool validation, JAR signature/certificate checks and package/version/ABI/non-debuggable/offline-manifest assertions. It has not been uploaded to Google Play or validated on physical devices as a release bundle. For future uploads, use a version code not previously used in Play.
+
 ## Release gates
 
 ### Before inviting closed-test players
 
 - [ ] Set the candidate version name and increment `version/code` in `export_presets.cfg`.
-- [ ] Build a signed AAB using a separately backed-up upload/release key; keep its credentials out of the repository.
+- [x] Build and verify an initial signed AAB with a dedicated upload key; credentials remain outside the repository.
+- [ ] Back up the upload keystore and credentials to separate secure owner-controlled storage before continuing Play releases.
 - [ ] Confirm Play Console target-SDK and policy requirements for the build date.
 - [ ] Run the full CI workflow at the candidate commit and retain its run URL and artifact/checksum.
 - [ ] Run the scenarios in [Android release and device scenarios](android-release.md), [audio](audio.md#android-listening-scenario-pending), [Old Town](old-town.md#verification-and-device-scenario), [puzzle polish](puzzle-polish.md#validation-and-on-device-scenario), and [emotional progression](emotional-progression.md#verification-and-android-scenario).
@@ -50,7 +54,7 @@ The debug signing key supports repeatable **test APK** upgrades. It is not a Pla
 
 ## Known boundaries
 
-- The current CI artifact is an APK for testing, not an upload-ready AAB.
+- A signed AAB upload candidate exists, but Play submission, policy acceptance and release-bundle device validation remain pending.
 - Existing automated and desktop-rendered evidence does not prove real-device ergonomics, interruption handling or subjective animation/audio quality.
 - The project intentionally has no telemetry. Decisions from external validation therefore need consented qualitative reports rather than inferred analytics.
 - Contact details, public privacy-policy hosting and Play Console declarations are owner-controlled inputs and remain incomplete until supplied and published.
