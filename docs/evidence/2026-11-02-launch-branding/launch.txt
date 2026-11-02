@@ -1,0 +1,7 @@
+Starting: Intent { cmp=com.spidersu.rescueteam/com.godot.game.GodotAppLauncher }
+Status: ok
+LaunchState: COLD
+Activity: com.spidersu.rescueteam/com.godot.game.GodotApp
+TotalTime: 1950
+WaitTime: 1953
+Complete
