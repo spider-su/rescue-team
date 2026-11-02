@@ -1,0 +1,8 @@
+--------- beginning of main
+11-02 10:58:26.401   370   370 D AndroidRuntime: >>>>>> START com.android.internal.os.ZygoteInit uid 0 <<<<<<
+11-02 10:58:26.405   370   370 I AndroidRuntime: Using default boot image
+11-02 10:58:26.405   370   370 I AndroidRuntime: Leaving lock profiling enabled
+11-02 10:58:37.029   978   978 I AndroidRuntime: VM exiting with result code 0, cleanup skipped.
+11-02 11:00:41.729  4326  4350 I godot   : Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+11-02 11:00:44.178  4326  4350 I godot   : OpenGL API OpenGL ES 3.1 (OpenGL ES 3.1.0 (ANGLE 2.1.1 git hash: fbf66f49c7cc)) - Compatibility - Using Device: Google (Google Inc. (Google)) - Android Emulator OpenGL ES Translator (ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver-5.0.0))
+11-02 11:00:44.203  4326  4350 I godot   : 

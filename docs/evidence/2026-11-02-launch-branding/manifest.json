@@ -1,0 +1,16 @@
+{
+  "source_commit": "651a100682d4aeb486cc3a8dba0ec1869bf0e867",
+  "ci_run": "https://github.com/spider-su/rescue-team/actions/runs/41424619734",
+  "emulator": "rescue-team-branding",
+  "serial": "emulator-5556",
+  "api": 35,
+  "display": "1080x2400",
+  "renderer": "SwiftShader / GL Compatibility",
+  "audio": false,
+  "assets": {
+    "boot-splash.png": "7739806355d4c72792a5452cd3334dd0e78c691321fda93611f1abbf21201812",
+    "adaptive-icon.png": "2d81990dd776ca72cd394a51daf9120bf4fd337518f3e9d03157c95f4c7866e3",
+    "app-icon.png": "f9320dfb09922d24200f55f8245093b9d176e05830e6d77be5d28d9d1738b9f1"
+  },
+  "apk_sha256": "4cae5fbf25390810f1519d61fa90487069edb07b9924d94c59a5a5361b0ab016"
+}
