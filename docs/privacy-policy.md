@@ -5,9 +5,11 @@ permalink: /privacy/
 
 # Rescue Team privacy policy
 
-**Effective date:** [Publication date]
+**Status:** Publication draft — publisher/contact confirmed; legal review, effective date and release-build verification pending.
 
-Rescue Team is an offline puzzle game published by **[Developer legal name]**. This policy describes the current Android application identified as `com.spidersu.rescueteam`.
+**Effective date:** [To be set at publication]
+
+Rescue Team is an offline puzzle game published by **Alex Kotik**. This policy describes the current Android application identified as `com.spidersu.rescueteam`.
 
 ## Data the app handles
 
@@ -38,6 +40,8 @@ If a future version changes data practices, this policy and the applicable store
 
 ## Contact
 
-For privacy questions, contact **[support email]**.
+Developer display name: **smart-box**. Publisher: **Alex Kotik**. A postal correspondence address has not been supplied; confirm any applicable address-disclosure obligation before publishing.
 
-Before publishing, replace the bracketed publication date, legal name and support email, publish this exact approved text at a stable HTTPS URL, and use that URL in the Play Console. If the product adds analytics, advertising, accounts, cloud storage, crash reporting or another network service, revise this policy and the data-safety declaration first.
+For privacy questions, contact **alex.kotik.net@gmail.com**.
+
+Before publishing, confirm correspondence-address obligations and the effective date, verify the exact release build, publish this exact approved text at a stable HTTPS URL, and use that URL in the Play Console. If the product adds analytics, advertising, accounts, cloud storage, crash reporting or another network service, revise this policy and the data-safety declaration first.
