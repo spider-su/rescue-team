@@ -45,6 +45,19 @@ godot --headless --path . --export-debug "Android" build/game-debug.apk
 
 This exports the **twenty-mission campaign with three optional Floodworks trials**. The new scrolling, ranger and Old Town chapter still need physical-device acceptance; use the [Old Town device scenario](old-town.md#verification-and-device-scenario). The owner reported the preceding coastal UI working but scrolling being difficult; device/OS details were not provided.
 
+## Signed Play upload bundle
+
+The manual `Godot Game CI` dispatch accepts `release_aab=true`, `release_version_code` and `release_version_name`. It first runs the full existing import/test/debug-export pipeline, then installs the pinned Godot Gradle template and creates `rescue-team-release.aab` using `--export-release`. The normal APK export preset is changed only in that disposable CI checkout.
+
+```bash
+gh workflow run godot-ci.yml --ref main \
+  -f release_aab=true -f release_version_code=1 -f release_version_name=0.1.0
+```
+
+For subsequent Play uploads, choose a version code that has never been used for this app. The bundle is signed using the dedicated upload key supplied by `ANDROID_RELEASE_KEYSTORE_BASE64`, `ANDROID_RELEASE_KEYSTORE_USER` and `ANDROID_RELEASE_KEYSTORE_PASSWORD`. No fallback to debug signing is allowed. The recovery keystore and credentials are stored privately outside the repository; back them up to secure owner-controlled storage before relying on this key for continuing releases.
+
+The `rescue-team-release-aab` artifact includes the signed bundle, SHA-256/source/CI metadata, manifest and certificate-verification evidence. Before uploading, CI runs pinned bundletool validation, JAR signature verification and checks the exact upload certificate, package, requested version, non-debuggable status, arm64 libraries and absence of INTERNET permission. The bundle is an upload candidate; these checks do not prove device acceptance or Play policy approval. It is not directly installable like an APK.
+
 ## Regression playtest: progress and crate safety (pending on device)
 
 - Complete Mission 01, close the app with Android's force-stop action, then reopen it offline. Mission 02 must remain unlocked. Complete another mission and repeat; prior unlocks and best move counts must remain. This checks completed-save persistence, not power-loss durability during a write.
