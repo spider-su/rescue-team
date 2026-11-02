@@ -24,7 +24,7 @@ def render():
  else:
   for x,y,r in [(900,90,250),(930,410,190)]:d.ellipse((x-r,y-r,x+r,y+r),outline=c['accent'],width=2)
   logo=Image.open(ROOT/c['icon']).convert('RGBA');logo.thumbnail((330,330));im.paste(logo,(650,85),logo)
- 
+
  if c['name']=='Ryczałt':
   d=ImageDraw.Draw(im);d.rectangle((614,0,1024,500),fill='white');logo=Image.open(ROOT/c['icon']).convert('RGBA');logo.thumbnail((330,330));im.paste(logo,(650,85),logo)
  d=ImageDraw.Draw(im);d.rounded_rectangle((48,58,112,64),3,fill=c['accent'])
@@ -48,7 +48,7 @@ def capture(args):
  number=len(list((OUT/'phone').glob('phone-*.png')))+1;relative=f'phone/phone-{number:02d}.png'
  raw=subprocess.check_output(adb+['exec-out','screencap','-p']);p=OUT/relative;p.parent.mkdir(exist_ok=True);raw_path=OUT/'raw'/p.name;raw_path.parent.mkdir(exist_ok=True);raw_path.write_bytes(raw);image=Image.open(io.BytesIO(raw)).convert('RGB');image=image.crop(c['screenshot_crop']) if c.get('screenshot_crop') else image;image.save(p,optimize=True)
  manifest_path=OUT/'screenshots.json';m=json.loads(manifest_path.read_text()) if manifest_path.exists() else {'screenshots':[]}
- record={'file':relative,'screen':args.name,'captured_at':datetime.datetime.now(datetime.timezone.utc).isoformat(),'capture_method':'adb exec-out screencap -p','sha256':digest(p),'raw_sha256':hashlib.sha256(raw).hexdigest(),'crop':c.get('screenshot_crop'),'apk':{'file':apk.name,'sha256':digest(apk),'package':match[1],'version_code':match[2],'version_name':match[3],'source_commit':args.source_sha,'build_url':args.build_url},'emulator':{'avd':shell('getprop','ro.boot.qemu.avd_name'),'serial':args.serial,'api':shell('getprop','ro.build.version.sdk'),'android':shell('getprop','ro.build.version.release'),'abi':shell('getprop','ro.product.cpu.abi'),'display':shell('wm','size'),'density':shell('wm','density')},'foreground_verified':True,'visual_review':'pending'}
+ record={'file':relative,'screen':args.name,'captured_at':datetime.datetime.now(datetime.timezone.utc).isoformat(),'capture_method':'adb exec-out screencap -p','sha256':digest(p),'raw_sha256':hashlib.sha256(raw).hexdigest(),'crop':c.get('screenshot_crop'),'apk':{'file':apk.name,'sha256':digest(apk),'package':match[1],'version_code':match[2],'version_name':match[3],'source_commit':args.source_sha,'build_url':args.build_url},'emulator':{'avd':shell('getprop','ro.boot.qemu.avd_name'),'serial':args.serial,'api':shell('getprop','ro.build.version.sdk'),'android':shell('getprop','ro.build.version.release'),'abi':shell('getprop','ro.product.cpu.abi'),'display':shell('wm','size'),'density':shell('wm','density'),'app_language':c['language'],'system_locale':shell('getprop','persist.sys.locale')},'foreground_verified':True,'visual_review':'pending'}
  m['screenshots'].append(record);manifest_path.write_text(json.dumps(m,indent=2,ensure_ascii=False)+'\n');print(relative)
 def validate():
  c=config();errors=[];rows=[]
