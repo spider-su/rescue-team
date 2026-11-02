@@ -1,0 +1,6 @@
+title: "Rescue Team"
+description: "Privacy information for Rescue Team, published by Alex Kotik (smart-box)."
+theme: minima
+markdown: kramdown
+plugins:
+  - jekyll-relative-links
