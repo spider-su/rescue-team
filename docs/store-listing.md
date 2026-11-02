@@ -58,3 +58,37 @@ For each screenshot, record candidate version, device or rendered source, captur
 - App access: no account or restricted content
 - Store contact and public privacy-policy link
 - Countries/regions, pricing and distribution choices from the release owner
+
+## Google Play App content — declaration worksheet (2026-11-02, draft)
+
+For `com.spidersu.rescueteam`; this does **not** certify the release candidate or mean that Console forms were submitted. The existing [privacy policy](privacy-policy.md) is the only user-facing privacy source.
+
+| Play Console item | Proposed answer / action | Evidence or unresolved decision |
+| --- | --- | --- |
+| Privacy policy URL | **Pending:** approve existing [privacy policy](privacy-policy.md), fill publisher/effective date/support and publish to a public read-only HTTPS webpage linked in app | Current draft lacks legal publisher name and support contact |
+| Ads declaration | **No** | Release documentation and Godot export describe no advertising |
+| App access | **All features accessible without login** | Offline game without an account or gated server content |
+| Target audience | **Owner decision required** | Cartoony puzzle gameplay may appeal to children; choose intended ages truthfully and review Families obligations if children are included |
+| Content rating | **Complete questionnaire in Console** | Fictional fires, disasters, infected blockers, rescue and containment actions; answer violence/fear questions based on actual visuals and gameplay, not a guessed numeric rating |
+| Data safety | **Candidate: no app data collection/sharing** | Local progress/settings; no backend, ads, analytics or Internet permission in current export preset. Revalidate bundled components and signed AAB |
+| Account deletion | **Not applicable** | No account creation in the documented game |
+
+### Specific content/rights and data checks
+
+- Local stored data: mission completion, move counts/best scores, unfinished checkpoint, audio preferences and crew cosmetic. Normal deletion is clear app storage/uninstall; account-deletion URL is unnecessary without accounts.
+- No Internet permission in the inspected Godot export preset; verify final merged Android manifest, third-party plugins and actual runtime before selecting 'No data collected'.
+- No advertisements or purchases appear in existing store copy; review changes before submission.
+- Target audience and IARC rating are separate declarations. Discuss the portrayal of infected obstacles and hazards accurately even if the graphics are non-graphic and family-friendly.
+- Verify ownership/licensing of generated assets and third-party font/music notices and the current screenshots before store approval.
+
+### Console completion record
+
+- [ ] Confirm legal publisher, effective date and support email in policy
+- [ ] Publish public policy HTTPS page and link inside app
+- [ ] Approve intended age groups after Families review
+- [ ] Enter ads and app-access answers
+- [ ] Submit content-rating questionnaire; retain assigned rating
+- [ ] Validate exact AAB and complete Data Safety declaration
+- [ ] Archive screenshot/answers, release SHA, AAB SHA-256 and review date
+
+References: https://support.google.com/googleplay/android-developer/answer/9859455 and https://support.google.com/googleplay/android-developer/answer/9867159
