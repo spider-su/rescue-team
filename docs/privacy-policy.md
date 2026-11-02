@@ -1,4 +1,5 @@
 ---
+layout: default
 title: "Rescue Team Privacy Policy"
 permalink: /privacy/
 ---
