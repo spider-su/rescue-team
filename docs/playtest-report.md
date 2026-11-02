@@ -2,6 +2,8 @@
 
 Use one copy of this report per device and candidate. Attach screenshots or a short screen recording only when they clarify a failure. Do not include personal account data.
 
+Recorded emulator run: [2026-11-02 Android API 35 regression](evidence/2026-11-02-android-emulator/README.md) covers Coastal 01–10, Old Town 11 and Floodworks 21–23, checkpoint/cold-launch persistence, smaller-screen layouts and APK update-over-install. It records two copy defects and a layout observation; physical-device acceptance remains pending.
+
 ## Build and device
 
 | Field | Result |

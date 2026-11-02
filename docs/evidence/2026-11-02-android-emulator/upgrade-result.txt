@@ -1,0 +1,1 @@
+PASS: installed previous debug version 1092 with adb install -r -d as setup. Launched it, then installed 1094 with adb install -r. Both returned Success. Progress, audio settings, crest selection and unfinished checkpoint were byte-identical before/after. No uninstall or clear-data was used.

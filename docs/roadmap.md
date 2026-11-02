@@ -47,6 +47,7 @@ Prefer a small focused PR for each increment; do not combine all milestones in o
 
 - [x] Owner-reported Android Mission 01 happy-path completion (2026-10-30). Device model, Android version, APK commit and detailed observations were not recorded.
 - [x] Desktop-rendered UI evidence and isolated production-scene regression coverage. Neither demonstrates physical-device ergonomics.
+- [x] [Android API 35 emulator regression, 2026-11-02](evidence/2026-11-02-android-emulator/README.md): actual CI APK completed Coastal 01–10, Old Town 11 and Floodworks 21–23, with resume, persistence, two display/navigation configurations and a 1092→1094 APK update. Two copy defects and a layout observation remain; Old Town 12–20 and physical devices were not tested in this run.
 
 ### Remaining before external pre-release testing
 
