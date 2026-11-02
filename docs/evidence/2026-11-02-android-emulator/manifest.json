@@ -1,0 +1,22 @@
+{
+  "date": "2026-11-02",
+  "timezone": "Europe/Warsaw",
+  "repository": "spider-su/rescue-team",
+  "branch": "codex/align-current-docs",
+  "source_commit": "c3d982afb54ab1d71c57d8dc274baa4c991d669d",
+  "ci_run": "https://github.com/spider-su/rescue-team/actions/runs/41418375868",
+  "apk_sha256": "09d8af430b34edf0ec515e68abb662335390b4adaca4f5fde78a9a2ebe25aecb",
+  "package": "com.spidersu.rescueteam",
+  "version_name": "0.1.0",
+  "version_code": 1094,
+  "serial": "emulator-5554",
+  "avd": "world-maps-poc",
+  "api": 35,
+  "abi": "arm64-v8a",
+  "screen": "1080x2400",
+  "density": 420,
+  "renderer": "SwiftShader / GL Compatibility",
+  "audio_output": false,
+  "seeded_progress": false,
+  "skill": "/Users/alex/projects/world-maps/.codex/skills/android-emulator-smoke/SKILL.md"
+}
