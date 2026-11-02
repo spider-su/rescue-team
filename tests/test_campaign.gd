@@ -90,7 +90,7 @@ func _initialize() -> void:
 	if not _assert(reloaded.best.is_empty() and not reloaded.unlocked(1, catalog), "invalid progress falls back safely"):
 		return
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(save_path))
-	print("PASS: ten validated/solvable missions, saved unlock progression and corrupt save handling")
+	print("PASS: Coastal 01–10 validated/solvable, saved unlock progression and corrupt-save handling")
 	quit(0)
 
 func _test_safe_saves(progress: RefCounted, catalog: RefCounted) -> bool:

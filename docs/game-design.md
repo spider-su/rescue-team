@@ -51,9 +51,9 @@ Action feedback uses short, interrupt-safe animation beats rather than long cine
 4. The Locked Corridor — original cooperative prototype.
 5. Harbor Crossroads — the first route reversal: power the gate from the side lane, then extract from the opposite end.
 
-## Ten-level vertical slice
+## Coastal vertical slice and later chapters
 
-The manifest now contains ten authored missions. The first four introduce rescue, fire, switches/gates and cooperation; Mission 05 reverses the established route before the new-mechanic ramp. Missions 06–09 add valve/water, bridge, ranger/infected and a light combination in that order; Mission 10 reuses the cooperative crate/fire finale with a northbound extraction before Old Town. Later locations deliberately rotate or reverse street orientation and entry/exit anchors so their planning does not feel like a repeated left-to-right board. Tests verify a complete solution for every mission. Content breadth does not establish device usability or external-player engagement.
+The Coastal vertical slice contains ten authored missions. The first four introduce rescue, fire, switches/gates and cooperation; Mission 05 reverses the established route before the new-mechanic ramp. Missions 06–09 add valve/water, bridge, ranger/infected and a light combination in that order; Mission 10 reuses the cooperative crate/fire finale with a northbound extraction before Old Town. Old Town adds ten larger containment puzzles, and Floodworks adds three optional valve/bridge trials. Later locations deliberately rotate or reverse street orientation and entry/exit anchors so their planning does not feel like a repeated left-to-right board. Tests replay a complete solution for all 23 maps. Content breadth does not establish device usability or external-player engagement.
 
 Ship only after every level has at least one verified solution and tests for unwinnable/invalid state handling. Favor manual, interesting designs over generated filler.
 
@@ -77,4 +77,4 @@ The project takes inspiration from an old **gameplay genre**, not original title
 
 ## Approved puzzle-polish increment
 
-Star targets now use actual saved step units; existing best scores keep their format. First-five-mission teaching and free layered hints support the learning curve. Unfinished missions restore through validated action replay, including undo. Optional trials after 05 introduce engineer valves, draining routes and bridge repair in three authored cooperative puzzles; see [rules and device scenarios](puzzle-polish.md). These trials prototype interaction depth before another content expansion.
+Star targets now use actual saved step units; existing best scores keep their format. Uncompleted Missions 01–05 proactively outline the current target and show a short hero instruction; free layered hints remain available in every mission. Unfinished missions restore through validated action replay, including undo. Optional trials after 05 introduce engineer valves, draining routes and bridge repair in three authored cooperative puzzles; see [rules and device scenarios](puzzle-polish.md). These trials prototype interaction depth before another content expansion.

@@ -9,19 +9,19 @@
 - `scripts/coastal_style.gd`, `assets/coastal/`, `assets/ui/`, `assets/fonts/`: shared presentation styles, original artwork, command icons and OFL typography. See `docs/coastal-ui.md` for layout, asset provenance, tests and device scenarios.
 - `scripts/rescue_audio.gd`, `assets/audio/`: original imported music/effects, bounded playback voices, independent local preferences and foreground suspension. See `docs/audio.md` and `tests/test_audio.gd`.
 - `scripts/crew_progression.gd`, `scripts/crew_insignia.gd`, `scripts/district_recovery.gd`: original named-crew text, visual-only local cosmetics and saved-completion district illustration. `tests/test_crew_progression.gd` keeps rewards derived from campaign data rather than gameplay state.
-- `scripts/rescue_level.gd`, `tests/test_rescue_level.gd`: data-driven deterministic rules and headless tests of the original mission.
-- `.github/workflows/godot-ci.yml`: pinned Godot/editor templates, Java 17, Android SDK, headless tests, debug APK artifact.
+- `scripts/rescue_level.gd`, `tests/test_rescue_level.gd`: data-driven deterministic rules and focused headless action/undo tests.
+- `.github/workflows/godot-ci.yml`: pinned Godot/editor templates, Java 17, Android SDK, all eight headless suites, monotonic debug version code and arm64 debug APK artifact.
 - `docs/game-design.md` and `docs/roadmap.md`: product scope, stage gates and test expectations.
 
 ## Gameplay boundaries
 
 1. **Pure puzzle domain:** deterministic grid, unit positions, hazards, actions, win/lose rules and undo; no dependency on graphics.
-2. **Level content:** explicit JSON manifest in `scripts/level_catalog.gd`, twenty campaign maps and three optional Floodworks trials, validation and tested win paths. Coastal 06–09 teach valve/water, bridge and ranger/infected in a bounded ramp; `levels/old-town/` expands those mechanics. Floodworks adds the deeper three-way valve/bridge combinations.
+2. **Level content:** explicit JSON manifest in `scripts/level_catalog.gd`, twenty campaign maps and three optional Floodworks trials, validation and tested win paths. Coastal 01–05 provide proactive teaching; 06–09 teach valve/water, bridge and ranger/infected in a bounded ramp; `levels/old-town/` expands those mechanics from varied district entries. Floodworks adds the deeper three-way valve/bridge combinations.
 3. **Presentation:** Godot scene rendering, touch input, feedback/audio, animations and Android lifecycle.
 4. **Local persistence:** `scripts/campaign_progress.gd`, versioned `user://rescue_progress_v1.json`, best move counts and corrupt-data fallback.
-5. **UI integration:** `tests/test_rescue_ui.gd` drives the production scene with an isolated save; checks screen transitions, animated routes, persistence feedback, adaptive tile input and portrait layouts. Gameplay rules do not import presentation resources.
+5. **UI integration:** `tests/test_rescue_ui.gd` drives the production scene with an isolated save; checks three location groups, proactive early guidance, animated routes, persistence feedback, adaptive tile input, scrolling and portrait layouts. Gameplay rules do not import presentation resources.
 6. **Gestures and chapter expansion:** `scripts/mission_scroll.gd` handles card/illustration swipes before child controls, suppresses duplicate emulated input and cancels card presses on drag. `tests/test_old_town.gd` replays all ten new solutions and checks role restrictions, undo and old-save compatibility. See `docs/old-town.md`.
 
-7. **Guidance and resume:** `scripts/mission_guidance.gd` derives contextual objectives. `scripts/mission_session.gd` validates a bounded action journal by replay through the rules, rebuilding grouped undo. It uses a separate atomic checkpoint file; `tests/test_puzzle_polish.gd` covers scoring, topology and persistence. See `docs/puzzle-polish.md`.
+7. **Guidance and resume:** `scripts/mission_guidance.gd` derives contextual objectives; uncompleted Coastal 01–05 also proactively outline the target and show a non-blocking hero prompt. `scripts/mission_session.gd` validates a bounded action journal by replay through the rules, rebuilding grouped undo. It uses a separate atomic checkpoint file; `tests/test_puzzle_polish.gd` covers scoring, topology and persistence. See `docs/puzzle-polish.md`.
 
 Keep gameplay testable headlessly; avoid abstracting Godot physics, building a custom engine, introducing a backend, or installing SDKs until the project genuinely needs them. This repository is a product derived from the MIT-licensed [mobile_template game-template](https://github.com/spider-su/mobile_template/tree/game-template), **not** a template branch to merge with Expo.

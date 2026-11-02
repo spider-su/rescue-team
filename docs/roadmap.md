@@ -33,46 +33,24 @@ Prefer a small focused PR for each increment; do not combine all milestones in o
 
 ## Current snapshot
 
-- [x] Project bootstrapped from Godot game-template and identity set.
-- [x] CI workflow configured for `main`, feature branches and pull requests.
-- [x] CI green **in this repository** — [initial successful workflow run](https://github.com/spider-su/rescue-team/actions/runs/41079474191), including Android debug APK artifact. Basic real-device Mission 01 completion was subsequently reported; broader smoke testing remains pending.
-- [x] Phase 1: one playable original rescue puzzle, two specialist abilities, fire, crate/switch/gate, civilian extraction, deterministic win path, undo and restart. The campaign now has ten tested maps; broader device acceptance remains pending.
-- [x] **Initial Android happy-path playtest** (2026-10-30): project owner reports installing the APK and completing Mission 01 successfully; hardware/OS version and detailed input observations not recorded.
-- [ ] **New ten-level build device smoke test** (tap-to-move, menu navigation, unlock/save, pause/resume, smaller screens): still pending.
-- [ ] **Comprehensive device smoke test** still pending: touch ergonomics, undo/restart, app lifecycle, different screen sizes, accessibility and performance.
-- [x] Ten data-driven JSON missions with validated complete solutions, mission picker, monotonic offline unlocks and route animations (feature branch; CI/device verification pending).
-- [x] Ten curated missions are implemented with deterministic solution tests. Full vertical-slice device persistence and usability acceptance remain pending.
-- [x] Coastal UI implemented: original human crew and harbor artwork, mission cards, adaptive square-cell board and dedicated completion screen; UI integration tests and rendered desktop evidence are documented in `docs/coastal-ui.md`.
-- [ ] Coastal UI physical-device acceptance, audio listening tests and remaining mobile polish.
-- [ ] Commercial metrics validated.
+### Implemented and CI-verified
 
-## Owner-requested expansion (2026-10-31)
+- [x] Original product identity, deterministic grid rules, undo/restart, local progress and safe corrupt-save fallback.
+- [x] Twenty campaign missions: Coastal District 01–10 and Old Town Quarantine 11–20; three optional Floodworks trials 21–23. All 23 reference routes replay through the shipped model and earn their authored three-star scores.
+- [x] Gradual content sequence: proactive guidance in Coastal 01–05; valve/water, bridge and ranger introductions in 06–09; a cooperative recap in 10; larger Old Town containment puzzles and optional Floodworks combinations afterwards.
+- [x] Three specialists, fire/crate/gate/valve/bridge/infected rules, original art/audio, local audio preferences, named crew, cosmetic insignia and district recovery.
+- [x] Mission-card swipe scrolling, adaptive portrait board, touch-sized controls, obstacle dialogue, action presentation, two-stage optional hints and validated unfinished-mission resume.
+- [x] CI on `main` and pull requests: Godot import, eight headless suites and an arm64 debug APK. The most recent merged campaign/layout and guidance run passed on 2026-11-01: [Godot Game CI](https://github.com/spider-su/rescue-team/actions/runs/41357241491).
+- [x] Stable CI debug signing and monotonic per-run Android version codes support update-over-install testing within the debug key chain. The debug APK is not a Play release artifact.
 
-- [x] Group campaign into Coastal District (01–10) and Old Town Quarantine (11–20), preserving old IDs and saved scores.
-- [x] Replace difficult card scrolling with card/illustration drag gestures, inertia, drag-to-click cancellation and no focus snap-back; cover with actual viewport pointer-event tests.
-- [x] Add the ranger's adjacent infected-containment ability with deterministic restrictions and undo/restart coverage.
-- [x] Add ten static authored Old Town maps with complete, replayed cooperative walkthroughs (42–106 moves in those walkthroughs; not claimed optimal).
-- [ ] Record new scrolling, specialist selection and chapter playtests on Android hardware; owner-reported success of the prior build does not verify these changes.
+### Evidence recorded, but limited
 
-- [x] Original theme music and twelve action effects, independent persistent mutes and lifecycle suspension; automated audio/UI coverage.
-- [ ] Android listening, interruption and route-change acceptance; see `docs/audio.md`.
+- [x] Owner-reported Android Mission 01 happy-path completion (2026-10-30). Device model, Android version, APK commit and detailed observations were not recorded.
+- [x] Desktop-rendered UI evidence and isolated production-scene regression coverage. Neither demonstrates physical-device ergonomics.
 
-## Approved next increment (2026-10-31)
+### Remaining before external pre-release testing
 
-- [x] Correct star units with authored step targets and full reference-solution reward assertions; retain v1 score compatibility.
-- [x] Contextual teaching for 01–05 and two-stage hints with object highlighting.
-- [x] Validated, atomic unfinished-mission checkpoints with partial-walk resume and grouped undo.
-- [x] Three optional Floodworks trials after 05: valve → drained route → repaired bridge, combined with existing specialists.
-- [ ] Android acceptance and external-player validation under `docs/puzzle-polish.md`.
-
-## Coastal mechanic ramp (2026-11-01)
-
-- [x] Replace repetitive 06–09 crate variants with a one-at-a-time Coastal introduction to valve/water, bridge and ranger containment, followed by a small relay.
-- [x] Preserve IDs, unlock order, deterministic rules and replayed reference solutions; Mission 10 remains the original cooperative recap before Old Town.
-- [ ] Verify the new lesson sequence, specialist discovery and board readability on Android hardware.
-
-## Approved emotional-progression increment (2026-11-01)
-
-- [x] Named crew, original personality lines and visual-only cosmetic milestones derived from saved rescues.
-- [x] District illustrations reflect completed addresses without changing puzzle progression or score rules.
-- [ ] Record the district recovery and cosmetic selection scenario on Android hardware; see `docs/emotional-progression.md`.
+- [ ] Run the documented Android scenarios on at least one small and one tall physical phone: onboarding 01–05, mission scrolling, all three specialists, undo/restart, checkpoint resume, audio interruption, action pacing, Android Back and system bars.
+- [ ] Record device model, Android version, commit/APK artifact, clean-install and update-over-install result, and each PASS/FAIL observation in `docs/playtest-report.md`.
+- [ ] Build and validate a separately signed release AAB, then satisfy Play Console policy, listing, privacy, support and closed-track requirements.
+- [ ] Conduct the Phase 5 external-player study (20–40 players) and use observed comprehension, friction and voluntary continuation to make the release decision.
