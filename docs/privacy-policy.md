@@ -1,3 +1,8 @@
+---
+title: "Rescue Team Privacy Policy"
+permalink: /privacy/
+---
+
 # Rescue Team privacy policy
 
 **Effective date:** [Publication date]
