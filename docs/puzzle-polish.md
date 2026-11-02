@@ -36,7 +36,7 @@ Only the engineer operates valves/builds bridges, from orthogonally adjacent til
 
 ## Validation and on-device scenario
 
-CI adds `tests/test_puzzle_polish.gd` to the existing five suites. It verifies all 23 winning paths against actual star targets, legacy score interpretation, goal transitions, optional unlocks, water/bridge restrictions, full undo/restart, journal replay/corruption/write failure, carried civilians and partial walks. Production UI tests cover HINT→SHOW, progress reset, menu resume, restored undo, all three animated trials and three-star results. Test saves/preferences/checkpoints are isolated.
+CI runs `tests/test_puzzle_polish.gd` alongside seven other headless suites. It verifies all 23 winning paths against actual star targets, legacy score interpretation, goal transitions, optional unlocks, water/bridge restrictions, full undo/restart, journal replay/corruption/write failure, carried civilians and partial walks. Production UI tests cover proactive first-five prompts, HINT→SHOW, progress reset, menu resume, restored undo, all three animated trials and three-star results. Test saves/preferences/checkpoints are isolated.
 
 Desktop graphical launch is currently blocked by the host's NSXPC/LaunchServices failure before engine startup. No new native screenshot or hardware acceptance is claimed; headless UI geometry and input checks remain available.
 

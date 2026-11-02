@@ -8,7 +8,8 @@ The approved direction is an original human rescue squad in a warm coastal town.
 
 - Warm paper panels, navy headers, orange firefighter, blue engineer, teal primary actions and green rescue exits.
 - Original harbor and victory illustrations, crew portraits/full-body sprites and interactive-object atlas. Asset provenance, exact generation prompts and font licenses are under `assets/coastal/README.md` and `assets/fonts/`.
-- Scrollable cards for all ten missions: completed, available and locked states. The first uncompleted available mission is highlighted. Thumbnails are decorative harbor crops, not previews of map geometry.
+- Scrollable cards for Coastal 01–10, Old Town 11–20 and optional Floodworks 21–23: completed, available and locked states. The first uncompleted available mission is highlighted. Thumbnails are decorative location crops, not previews of map geometry.
+- Uncompleted Coastal 01–05 proactively show a short, non-blocking hero instruction and outline the current puzzle target. HINT and SHOW remain available for optional deeper guidance.
 - Gameplay prioritizes a live board, explicit active specialist, move count, objective, current model feedback and undo/restart/levels. The header has a back-to-missions control. Buttons disable during movement.
 - Ordinary floor tiles may carry a few small, translucent drifting leaves or ground bugs. They are decorative, sit below characters/props and never create a target, route change or rule.
 - The board uses square cells and low stone walls over decorative harbor surroundings. On tall play areas it rotates a wide mission clockwise; both route drawing and pointer picking transform back to original model coordinates. It keeps the original orientation on shorter play areas. It does not modify JSON maps, collision, action count or solutions.
@@ -18,9 +19,9 @@ The approved direction is an original human rescue squad in a warm coastal town.
 
 ## Validation
 
-Run editor import, `test_rescue_level.gd`, `test_campaign.gd`, `test_rescue_ui.gd` and scene startup. CI runs all these before Android export.
+Run editor import and every `tests/test_*.gd` suite. CI runs the focused rule, Coastal, Old Town, audio, puzzle-polish, crew-progression, action-presentation and production-UI suites before Android export.
 
-The UI test instantiates the production scene inside a viewport with an isolated save. It exercises locked missions, real board input and animation, civilian collection, whole-route undo, victory/save/unlock, replay, next mission, the last mission, failed-save feedback, scrolling and tile projection for all ten maps in both orientations. It checks play controls at 720×1280, 720×1600 and 540×960, plus scrolled completion controls at 540×960. The graphical version exports actual viewport screenshots with `-- --capture-dir=/absolute/path`.
+The UI test instantiates the production scene inside a viewport with an isolated save. It exercises three location groups, locked missions, proactive early teaching, real board input and animation, civilian collection, whole-route undo, victory/save/unlock, replay, next/final mission navigation, failed-save feedback, scrolling and tile projection for all 23 maps in both orientations. It checks play controls at 720×1280, 720×1600 and 540×960, plus scrolled completion controls at 540×960. The graphical version exports actual viewport screenshots with `-- --capture-dir=/absolute/path`.
 
 Actual rendered evidence is stored in [evidence/2026-10-31-coastal-ui](evidence/2026-10-31-coastal-ui/). Screenshot prior completions are seeded only in the test save. Rendering uses Godot GL Compatibility on macOS; this is desktop evidence, not Android device proof. The first local import encountered a transient engine crash during font import; a retry and a separate clean-cache import completed. Android's clean CI import is a separate required check.
 
@@ -35,4 +36,4 @@ Record device model, Android version, APK commit and signing/install result. Sta
 5. Check Android Back, status/navigation bars, camera cutouts, background/resume and a smaller/taller display. Ensure command buttons and completion actions remain reachable, and board orientation/picking remain consistent after resizing/resume.
 6. Complete mission 10; the main completion action must return to the ten completed missions. This UI milestone is not accepted on hardware until these results are recorded.
 
-No ads, billing, energy, timers, stars, accounts or new puzzle mechanics were added. Audio and broader Android polish remain roadmap work.
+No ads, billing, energy systems, accounts or unapproved puzzle mechanics are included. Stars, audio and the documented campaign extensions are implemented; broader Android polish remains pending hardware validation.

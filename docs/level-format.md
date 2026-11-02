@@ -31,7 +31,7 @@ Example (truncated for explanation; actual file must pass validation):
 
 Validation requires same-length rows, all-wall border, board 5–24 columns × 3–24 rows, exactly one F/E/C/X, at most one fire, and either zero or exactly one each of B/s/G. An optional ranger is unique; at most six infected are supported, and any infected requires a ranger. Optional `location` is `coast` (default) or `old-town`. Invalid maps are rejected before game startup rather than partially applied.
 
-A `RescueLevel` instance keeps the parsed definition and resets to its own map. Its BFS routing only uses currently walkable tiles and preserves fire, crate and gate interactions as explicit actions. Adding a level requires a known winning route in `tests/test_campaign.gd` (original chapter) or `tests/fixtures/old_town_solutions.json` replayed by `tests/test_old_town.gd` so content cannot silently ship unwinnable.
+A `RescueLevel` instance keeps the parsed definition and resets to its own map. Its BFS routing only uses currently walkable tiles and preserves fire, crate and gate interactions as explicit actions. Adding a level requires a known winning route in the matching fixture collection: `coastal_solutions.json` is replayed by `tests/test_campaign.gd`, `old_town_solutions.json` by `tests/test_old_town.gd`, and `floodworks_solutions.json` by `tests/test_puzzle_polish.gd`. This keeps authored content from silently shipping unwinnable.
 
 Progress is stored locally as JSON in `user://rescue_progress_v1.json` containing version 1 and a map of completed level IDs to best move counts. Only the next level after a completed predecessor unlocks; corrupted or unknown records are safely ignored. There is no online account or cloud synchronization.
 

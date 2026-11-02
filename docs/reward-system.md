@@ -13,12 +13,12 @@ Make every rescue satisfying, reward mastery, and motivate replay without timers
 
 ## Campaign
 - Show total stars earned / 3 × mission count on the mission picker.
-- Show chapter milestones at 10, 20 and 30 stars for the first ten missions; rewards are cosmetic badges, never required to unlock missions.
-- Initial badges: First Rescue (complete one), Harbor Guardian (complete ten), Perfect Planner (three-star one mission), Master Rescuer (three-star all ten).
-- Badge unlocks are derived from saved best scores and validated thresholds, avoiding redundant mutable state.
+- Show location completion and stars in the mission picker, plus the total XP/rank profile.
+- Cosmetic-only crew insignia unlock after 1, 5 and 10 completed missions; the Floodworks crest unlocks only after completing trials 21–23. No reward changes puzzle strength, access or score targets.
+- Insignia unlocks are derived from committed completion records, avoiding redundant mutable state.
 
 ## Visual feedback
-- Completion: short staggered star reveal, expressive character celebration, subtle particle/confetti effect, optional sound/haptics, and reduced-motion fallback.
+- Completion: expressive character celebration, confetti and a victory sound, with immediate Next, Replay, Undo rescue or Levels controls after the animation.
 - Mission cards: earned stars and personal best; locked cards remain distinguishable.
 - No blocking animation; allow immediate Next, Replay or Levels.
 
@@ -32,15 +32,13 @@ Make every rescue satisfying, reward mastery, and motivate replay without timers
 - Replaying worse never lowers best/stars; better replay improves both.
 - Existing saves load and derive appropriate rewards.
 - Save failure never announces durable reward.
-- UI tests cover star display, progress totals, badges, replay, small screens and reduced motion.
+- UI tests cover star display, progress totals, insignia, replay, small screens and animated action cleanup.
 - Headless gameplay tests and Android APK CI stay green.
 
 ## Delivery
-1. Add authored star thresholds to each level and validation/tests.
-2. Derive reward state from saved best moves.
-3. Integrate stars and new-best feedback in mission cards/completion.
-4. Add campaign progress and cosmetic badges.
-5. Add brief animation/sound and test on Android.
+1. Keep authored star thresholds and reference routes in sync when adding a map.
+2. Preserve derived rewards when changing save or progression code.
+3. Validate animation/audio comfort on Android hardware before treating presentation polish as accepted.
 
 Do not add currency, shop, backend, ads, analytics, streaks, or time pressure in this milestone.
 
