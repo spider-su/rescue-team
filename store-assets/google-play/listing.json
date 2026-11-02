@@ -1,0 +1,28 @@
+{
+  "name": "Rescue Team",
+  "package": "com.spidersu.rescueteam",
+  "language": "en-US",
+  "title": "Rescue Team",
+  "short_description": "Team up specialist heroes to solve rescue puzzles and bring civilians to safety",
+  "icon": "assets/branding/app-icon.png",
+  "art": "assets/coastal/victory.png",
+  "background": "#194F63",
+  "foreground": "#FFF4DA",
+  "accent": "#FFD168",
+  "graphic_title": [
+    "Rescue",
+    "Team"
+  ],
+  "graphic_subtitle": [
+    "Plan the route.",
+    "Bring everyone home."
+  ],
+  "graphic_footer": "THINK  /  TEAM UP  /  RESCUE",
+  "full_description": "Every rescue begins with a plan. Guide a crew of specialists through handcrafted grid puzzles, clear a safe route and carry civilians to the exit.\n\nThree specialists, one team\nMaya the firefighter clears fire. Theo the engineer pushes crates onto switches, operates valves and repairs bridges. Nia the containment ranger stuns infected blockers to open a path for the crew. Choose who acts next and combine their abilities in the right order.\n\nHandcrafted missions\nPlay 20 campaign missions across the Coastal District and Old Town Quarantine. Three optional Floodworks trials add water, valves and bridge puzzles after your early rescues.\n\nRoom to think\nTap a hero or portrait to select them, then tap a reachable destination. There is no countdown. Undo a destination tap, restart a mission or use layered hints when you need help. Resume an unfinished rescue with its saved actions.\n\nBring life back to the district\nEarn stars, improve your best move counts and unlock the next mission. Saved rescues restore district addresses and unlock cosmetic crew insignia that leave puzzle rules unchanged.\n\nPlay offline\nCampaign progress, unfinished missions, crew choices and sound preferences are saved locally. Original illustrated locations, music and rescue effects bring the crew's work to life. Music and sound can be switched independently.\n\nNo account is needed to play. Plan carefully, work together and find a way home.",
+  "screenshot_crop": [
+    0,
+    276,
+    1080,
+    2196
+  ]
+}
