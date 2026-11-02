@@ -45,11 +45,11 @@ def capture(args):
  installed=shell('pm','path',c['package']).splitlines()[0].removeprefix('package:')
  assert shell('sha256sum',installed).split()[0]==digest(apk),'Installed APK bytes differ from source APK'
  assert re.fullmatch('[0-9a-f]{40}',args.source_sha),'Use the APK source commit, not the asset commit'
- number=len(list((OUT/'phone').glob('phone-*.png')))+1;relative=f'phone/phone-{number:02d}.png'
+ number=args.number or len(list((OUT/'phone').glob('phone-*.png')))+1;assert 1<=number<=8,'Phone index must be 1–8';relative=f'phone/phone-{number:02d}.png'
  raw=subprocess.check_output(adb+['exec-out','screencap','-p']);p=OUT/relative;p.parent.mkdir(exist_ok=True);raw_path=OUT/'raw'/p.name;raw_path.parent.mkdir(exist_ok=True);raw_path.write_bytes(raw);image=Image.open(io.BytesIO(raw)).convert('RGB');image=image.crop(c['screenshot_crop']) if c.get('screenshot_crop') else image;image.save(p,optimize=True)
  manifest_path=OUT/'screenshots.json';m=json.loads(manifest_path.read_text()) if manifest_path.exists() else {'screenshots':[]}
  record={'file':relative,'screen':args.name,'captured_at':datetime.datetime.now(datetime.timezone.utc).isoformat(),'capture_method':'adb exec-out screencap -p','sha256':digest(p),'raw_sha256':hashlib.sha256(raw).hexdigest(),'crop':c.get('screenshot_crop'),'apk':{'file':apk.name,'sha256':digest(apk),'package':match[1],'version_code':match[2],'version_name':match[3],'source_commit':args.source_sha,'build_url':args.build_url},'emulator':{'avd':shell('getprop','ro.boot.qemu.avd_name'),'serial':args.serial,'api':shell('getprop','ro.build.version.sdk'),'android':shell('getprop','ro.build.version.release'),'abi':shell('getprop','ro.product.cpu.abi'),'display':shell('wm','size'),'density':shell('wm','density'),'app_language':c['language'],'system_locale':shell('getprop','persist.sys.locale')},'foreground_verified':True,'visual_review':'pending'}
- m['screenshots'].append(record);manifest_path.write_text(json.dumps(m,indent=2,ensure_ascii=False)+'\n');print(relative)
+ m['screenshots']=[s for s in m['screenshots'] if s['file']!=relative];m['screenshots'].append(record);m['screenshots'].sort(key=lambda s:s['file']);manifest_path.write_text(json.dumps(m,indent=2,ensure_ascii=False)+'\n');print(relative)
 def validate():
  c=config();errors=[];rows=[]
  for field,limit in [('title',30),('short_description',80),('full_description',4000)]:
@@ -83,5 +83,5 @@ def validate():
  (OUT/'validation.json').write_text(json.dumps(report,indent=2,ensure_ascii=False)+'\n');print(json.dumps(report,indent=2,ensure_ascii=False));raise SystemExit(bool(errors))
 if __name__=='__main__':
  p=argparse.ArgumentParser(description=__doc__);sub=p.add_subparsers(dest='command',required=True)
- sub.add_parser('render');sub.add_parser('validate');cap=sub.add_parser('capture');cap.add_argument('--adb',default='adb');cap.add_argument('--aapt',default='aapt');cap.add_argument('--serial',required=True);cap.add_argument('--apk',required=True);cap.add_argument('--source-sha',required=True);cap.add_argument('--build-url',required=True);cap.add_argument('--name',required=True)
+ sub.add_parser('render');sub.add_parser('validate');cap=sub.add_parser('capture');cap.add_argument('--adb',default='adb');cap.add_argument('--aapt',default='aapt');cap.add_argument('--serial',required=True);cap.add_argument('--apk',required=True);cap.add_argument('--source-sha',required=True);cap.add_argument('--build-url',required=True);cap.add_argument('--name',required=True);cap.add_argument('--number',type=int,help='Explicitly replace a screenshot and its provenance record')
  a=p.parse_args();{'render':render,'validate':validate,'capture':lambda:capture(a)}[a.command]()
