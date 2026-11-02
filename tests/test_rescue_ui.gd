@@ -64,9 +64,10 @@ func _run() -> void:
 	_check(game.screen == "play", "Mission card starts the actual play scene")
 	_check_controls_fit()
 	await _test_hero_popup()
-	_check(game.objective_label.text.begins_with("Training:"), "First mission offers contextual training")
+	_check(game.objective_label.text.begins_with("Training:") and game.board.hint_target == game.level.civilian_pos, "First mission proactively explains and highlights the current training target")
+	_check(game.hero_popup.visible and game.hero_popup_text.text.begins_with("Training:"), "First mission opens a non-blocking hero training prompt")
 	game.hint_button.pressed.emit()
-	_check(game.hint_stage == 1 and game.board.hint_target.x == -1, "First hint is a strategic nudge")
+	_check(game.hint_stage == 1 and game.board.hint_target == game.level.civilian_pos, "First hint keeps the proactive training target visible")
 	game.hint_button.pressed.emit()
 	_check(game.hint_stage == 2 and game.board.hint_target == game.level.civilian_pos, "Second hint highlights the objective without moving")
 	for dimensions in [Vector2i(540, 960), Vector2i(720, 1280)]:
@@ -81,7 +82,7 @@ func _run() -> void:
 	game.resume_button.pressed.emit()
 	_check(game.hint_stage == 2 and game.board.hint_target == game.level.civilian_pos, "Resume restores revealed hint stage")
 	await _tap(Vector2i(3, 1))
-	_check(game.hint_stage == 0 and game.board.hint_target.x == -1, "Progress changes the guidance goal and clears its highlight")
+	_check(game.hint_stage == 0 and game.board.hint_target == game.level.exit_pos, "Progress advances the training prompt and highlights the next target")
 	game._show_menu()
 	game.resume_button.pressed.emit()
 	_check(game.level.carrying_role == game.level.FIREFIGHTER and game.level.history.size() == 1, "Resume reconstructs carrying state and grouped undo")
@@ -149,12 +150,10 @@ func _run() -> void:
 	for id in ["05", "06", "07", "08", "09"]:
 		game.progress.record_victory(id, 20)
 	game._start_level(9)
-	game.engineer_button.pressed.emit()
-	for x in range(2, 6):
-		await _tap(Vector2i(x, 3))
-	game.firefighter_button.pressed.emit()
-	for x in [5, 7, 10]:
-		await _tap(Vector2i(x, 1))
+	var coastal_solutions: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://tests/fixtures/coastal_solutions.json"))
+	for step in coastal_solutions["10"]:
+		game._on_role(step[0])
+		await _tap(Vector2i(step[1], step[2]))
 	_check(game.screen == "victory" and game.next_button.text == "NEXT LOCATION", "Coastal completion offers the new location")
 	game.next_button.pressed.emit()
 	_check(game.screen == "play" and game.current_index == 10 and game.location_index == 1 and game.ranger_button.visible, "Next location begins mission 11 with ranger available")

@@ -1,13 +1,13 @@
 {
   "id": "22",
   "location": "floodworks",
-  "title": "Bridge the Gap",
-  "hint": "Engineer: turn the valve to drain water, then repair the broken bridge.",
+  "title": "Highwater Bridge",
+  "hint": "Open the valve from below before repairing the bridge above.",
   "rows": [
     "###########",
-    "#F.~.=f.CX#",
-    "#...#######",
     "#E.V......#",
+    "#...#######",
+    "#F.~.=f.CX#",
     "###########"
   ],
   "three_star_moves": 20,

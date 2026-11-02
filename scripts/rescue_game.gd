@@ -72,6 +72,7 @@ var session: RefCounted
 var commands: Array = []
 var hint_stage := 0
 var guidance_key := ""
+var training_prompt_key := ""
 var resume_saved := true
 var resume_button: Button
 var hint_button: Button
@@ -644,6 +645,7 @@ func _start_level(index: int) -> void:
 	commands = []
 	hint_stage = 0
 	guidance_key = ""
+	training_prompt_key = ""
 	current_index = index
 	var next_location: int = catalog.location_for(index)
 	if next_location != location_index:
@@ -770,6 +772,7 @@ func _on_restart() -> void:
 	commands = []
 	hint_stage = 0
 	guidance_key = ""
+	training_prompt_key = ""
 	level.reset()
 	board.route_preview.clear()
 	_show_screen("play")
@@ -808,10 +811,11 @@ func _refresh() -> void:
 	if guidance_key != goal["key"]:
 		guidance_key = goal["key"]
 		hint_stage = 0
-	board.hint_target = goal["target"] if hint_stage >= 2 else Vector2i(-1, -1)
+	var training := current_index < 5 and not progress.is_complete(level.level_id)
+	board.hint_target = goal["target"] if training or hint_stage >= 2 else Vector2i(-1, -1)
 	hint_button.text = "HINT" if hint_stage == 0 else ("SHOW" if hint_stage == 1 else "REPEAT")
 	hint_button.disabled = moving or level.rescued
-	if current_index < 5 and not progress.is_complete(level.level_id):
+	if training:
 		objective_label.text = "Training: " + goal["nudge"]
 		objective_label.add_theme_font_size_override("font_size", 22)
 	else:
@@ -844,7 +848,20 @@ func _refresh() -> void:
 		next_button.text = ("NEXT LOCATION" if catalog.location_for(current_index + 1) != location_index else "NEXT MISSION") if has_next else "ALL MISSIONS"
 		next_button.disabled = not saved
 		victory_undo.disabled = level.history.is_empty()
+	if training and training_prompt_key != goal["key"]:
+		training_prompt_key = goal["key"]
+		call_deferred("_show_training_prompt", goal)
 	board.queue_redraw()
+
+func _show_training_prompt(goal: Dictionary) -> void:
+	if screen != "play" or level.rescued or guidance_key != goal["key"]:
+		return
+	hero_popup.offset_top = -minf(220, board.size.y - 24)
+	hero_popup_text.add_theme_font_size_override("font_size", 22)
+	hero_popup_text.text = "Training: " + goal["detail"]
+	hero_popup_portrait.texture = UI.portrait(goal["role"])
+	hero_popup.show()
+	hero_popup_timer.start(5.5)
 
 func _checkpoint() -> void:
 	# Isolated UI fixtures do not replace a real catalog mission's checkpoint.

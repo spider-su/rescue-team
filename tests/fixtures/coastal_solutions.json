@@ -70,27 +70,27 @@
   "05": [
     [
       "engineer",
-      4,
+      8,
       3
     ],
     [
       "engineer",
-      5,
+      7,
       3
     ],
     [
       "firefighter",
-      4,
+      8,
       1
     ],
     [
       "firefighter",
-      7,
+      5,
       1
     ],
     [
       "firefighter",
-      10,
+      2,
       1
     ]
   ],
@@ -196,37 +196,37 @@
     [
       "engineer",
       2,
-      3
+      2
     ],
     [
       "engineer",
       3,
-      3
+      2
     ],
     [
       "engineer",
       4,
-      3
+      2
     ],
     [
       "engineer",
       5,
-      3
+      2
     ],
     [
       "firefighter",
       5,
-      1
+      4
     ],
     [
       "firefighter",
       7,
-      1
+      4
     ],
     [
       "firefighter",
       10,
-      1
+      4
     ]
   ]
 }

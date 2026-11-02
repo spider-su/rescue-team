@@ -1,13 +1,13 @@
 {
   "id": "21",
   "location": "floodworks",
-  "title": "Open the Sluice",
-  "hint": "Engineer: turn the valve to drain water, then repair the broken bridge.",
+  "title": "West Sluice",
+  "hint": "Drain the west channel, then let Maya use the reopened lane.",
   "rows": [
     "###########",
-    "#F.~.C.X..#",
-    "#...#######",
-    "#E.V......#",
+    "#..X.C.~.F#",
+    "#######...#",
+    "#......V.E#",
     "###########"
   ],
   "three_star_moves": 8,

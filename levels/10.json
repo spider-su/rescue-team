@@ -1,13 +1,13 @@
 {
   "id": "10",
   "title": "Final Extraction",
-  "hint": "Use the engineer to push the box 4 time(s), then rescue the civilian.",
+  "hint": "The final route runs north: clear the way, power the gate, then extract.",
   "rows": [
     "#############",
-    "#F...f.C.GX##",
-    "#.#.#####.###",
-    "#EB...s.....#",
     "#...###.....#",
+    "#EB...s.....#",
+    "#.#.#####.###",
+    "#F...f.C.GX##",
     "#############"
   ],
   "three_star_moves": 13,

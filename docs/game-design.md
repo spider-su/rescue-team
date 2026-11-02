@@ -49,11 +49,11 @@ Action feedback uses short, interrupt-safe animation beats rather than long cine
 2. Smoke Alley — clear a blocking fire.
 3. Power the Gate — engineer activates a switch.
 4. The Locked Corridor — original cooperative prototype.
-5. Crossed Routes — two crate pushes and longer extraction.
+5. Harbor Crossroads — the first route reversal: power the gate from the side lane, then extract from the opposite end.
 
 ## Ten-level vertical slice
 
-The manifest now contains ten authored missions. The first five introduce rescue, fire, switches/gates and cooperation. Missions 06–09 add valve/water, bridge, ranger/infected and a light combination in that order; Mission 10 recaps the original cooperative crate/fire finale before Old Town. Tests verify a complete solution for every mission. Content breadth does not establish device usability or external-player engagement.
+The manifest now contains ten authored missions. The first four introduce rescue, fire, switches/gates and cooperation; Mission 05 reverses the established route before the new-mechanic ramp. Missions 06–09 add valve/water, bridge, ranger/infected and a light combination in that order; Mission 10 reuses the cooperative crate/fire finale with a northbound extraction before Old Town. Later locations deliberately rotate or reverse street orientation and entry/exit anchors so their planning does not feel like a repeated left-to-right board. Tests verify a complete solution for every mission. Content breadth does not establish device usability or external-player engagement.
 
 Ship only after every level has at least one verified solution and tests for unwinnable/invalid state handling. Favor manual, interesting designs over generated filler.
 

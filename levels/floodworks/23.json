@@ -1,14 +1,14 @@
 {
   "id": "23",
   "location": "floodworks",
-  "title": "The Floodworks Relay",
-  "hint": "Engineer: turn the valve to drain water, then repair the broken bridge.",
+  "title": "Floodworks Turntable",
+  "hint": "Clear the western relay in a new order: water, infected, gate, then exit.",
   "rows": [
     "#############",
-    "#F.~.=f.ZGCX#",
-    "#...#########",
-    "#E.V..B.s...#",
-    "#R..........#",
+    "#XCGZ.f=.~.F#",
+    "#########...#",
+    "#...s.B..V.E#",
+    "#..........R#",
     "#############"
   ],
   "three_star_moves": 59,

@@ -1,13 +1,13 @@
 {
   "id": "05",
-  "title": "Crossed Routes",
-  "hint": "Two box pushes, then a long firefighter extraction.",
+  "title": "Harbor Crossroads",
+  "hint": "Use the side lane to power the gate, then bring Maya home.",
   "rows": [
     "#############",
-    "#F..f..C.GX##",
-    "#.#.#####.###",
-    "#E..B.s.....#",
-    "#...###.....#",
+    "##XG.C..f..F#",
+    "###.#####.#.#",
+    "#.....s.B..E#",
+    "#.....###...#",
     "#############"
   ],
   "three_star_moves": 13,
